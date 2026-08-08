@@ -2,7 +2,7 @@
 FROM eclipse-temurin:17-jdk-jammy AS builder
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
-ENV GRADLE_HOME=/opt/gradle-8.12
+ENV GRADLE_HOME=/opt/gradle-9.3.1
 ENV PATH=${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${GRADLE_HOME}/bin
 
 RUN apt-get update && apt-get install -y wget unzip git && rm -rf /var/lib/apt/lists/*
@@ -13,7 +13,7 @@ RUN mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools && \
     mv ${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest && \
     rm /tmp/cmdline-tools.zip
 
-RUN wget -q https://services.gradle.org/distributions/gradle-8.12-bin.zip -O /tmp/gradle.zip && \
+RUN wget -q https://services.gradle.org/distributions/gradle-9.3.1-bin.zip -O /tmp/gradle.zip && \
     unzip -q /tmp/gradle.zip -d /opt && \
     rm /tmp/gradle.zip
 
