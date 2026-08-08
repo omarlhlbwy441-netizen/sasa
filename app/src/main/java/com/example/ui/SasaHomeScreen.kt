@@ -1,5 +1,12 @@
 package com.example.ui
 
+import android.content.Context
+import android.content.Intent
+import android.speech.RecognizerIntent
+import android.speech.tts.TextToSpeech
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -26,13 +33,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Terminal
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,9 +63,12 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,13 +77,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.CompositionLocalProvider
 import com.example.data.ChatMessage
 import com.example.data.GeminiModel
 import com.example.data.MessageSender
@@ -83,6 +102,7 @@ import com.example.ui.theme.SasaSecondary
 import com.example.ui.theme.SasaTextSecondary
 import com.example.ui.theme.SasaUserBubble
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -95,6 +115,50 @@ fun SasaHomeScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+
+    // Feedback state map: messageId -> Boolean (true = Up, false = Down)
+    val feedbackState = remember { mutableStateMapOf<String, Boolean>() }
+
+    // Text-To-Speech setup
+    var ttsEngine by remember { mutableStateOf<TextToSpeech?>(null) }
+    DisposableEffect(context) {
+        val tts = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                ttsEngine?.language = Locale("ar")
+            }
+        }
+        ttsEngine = tts
+        onDispose {
+            tts.stop()
+            tts.shutdown()
+        }
+    }
+
+    // Voice input launcher
+    val speechLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val spokenText = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+            if (!spokenText.isNullOrBlank()) {
+                inputText = if (inputText.isBlank()) spokenText else "$inputText $spokenText"
+            }
+        }
+    }
+
+    // File picker launcher
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            val fileName = uri.lastPathSegment?.substringAfterLast('/') ?: "ملف مرفق"
+            val noticeText = "📁 تم إرفاق الملف: $fileName\n\nيرجى كتابة تعليماتك أو استفسارك حول هذا الملف."
+            inputText = if (inputText.isBlank()) noticeText else "$inputText\n$noticeText"
+            Toast.makeText(context, "تم إرفاق الملف بنجاح: $fileName", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     // Scroll to bottom when new messages arrive
     LaunchedEffect(uiState.messages.size, uiState.isGenerating) {
@@ -123,6 +187,36 @@ fun SasaHomeScreen(
                     onClearChat = { viewModel.onClearChat() }
                 )
             },
+            bottomBar = {
+                BottomInputBar(
+                    inputText = inputText,
+                    onInputChanged = { inputText = it },
+                    isGenerating = uiState.isGenerating,
+                    activeModelName = uiState.selectedModel.displayName,
+                    onSend = {
+                        if (inputText.isNotBlank() && !uiState.isGenerating) {
+                            val textToSend = inputText
+                            inputText = ""
+                            viewModel.onSendMessage(textToSend)
+                        }
+                    },
+                    onAttachFile = {
+                        filePickerLauncher.launch("*/*")
+                    },
+                    onVoiceInput = {
+                        try {
+                            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ar")
+                                putExtra(RecognizerIntent.EXTRA_PROMPT, "تحدث الآن للاستماع لصلبك البرمجي...")
+                            }
+                            speechLauncher.launch(intent)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "الميزة غير متوفرة على هذا الجهاز", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+            },
             snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = SasaDarkBackground
         ) { paddingValues ->
@@ -143,7 +237,36 @@ fun SasaHomeScreen(
                         item { Spacer(modifier = Modifier.height(8.dp)) }
 
                         items(uiState.messages, key = { it.id }) { msg ->
-                            ChatMessageItem(message = msg)
+                            ChatMessageItem(
+                                message = msg,
+                                feedbackValue = feedbackState[msg.id],
+                                onCopy = {
+                                    clipboardManager.setText(AnnotatedString(msg.text))
+                                    Toast.makeText(context, "تم نسخ النص إلى الحافظة", Toast.LENGTH_SHORT).show()
+                                },
+                                onListen = {
+                                    ttsEngine?.stop()
+                                    ttsEngine?.speak(msg.text, TextToSpeech.QUEUE_FLUSH, null, msg.id)
+                                },
+                                onShare = {
+                                    val sendIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, msg.text)
+                                        type = "text/plain"
+                                    }
+                                    val shareIntent = Intent.createChooser(sendIntent, "مشاركة رد صاصا AI")
+                                    context.startActivity(shareIntent)
+                                },
+                                onFeedback = { isUp ->
+                                    if (feedbackState[msg.id] == isUp) {
+                                        feedbackState.remove(msg.id)
+                                    } else {
+                                        feedbackState[msg.id] = isUp
+                                        val feedbackMsg = if (isUp) "شكراً لك على التقييم الإيجابي! 👍" else "شكراً لملاحظاتك، سنعمل على تحسين الإجابات. 👎"
+                                        Toast.makeText(context, feedbackMsg, Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            )
                         }
 
                         if (uiState.isGenerating) {
@@ -199,6 +322,21 @@ fun SasaHomeScreen(
                                 val textToSend = inputText
                                 inputText = ""
                                 viewModel.onSendMessage(textToSend)
+                            }
+                        },
+                        onAttachFile = {
+                            filePickerLauncher.launch("*/*")
+                        },
+                        onVoiceInput = {
+                            try {
+                                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ar")
+                                    putExtra(RecognizerIntent.EXTRA_PROMPT, "تحدث الآن للاستماع لصلبك البرمجي...")
+                                }
+                                speechLauncher.launch(intent)
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "الميزة غير متوفرة على هذا الجهاز", Toast.LENGTH_SHORT).show()
                             }
                         }
                     )
@@ -354,7 +492,14 @@ fun HeaderBar(
 }
 
 @Composable
-fun ChatMessageItem(message: ChatMessage) {
+fun ChatMessageItem(
+    message: ChatMessage,
+    feedbackValue: Boolean? = null,
+    onCopy: () -> Unit = {},
+    onListen: () -> Unit = {},
+    onShare: () -> Unit = {},
+    onFeedback: (Boolean) -> Unit = {}
+) {
     val isUser = message.sender == MessageSender.USER
     val isSystem = message.sender == MessageSender.SYSTEM
 
@@ -416,7 +561,7 @@ fun ChatMessageItem(message: ChatMessage) {
                 containerColor = if (isUser) SasaUserBubble else if (message.isError) Color(0xFF3C1818) else SasaAiBubble
             ),
             modifier = Modifier
-                .fillMaxWidth(0.85f)
+                .fillMaxWidth(0.9f)
                 .testTag(if (isUser) "user_message_bubble" else "ai_message_bubble")
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
@@ -445,6 +590,93 @@ fun ChatMessageItem(message: ChatMessage) {
                 }
 
                 MessageTextWithCodeBlocks(text = message.text)
+
+                // Action buttons under AI responses (Copy, Listen, Share, Thumb Up, Thumb Down)
+                if (!isUser && !message.isError) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Copy Button
+                        IconButton(
+                            onClick = onCopy,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag("copy_response_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = "نسخ الرد",
+                                tint = SasaTextSecondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Listen/TTS Button
+                        IconButton(
+                            onClick = onListen,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag("listen_response_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = "استماع للرد",
+                                tint = SasaTextSecondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Share Button
+                        IconButton(
+                            onClick = onShare,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag("share_response_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "مشاركة الرد",
+                                tint = SasaTextSecondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        // Rating Thumb Up
+                        IconButton(
+                            onClick = { onFeedback(true) },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag("thumb_up_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ThumbUp,
+                                contentDescription = "إعجاب بالرد",
+                                tint = if (feedbackValue == true) SasaPrimary else SasaTextSecondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Rating Thumb Down
+                        IconButton(
+                            onClick = { onFeedback(false) },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag("thumb_down_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ThumbDown,
+                                contentDescription = "لم يعجبني",
+                                tint = if (feedbackValue == false) Color.Red else SasaTextSecondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -498,7 +730,9 @@ fun BottomInputBar(
     onInputChanged: (String) -> Unit,
     isGenerating: Boolean,
     activeModelName: String,
-    onSend: () -> Unit
+    onSend: () -> Unit,
+    onAttachFile: () -> Unit = {},
+    onVoiceInput: () -> Unit = {}
 ) {
     Surface(
         color = SasaDarkSurface,
@@ -523,6 +757,36 @@ fun BottomInputBar(
                     .fillMaxWidth()
                     .testTag("chat_input_field"),
                 shape = RoundedCornerShape(24.dp),
+                leadingIcon = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 4.dp)
+                    ) {
+                        // File attachment button
+                        IconButton(
+                            onClick = onAttachFile,
+                            modifier = Modifier.testTag("attach_file_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AttachFile,
+                                contentDescription = "رفع ملف",
+                                tint = SasaPrimary
+                            )
+                        }
+
+                        // Voice input button
+                        IconButton(
+                            onClick = onVoiceInput,
+                            modifier = Modifier.testTag("voice_input_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Mic,
+                                contentDescription = "إدخال صوتي",
+                                tint = SasaSecondary
+                            )
+                        }
+                    }
+                },
                 trailingIcon = {
                     IconButton(
                         onClick = onSend,
