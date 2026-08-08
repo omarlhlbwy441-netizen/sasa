@@ -372,17 +372,6 @@ fun SasaHomeScreen(
                         )
                     }
                 }
-
-                // API Key Dialog
-                if (uiState.showApiKeyDialog) {
-                    ApiKeyDialog(
-                        currentKey = uiState.customApiKey,
-                        onDismiss = { viewModel.setShowApiKeyDialog(false) },
-                        onSaveKey = { key ->
-                            viewModel.onSaveCustomApiKey(key)
-                        }
-                    )
-                }
             }
         }
     }
@@ -393,7 +382,7 @@ fun HeaderBar(
     selectedModel: GeminiModel,
     activeModelTag: String,
     onOpenModelMenu: () -> Unit,
-    onOpenKeyDialog: () -> Unit,
+    onOpenKeyDialog: () -> Unit = {},
     onClearChat: () -> Unit
 ) {
     Surface(
@@ -464,16 +453,6 @@ fun HeaderBar(
                         imageVector = Icons.Default.Psychology,
                         contentDescription = "تبديل النموذج",
                         tint = SasaSecondary
-                    )
-                }
-                IconButton(
-                    onClick = onOpenKeyDialog,
-                    modifier = Modifier.testTag("api_key_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Key,
-                        contentDescription = "إعدادات المفتاح",
-                        tint = SasaPrimary
                     )
                 }
                 IconButton(
