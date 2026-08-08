@@ -5,10 +5,10 @@ enum class GeminiModel(
     val displayName: String,
     val description: String
 ) {
-    FLASH_2_0("gemini-2.0-flash", "Gemini 2.0 Flash", "النموذج الأحدث والأسرع من غوغل للمهام العامة"),
-    FLASH_1_5("gemini-1.5-flash", "Gemini 1.5 Flash", "النموذج السريع عالي الكفاءة مع نافذة سياق كبيرة"),
-    PRO_1_5("gemini-1.5-pro", "Gemini 1.5 Pro", "نموذج البرمجة المتقدمة والتفكير المنطقي المعقد"),
-    FLASH_1_5_8B("gemini-1.5-flash-8b", "Gemini 1.5 Flash 8B", "نموذج المهام السريعة والإجابات المباشرة")
+    FLASH_2_5("gemini-2.5-flash", "Gemini 2.5 Flash", "النموذج الأحدث والأقوى من غوغل للمهام العامة والبرمجة"),
+    FLASH_2_0("gemini-2.0-flash", "Gemini 2.0 Flash", "النموذج السريع للجيل الثاني مع استجابة فائقة"),
+    FLASH_1_5("gemini-1.5-flash", "Gemini 1.5 Flash", "نموذج الأداء العالي مع نافذة سياق ضخمة"),
+    PRO_1_5("gemini-1.5-pro", "Gemini 1.5 Pro", "نموذج البرمجة المتقدمة والتفكير المنطقي المعقد")
 }
 
 data class ChatMessage(

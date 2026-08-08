@@ -310,36 +310,6 @@ fun SasaHomeScreen(
 
                         item { Spacer(modifier = Modifier.height(12.dp)) }
                     }
-
-                    // Input Bar
-                    BottomInputBar(
-                        inputText = inputText,
-                        onInputChanged = { inputText = it },
-                        isGenerating = uiState.isGenerating,
-                        activeModelName = uiState.selectedModel.displayName,
-                        onSend = {
-                            if (inputText.isNotBlank()) {
-                                val textToSend = inputText
-                                inputText = ""
-                                viewModel.onSendMessage(textToSend)
-                            }
-                        },
-                        onAttachFile = {
-                            filePickerLauncher.launch("*/*")
-                        },
-                        onVoiceInput = {
-                            try {
-                                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ar")
-                                    putExtra(RecognizerIntent.EXTRA_PROMPT, "تحدث الآن للاستماع لصلبك البرمجي...")
-                                }
-                                speechLauncher.launch(intent)
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "الميزة غير متوفرة على هذا الجهاز", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    )
                 }
 
                 // Dropdown menu for model selection
@@ -371,6 +341,17 @@ fun SasaHomeScreen(
                             }
                         )
                     }
+                }
+
+                // API Key Dialog
+                if (uiState.showApiKeyDialog) {
+                    ApiKeyDialog(
+                        currentKey = uiState.customApiKey,
+                        onDismiss = { viewModel.setShowApiKeyDialog(false) },
+                        onSaveKey = { key ->
+                            viewModel.onSaveCustomApiKey(key)
+                        }
+                    )
                 }
             }
         }
@@ -453,6 +434,16 @@ fun HeaderBar(
                         imageVector = Icons.Default.Psychology,
                         contentDescription = "تبديل النموذج",
                         tint = SasaSecondary
+                    )
+                }
+                IconButton(
+                    onClick = onOpenKeyDialog,
+                    modifier = Modifier.testTag("api_key_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Key,
+                        contentDescription = "تغيير مفتاح API",
+                        tint = SasaPrimary
                     )
                 }
                 IconButton(

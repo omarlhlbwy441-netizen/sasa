@@ -100,25 +100,31 @@ class GeminiRepository {
             if (m != preferredModel) modelsOrder.add(m)
         }
 
-        // Try online API requests if keys exist
-        if (keysToTry.isNotEmpty()) {
-            for (apiKey in keysToTry) {
-                for (model in modelsOrder) {
-                    try {
-                        val result = executeGeminiRequest(prompt, conversationHistory, model, apiKey)
-                        if (result is GeminiResult.Success) {
-                            return@withContext result
-                        }
-                    } catch (e: Exception) {
-                        // Continue to next key/model or fallback
+        if (keysToTry.isEmpty()) {
+            return@withContext GeminiResult.Error(
+                "💡 لم يتم إدخال مفتاح Gemini API صالح. يرجى الضغط على زر المفتاح 🔑 في أعلى الشاشة وإدخال مفتاحك المجاني من Google AI Studio (aistudio.google.com)."
+            )
+        }
+
+        var lastError: GeminiResult = GeminiResult.Error("فشل الاتصال بجميع نماذج Gemini.")
+
+        for (apiKey in keysToTry) {
+            for (model in modelsOrder) {
+                try {
+                    val result = executeGeminiRequest(prompt, conversationHistory, model, apiKey)
+                    if (result is GeminiResult.Success) {
+                        return@withContext result
+                    } else {
+                        lastError = result
                     }
+                } catch (e: Exception) {
+                    lastError = GeminiResult.Error("خطأ في الاتصال بالشبكة: ${e.message}")
                 }
             }
         }
 
-        // Automatic Programmatic Fallback: Sasa Smart Engine
-        val smartAnswer = generateSasaSmartResponse(prompt)
-        GeminiResult.Success(smartAnswer, preferredModel)
+        // Return the actual error message from Gemini API instead of mock templates
+        lastError
     }
 
     private fun executeGeminiRequest(
@@ -221,47 +227,6 @@ class GeminiRepository {
             sb.toString()
         } catch (e: Exception) {
             ""
-        }
-    }
-
-    private fun generateSasaSmartResponse(prompt: String): String {
-        val lower = prompt.lowercase()
-        return when {
-            lower.contains("مرحبا") || lower.contains("سلام") || lower.contains("هلا") || lower.contains("أهلا") || lower.contains("كيفك") -> {
-                "أهلاً بك! أنا منظومة **صاصا AI** الذكية.\n" +
-                        "جاهز لمساعدتك في كتابة وتحليل الكود البرمجي، حل المشكلات المعقدة، والإجابة على أي استفسارات باللغة العربية.\n\n" +
-                        "ما الذي نود العمل عليه اليوم؟"
-            }
-            lower.contains("كود") || lower.contains("برمج") || lower.contains("برمجة") || lower.contains("وظيفة") || lower.contains("دالة") || lower.contains("فنكشن") -> {
-                "تفضل هذا النموذج البرمجي المحسن وفقاً لطلبك:\n\n" +
-                        "```kotlin\n" +
-                        "// مثال برمجي بلغة Kotlin لمنظومة صاصا AI\n" +
-                        "fun processTask(input: String): String {\n" +
-                        "    println(\"جاري معالجة الطلب: \$input\")\n" +
-                        "    return \"تم تنفيذ الطلب بنجاح بواسطة صاصا AI\"\n" +
-                        "}\n" +
-                        "```\n\n" +
-                        "### 💡 التحليل والخطوات البرمجية:\n" +
-                        "1. **الدالة `processTask`**: تستقبل المدخلات وتقوم بالمعالجة المباشرة.\n" +
-                        "2. **الأداء**: خفيفة السلسة ومرنة للتوسع المستقبلي.\n" +
-                        "3. **التكامل**: يمكنك دمجها مباشرة في مشروعك.\n\n" +
-                        "هل تحتاج تعديلات إضافية أو بلغة أخرى مثل Python أو JavaScript؟"
-            }
-            lower.contains("ملف") || lower.contains("مرفق") || lower.contains("مستند") -> {
-                "تمت قراءة وتحليل الملف المرفق بنجاح بواسطة منظومة صاصا AI 📁.\n\n" +
-                        "### 📝 ملخص الملف والأفكار الرئيسية:\n" +
-                        "- يحتوي الملف على معلومات وبيانات مهيكلة جاهزة للمعالجة.\n" +
-                        "- تم التثبت من سلامة المحتوى والترميز.\n\n" +
-                        "كيف تريد منا معالجة البيانات المرفقة أو تحويلها برمجياً؟"
-            }
-            else -> {
-                "شكراً لاستفسارك! إليك التحليل المباشر بواسطة منظومة **صاصا AI**:\n\n" +
-                        "بناءً على طلبك: **\"$prompt\"**\n\n" +
-                        "1. **الفكرة الأساسية**: العمل على تلبية استفسارك بدقة وتقديم استجابة مهيكلة ومباشرة.\n" +
-                        "2. **التنفيذ**: استخدام أفضل الممارسات في التحليل وصياغة الردود باللغة العربية.\n" +
-                        "3. **التوصية**: يمكنك دائماً طلب شروح إضافية أو كتابة أمثلة برمجية مخصصة لطلبك.\n\n" +
-                        "هل ترغب في مزيد من التفاصيل حول نقطة معينة؟"
-            }
         }
     }
 
