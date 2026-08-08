@@ -89,7 +89,6 @@ import androidx.compose.ui.unit.sp
 import com.example.data.ChatMessage
 import com.example.data.GeminiModel
 import com.example.data.MessageSender
-import com.example.ui.components.ApiKeyDialog
 import com.example.ui.components.MessageTextWithCodeBlocks
 import com.example.ui.theme.SasaAccentGreen
 import com.example.ui.theme.SasaAiBubble
@@ -183,7 +182,6 @@ fun SasaHomeScreen(
                     selectedModel = uiState.selectedModel,
                     activeModelTag = uiState.activeModelTag,
                     onOpenModelMenu = { showModelMenu = true },
-                    onOpenKeyDialog = { viewModel.setShowApiKeyDialog(true) },
                     onClearChat = { viewModel.onClearChat() }
                 )
             },
@@ -342,17 +340,6 @@ fun SasaHomeScreen(
                         )
                     }
                 }
-
-                // API Key Dialog
-                if (uiState.showApiKeyDialog) {
-                    ApiKeyDialog(
-                        currentKey = uiState.customApiKey,
-                        onDismiss = { viewModel.setShowApiKeyDialog(false) },
-                        onSaveKey = { key ->
-                            viewModel.onSaveCustomApiKey(key)
-                        }
-                    )
-                }
             }
         }
     }
@@ -363,7 +350,6 @@ fun HeaderBar(
     selectedModel: GeminiModel,
     activeModelTag: String,
     onOpenModelMenu: () -> Unit,
-    onOpenKeyDialog: () -> Unit = {},
     onClearChat: () -> Unit
 ) {
     Surface(
@@ -434,16 +420,6 @@ fun HeaderBar(
                         imageVector = Icons.Default.Psychology,
                         contentDescription = "تبديل النموذج",
                         tint = SasaSecondary
-                    )
-                }
-                IconButton(
-                    onClick = onOpenKeyDialog,
-                    modifier = Modifier.testTag("api_key_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Key,
-                        contentDescription = "تغيير مفتاح API",
-                        tint = SasaPrimary
                     )
                 }
                 IconButton(
