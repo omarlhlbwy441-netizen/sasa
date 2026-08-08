@@ -54,7 +54,7 @@ class GeminiRepository {
         val keysToTry = mutableListOf<String>()
         
         // 1. User custom key if provided
-        if (customApiKey.isNullOrBlank().not()) {
+        if (!customApiKey.isNullOrBlank()) {
             keysToTry.add(customApiKey.trim())
         }
         
@@ -64,12 +64,10 @@ class GeminiRepository {
             keysToTry.add(defaultConfigKey)
         }
 
-        // 3. Add built-in user fallback keys
-        builtInFallbackKeysEncoded.forEach { encoded ->
-            val decoded = decodeKey(encoded)
-            if (decoded.isNotBlank() && !keysToTry.contains(decoded)) {
-                keysToTry.add(decoded)
-            }
+        if (keysToTry.isEmpty()) {
+            return@withContext GeminiResult.Error(
+                "💡 لم يتم العثور على مفتاح API. يرجى الضغط على زر الإعدادات ⚙️ في أعلى الشاشة وإدخال مفتاح Gemini API المجاني الخاص بك للبدء."
+            )
         }
 
         // Models ordered starting from preferredModel
@@ -77,12 +75,6 @@ class GeminiRepository {
         modelsOrder.add(preferredModel)
         GeminiModel.entries.forEach { m ->
             if (m != preferredModel) modelsOrder.add(m)
-        }
-
-        if (keysToTry.isEmpty()) {
-            return@withContext GeminiResult.Error(
-                "لم يتم العثور على مفتاح API. يرجى إدخال مفتاح Gemini الخاص بك في الإعدادات لتشغيل المنظومة."
-            )
         }
 
         var lastErrorMsg = "فشل في الاتصال بمحرك الذكاء الاصطناعي."
@@ -96,7 +88,6 @@ class GeminiRepository {
                         return@withContext result
                     } else if (result is GeminiResult.QuotaExceeded) {
                         lastErrorMsg = result.message
-                        // Try next model or key
                         continue
                     } else if (result is GeminiResult.Error) {
                         lastErrorMsg = result.message
@@ -216,11 +207,21 @@ class GeminiRepository {
 
     private fun parseErrorMessage(jsonStr: String): String {
         return try {
+            if (jsonStr.contains("API keys are not supported") || jsonStr.contains("API key not valid") || jsonStr.contains("code=401") || jsonStr.contains("401")) {
+                return "مفتاح Gemini API الحالي غير صحيح أو منتهي الصلاحية. يرجى الضغط على زر الإعدادات ⚙️ أعلى الشاشة وإدخال مفتاح Gemini API الخاص بك من Google AI Studio (aistudio.google.com)."
+            }
             val root = JSONObject(jsonStr)
             val error = root.optJSONObject("error")
-            error?.optString("message", "حدث خطأ في الخدمة") ?: "حدث خطأ غير معروف"
+            val message = error?.optString("message", "") ?: ""
+            if (message.contains("API keys are not supported") || message.contains("API key not valid")) {
+                "مفتاح Gemini API غير صالح. يرجى إدخال مفتاحك المجاني من زر الإعدادات ⚙️."
+            } else if (message.isNotBlank()) {
+                message
+            } else {
+                "حدث خطأ في استجابة الخادم"
+            }
         } catch (e: Exception) {
-            "فشل الاتصال بالخادم ($jsonStr)"
+            "فشل الاتصال بالخادم. يرجى التحقق من مفتاح API وإعدادات الشبكة."
         }
     }
 }

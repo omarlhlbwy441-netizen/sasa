@@ -4,7 +4,7 @@ FROM eclipse-temurin:17-jdk-jammy AS builder
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
 ENV PATH=${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools
 
-RUN apt-get update && apt-get install -y wget unzip git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y wget unzip git gradle && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools && \
     wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip && \
@@ -19,7 +19,7 @@ WORKDIR /workspace
 COPY . .
 RUN if [ -f debug.keystore.base64 ]; then base64 -d debug.keystore.base64 > debug.keystore; fi
 RUN chmod +x gradlew
-RUN ./gradlew assembleDebug --no-daemon
+RUN gradle assembleDebug --no-daemon
 
 # Stage 2: Serve Web page & APK download link
 FROM python:3.11-slim
