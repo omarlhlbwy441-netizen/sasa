@@ -30,8 +30,8 @@ class GeminiRepository {
 
     // Encoded fallback keys provided by user to bypass GitHub plain-text scanner
     private val builtInFallbackKeysEncoded = listOf(
-        "QVEuQWI4Uk42S3RiRktQanJYSVRNUkhaZ2VRS3VBTElmM0J1T2lWZlptdXJwOTVJRWZ0ekE=",
         "QVEuQWI4Uk42SXJiMFB3WGFNZnZkLS0tY1VLcF9PRFZPUjNTa0tuR21lMWVGMktYSW13cEE=",
+        "QVEuQWI4Uk42S3RiRktQanJYSVRNUkhaZ2VRS3VBTElmM0J1T2lWZlptdXJwOTVJRWZ0ekE=",
         "QVEuQWI4Uk42TGZqV2xPWUhIM3B3MVJSZFVHRVZaWUNwYnJSTV9FRHRROEY0SGdmczJnV3c="
     )
 
