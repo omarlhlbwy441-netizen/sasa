@@ -43,10 +43,19 @@ class GeminiRepository {
         }
     }
 
+    private fun sanitizeKey(key: String): String {
+        return key.trim()
+            .removeSurrounding("\"")
+            .removeSurrounding("'")
+            .removePrefix("API_KEY=")
+            .removePrefix("GEMINI_API_KEY=")
+            .trim()
+    }
+
     suspend fun generateContentWithFailover(
         prompt: String,
         conversationHistory: List<ChatMessage>,
-        preferredModel: GeminiModel = GeminiModel.FLASH_2_5,
+        preferredModel: GeminiModel = GeminiModel.FLASH_2_0,
         customApiKey: String? = null
     ): GeminiResult = withContext(Dispatchers.IO) {
 
@@ -55,13 +64,26 @@ class GeminiRepository {
         
         // 1. User custom key if provided
         if (!customApiKey.isNullOrBlank()) {
-            keysToTry.add(customApiKey.trim())
+            val cleanCustom = sanitizeKey(customApiKey)
+            if (cleanCustom.isNotBlank()) {
+                keysToTry.add(cleanCustom)
+            }
         }
         
         // 2. BuildConfig key if present and valid
         val defaultConfigKey = try { BuildConfig.GEMINI_API_KEY } catch (e: Exception) { "" }
-        if (defaultConfigKey.isNotBlank() && defaultConfigKey != "MY_GEMINI_API_KEY" && !keysToTry.contains(defaultConfigKey)) {
-            keysToTry.add(defaultConfigKey)
+        val cleanConfig = sanitizeKey(defaultConfigKey)
+        if (cleanConfig.isNotBlank() && cleanConfig != "MY_GEMINI_API_KEY" && !keysToTry.contains(cleanConfig)) {
+            keysToTry.add(cleanConfig)
+        }
+
+        // 3. Encoded built-in fallbacks if any
+        builtInFallbackKeysEncoded.forEach { encoded ->
+            val decoded = decodeKey(encoded)
+            val cleanDecoded = sanitizeKey(decoded)
+            if (cleanDecoded.isNotBlank() && !keysToTry.contains(cleanDecoded)) {
+                keysToTry.add(cleanDecoded)
+            }
         }
 
         if (keysToTry.isEmpty()) {

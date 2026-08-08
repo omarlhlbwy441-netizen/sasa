@@ -14,10 +14,10 @@ import kotlinx.coroutines.launch
 
 data class SasaUiState(
     val messages: List<ChatMessage> = emptyList(),
-    val selectedModel: GeminiModel = GeminiModel.FLASH_2_5,
+    val selectedModel: GeminiModel = GeminiModel.FLASH_2_0,
     val isGenerating: Boolean = false,
     val customApiKey: String = "",
-    val activeModelTag: String = GeminiModel.FLASH_2_5.displayName,
+    val activeModelTag: String = GeminiModel.FLASH_2_0.displayName,
     val systemNotice: String? = null,
     val showApiKeyDialog: Boolean = false
 )
@@ -33,9 +33,9 @@ class SasaViewModel(
                     sender = MessageSender.SASA_AI,
                     text = "مرحباً بك! أنا منظومة صاصا AI (Sasa AI v15.2).\n" +
                             "المساعد الذكي للتحليل والبرمجة باللغة العربية.\n\n" +
-                            "💡 تم تزويد التطبيق بنظام التنقل التلقائي الذكي بين نماذج Gemini (2.5 Flash, 3.1 Pro, 3.1 Lite) ومعالجة قيود الاستخدام (Quota Limits) تلقائياً.\n\n" +
+                            "💡 تم تحديث المحرك لدعم نماذج Gemini الرسمية المباشرة (Gemini 2.0 Flash, 1.5 Flash, 1.5 Pro) مع التحويل التلقائي عند الضغط أو استهلاك الحصص.\n\n" +
                             "كيف يمكنني مساعدتك اليوم؟",
-                    modelUsed = GeminiModel.FLASH_2_5.displayName
+                    modelUsed = GeminiModel.FLASH_2_0.displayName
                 )
             )
         )
