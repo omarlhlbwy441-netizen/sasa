@@ -2,9 +2,10 @@
 FROM eclipse-temurin:17-jdk-jammy AS builder
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
-ENV PATH=${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools
+ENV GRADLE_HOME=/opt/gradle-8.12
+ENV PATH=${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${GRADLE_HOME}/bin
 
-RUN apt-get update && apt-get install -y wget unzip git gradle && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y wget unzip git && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools && \
     wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip && \
@@ -12,13 +13,16 @@ RUN mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools && \
     mv ${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest && \
     rm /tmp/cmdline-tools.zip
 
+RUN wget -q https://services.gradle.org/distributions/gradle-8.12-bin.zip -O /tmp/gradle.zip && \
+    unzip -q /tmp/gradle.zip -d /opt && \
+    rm /tmp/gradle.zip
+
 RUN yes | sdkmanager --licenses && \
     sdkmanager "platforms;android-36" "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
 WORKDIR /workspace
 COPY . .
 RUN if [ -f debug.keystore.base64 ]; then base64 -d debug.keystore.base64 > debug.keystore; fi
-RUN chmod +x gradlew
 RUN gradle assembleDebug --no-daemon
 
 # Stage 2: Serve Web page & APK download link
