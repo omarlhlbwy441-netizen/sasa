@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sasa
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app/server.py
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: WORKSPACE_DIR
+        value: /workspace
