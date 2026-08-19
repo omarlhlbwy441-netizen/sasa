@@ -65,6 +65,59 @@ class GeminiRepository {
                         "🛠️ **المحرك المستخدم**: Sasa Media & Video Generation Subsystem (بإشراف الشيخ الهلباوي)\n\n" +
                         "▶️ [مشغل الفيديو المرئي التفاعلي مفعّل بالكامل داخل واجهة الأندرويد]"
             }
+            if (pLower.contains("كيف تبني") || pLower.contains("بناء النظام") || pLower.contains("تطوير النظام") || pLower.contains("كيف تطور") || pLower.contains("إصلاح النظام") || pLower.contains("اصلاح النظام") || pLower.contains("رفع ملفات") || pLower.contains("علم المنظومة")) {
+                return """🏛️ **الدليل الإرشادي والتنفيذي الشامل للعمليات الهندسية لمنظومة Sasa AI (صاصا)**:
+(تطوير وإشراف: **الشيخ الهلباوي**)
+
+تعتمد المنظومة على 4 محركات تنفيذية رئيسية لإدارة دورة حياة البرمجيات:
+
+---
+
+### 1. 🏗️ **كيفية بناء النظام (System Building & Scaffolding)**:
+1. **تحديد النمط المعماري (Architecture Type)**:
+   • اختيار بيئة العمل المناسبة (Kotlin/Jetpack Compose للأندرويد، أو FastAPI/Python للخوادم السحابية، أو Full-stack Web).
+2. **توليد الهيكل القياسي (Project Scaffolding)**:
+   • استدعاء `NeamaCodeEngine.buildFullSystem(projectType, projectName, description)`.
+   • إنشاء شجرة الملفات الأساسية (`server.py`, `Dockerfile`, `requirements.txt`, `build.gradle.kts`, `AndroidManifest.xml`).
+3. **ضبط التبعيات وحزم التشغيل**:
+   • كتابة ملفات التبعيات وضمان توافق الإصدارات (Clean Dependencies).
+4. **التحقق من سلامة البناء (Build Verification)**:
+   • التحقق من الكود واختبار التجميع عبر `compile_applet` لضمان خلوه من أخطاء الـ Compilation.
+
+---
+
+### 2. 🚀 **كيفية تطوير النظام وتوسيعه (System Evolution & Feature Engineering)**:
+1. **التحليل وتحديد نقاط الارتكاز (Context & Anchor Points)**:
+   • فحص الموديول المطلوب تطويره واستخراج كود المصدر الحالي.
+2. **التعديل الجراحي وحقن الميزات**:
+   • استدعاء `NeamaCodeEngine.evolveModule()` أو `modifyFileSurgically()` لحقن الدوال والواجهات الجديدة دون كسر الشفرة السابقة.
+3. **توزيع المهام المتوازية (Swarm Engine)**:
+   • استخدام `NeamaSwarmEngine` لتقسيم الميزات المعقدة على وكلاء فرعيين متخصصين (واجهات، قواعد بيانات، خوادم، أمان).
+4. **تكامل واجهات المستخدم والـ APIs**:
+   • ربط الميزات الجديدة مع `SasaViewModel` وقاعدة بيانات `Room` المحلية ومسارات الخادم.
+
+---
+
+### 3. 🛠️ **كيفية إصلاح النظام وتصحيح الأخطاء (Diagnostics, Patching & Auto-Healing)**:
+1. **المسح والتشخيص الذاتي (Deep Scanning)**:
+   • استدعاء `NeamaCodeEngine.scanCodebaseForIssues()` لفحص الأخطاء النحوية، الـ TODOs المعلقة، والاستثناءات غير المعالجة.
+2. **الترقيع الجراحي التلقائي (Automated Surgical Patching)**:
+   • استدعاء `NeamaCodeEngine.autoRepairCode(brokenCode, errorLogs, extension)` لمعالجة الـ Unresolved references، أخطاء الاستيراد، والتعارضات.
+3. **التعافي الذاتي للخوادم السحابية (Auto-Healing Orchestrator)**:
+   • مراقبة حية 24/7 عبر `UnifiedBackgroundEngine` لإعادة تشغيل ونشر الخدمات المعلقة على Render Cloud.
+
+---
+
+### 4. 📤 **كيفية رفع الملفات والمشاريع إلى GitHub (Git & Multi-File Pushing)**:
+1. **التحقق من التوثيق (Authentication)**:
+   • استخراج الـ GitHub Token والتأكد من سريانه وصلاحيات `repo`.
+2. **استخراج وحساب الـ SHA**:
+   • إرسال طلب `GET` إلى GitHub REST API لجلب الـ SHA لكل ملف مستهدف (في حال التحديث) أو إرساله كملف جديد.
+3. **التشفير والرفع الذري (Atomic Base64 Push)**:
+   • تحويل المحتوى إلى Base64 وإرسال طلب `PUT` لمسار `/repos/{owner}/{repo}/contents/{path}` مع إرفاق رسالة الـ Commit واسم المطور (**الشيخ الهلباوي**).
+4. **تسجيل المهام وتحديث السجلات**:
+   • تخزين بيانات الـ Commit و SHA في قاعدة بيانات `Room` ومزامنة الواجهة فورياً."""
+            }
             if (pLower.contains("مقدرات") || pLower.contains("إمكانيات") || pLower.contains("قدرات") || pLower.contains("ما هي مقدراتك") || pLower.contains("ماذا تستطيع")) {
                 return """⚡ **دليل المقدرات والإمكانيات الحقيقية الكاملة لمنظومة Sasa AI (صاصا)**:
 (تطوير وإشراف: **الشيخ الهلباوي** | متصل بالأنظمة الحية)
