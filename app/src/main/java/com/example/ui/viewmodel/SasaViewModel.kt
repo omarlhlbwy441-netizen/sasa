@@ -79,6 +79,11 @@ class SasaViewModel(application: Application) : AndroidViewModel(application) {
     val thinkingStage: StateFlow<Int> = _thinkingStage.asStateFlow()
 
     val executionPipeline = com.example.pipeline.InteractiveExecutionPipeline()
+    val astSurgicalEngine = com.example.pipeline.AstSurgicalEngine()
+    val multiCloudOrchestrator = com.example.pipeline.MultiCloudOrchestrator()
+    val vectorMemoryEngine = com.example.pipeline.VectorMemoryEngine()
+    val predictiveSelfHealingEngine = com.example.pipeline.PredictiveSelfHealingEngine()
+    val videoSynthesizerV3 = com.example.pipeline.VideoSynthesizerV3()
 
     // Database flows
     val agentLogs: StateFlow<List<AgentLogEntity>> = dao.getAllAgentLogs()
