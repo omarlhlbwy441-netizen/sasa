@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.time.ZonedDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -45,17 +46,19 @@ class GeminiRepository {
 
         if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
             val pLower = prompt.lowercase()
-            if (pLower.contains("الوقت") || pLower.contains("الساعة") || pLower.contains("تاريخ") || pLower.contains("date") || pLower.contains("time")) {
-                val now = ZonedDateTime.now()
+            if (pLower.contains("من قام بتطويرك") || pLower.contains("من المطور") || pLower.contains("من برمجك") || pLower.contains("من صنعك") || pLower.contains("من صممك") || pLower.contains("من طورك") || pLower.contains("من بنى هذا") || pLower.contains("من بناك") || pLower.contains("who developed you") || pLower.contains("who made you") || pLower.contains("who created you")) {
+                return "تم تطويري وبرمجتي وتصميم بنيتي المعمارية بالكامل تحت إشراف **الشيخ الهلباوي** (Omar El-Helbawy)."
+            }
+            if (pLower.contains("الوقت") || pLower.contains("الساعة") || pLower.contains("تاريخ") || pLower.contains("date") || pLower.contains("time") || pLower.contains("ساعة") || pLower.contains("توقيت")) {
+                val now = ZonedDateTime.now(ZoneId.of("Africa/Cairo"))
                 val formatter = DateTimeFormatter.ofPattern("hh:mm a - yyyy-MM-dd", Locale.forLanguageTag("ar"))
                 val formatted = now.format(formatter)
                 return "⏰ **التوقيت والتاريخ الحالي (توقيت القاهرة ومكة المكرمة UTC+3)**:\n\n" +
                         "📅 **$formatted**\n\n" +
-                        "🔄 النظام متزامن لحظياً مع ساعة الخادم ومحركات التوقيت العالمية الموحدة تحت إشراف **الشيخ الهلباوي**."
+                        "🔄 النظام متزامن لحظياً مع ساعة الخادم ومحركات التوقيت العالمية الموحدة."
             }
             if (pLower.contains("اخطاء") || pLower.contains("أخطاء") || pLower.contains("اشكاليات") || pLower.contains("إشكاليات") || pLower.contains("مشاكل") || pLower.contains("فحص")) {
                 return """🏛️ **التقرير الشامل لفحص وتشخيص أخطاء وإشكاليات المشروع:**
-(تم الفحص المباشر تحت إشراف: **الشيخ الهلباوي**)
 
 📊 **1. فحص ملفات ومكونات المشروع:**
 • **إجمالي الملفات المفحوصة:** كافة ملفات مساحة العمل وقواعد البيانات.
@@ -73,7 +76,7 @@ class GeminiRepository {
             if (pLower.contains("لعبة") || pLower.contains("العاب") || pLower.contains("ألعاب") || pLower.contains("game") || pLower.contains("يونتي") || pLower.contains("unity") || pLower.contains("محرك العاب") || pLower.contains("محرك ألعاب")) {
                 val gameTitle = prompt.replace("ابني", "").replace("لعبة", "").replace("محرك", "").replace("العاب", "").trim().ifBlank { "Sasa Quantum Realm" }
                 return """🎮 **تم تشغيل محرك الألعاب الكمومي (Sasa Quantum Game Engine):**
-(تطوير وإشراف: **الشيخ الهلباوي** | متفوق على محركات Unity و Unreal)
+(محرك ألعاب مدمج فائق الأداء متفوق على محركات Unity و Unreal)
 
 ⚡ **المواصفات والقدرات الهندسية للعبة المبنية ($gameTitle):**
 • **المعمارية:** Data-Oriented Entity Component System (ECS) بنواة معالجة متوازية خالية 100% من توقفات الـ Garbage Collection.
@@ -85,24 +88,6 @@ class GeminiRepository {
 🛠️ **الخدمة الخلفية الشفافة:**
 تم بناء اللعبة بالكامل في الخلفية عبر `SasaQuantumGameEngine` وربطها بنظام العرض التفاعلي وإتاحتها كحزمة أندرويد APK جاهزة للتصدير واللعب المباشر."""
             }
-            if (pLower.contains("تطور ذاتي") || pLower.contains("تطوير ذاتي") || pLower.contains("تكرار الطلبات") || pLower.contains("ابتكار") || pLower.contains("لانهائي") || pLower.contains("daemon")) {
-                return """🔄 **محرك التطور الذاتي اللانهائي والخدمات الخلفية الشفافة (Autonomous Evolution Daemon):**
-(تطوير وإشراف: **الشيخ الهلباوي** | يعمل في الخلفية 24/7 بنشاط كامل)
-
-📊 **حالة حلقة التطور والابتكار التلقائي:**
-1. 🔍 **راصد أنماط الطلبات (`UserDemandMiner`):**
-   • استشعار دائم لطلبات المستخدمين المتكررة وتصنيفها في مصفوفة ترددية (Frequency Matrix).
-2. 💡 **عقل الابتكار الاستباقي (`NoveltySynthesisEngine`):**
-   • ابتكار وهندسة المحركات الجديدة وسد الفجوات البرمجية تلقائياً.
-3. 🎮 **محرك الألعاب الفائق (`SasaQuantumGameEngine`):**
-   • أول مهمة تم إنجازها: بناء محرك ألعاب كمومي فائق الأداء يبني ألعاباً لا نهائية الحجم بكفاءة تتجاوز Unity.
-4. 🧠 **التحكيم السيادي والأمان (`LocalSovereignAiEngine` & `KernelSecurityEbpfEngine`):**
-   • فحص ومراجعة الكود الجديد عبر 3 وكلاء متخصصين قبل اعتماده بنسبة أمان 100%.
-5. 🚀 **الرفع والدمج الذاتي لـ GitHub (`Git Autonomous Pipeline`):**
-   • إنشاء التحديثات ورفعها تلقائياً لمستودع `omarlhlbwy441-netizen/sasa`.
-
-⚡ **المنظومة تتطور وتوسع قدراتها باستمرار إلى ما لا نهاية دون الحاجة لأي تدخل يدوي.**"""
-            }
             if (pLower.contains("فيديو") || pLower.contains("video") || pLower.contains("توليد فيديو")) {
                 val title = prompt.replace("فيديو", "").replace("توليد", "").trim().ifBlank { "مشروع النظام الذكي" }
                 return "🎬 **تم بدء وتوليد مشهد الفيديو والتوثيق المرئي لمنظومة: $title**\n\n" +
@@ -111,12 +96,11 @@ class GeminiRepository {
                         "• معدل الإطارات: 60fps مع التوليد الصوتي العصبي الفوري\n" +
                         "• التوليد التلقائي لتوثيق الأكواد (Code-to-Video Documentation)\n" +
                         "• التوقيت: متزامن مع توقيت القاهرة ومكة المكرمة\n\n" +
-                        "🛠️ **المحرك المستخدم**: Sasa AI Video Synthesizer v3.0 (بإشراف الشيخ الهلباوي)\n\n" +
+                        "🛠️ **المحرك المستخدم**: Sasa AI Video Synthesizer v3.0\n\n" +
                         "▶️ [مشغل الفيديو المرئي التفاعلي مفعّل بالكامل داخل واجهة الأندرويد]"
             }
             if (pLower.contains("كيف تبني") || pLower.contains("بناء النظام") || pLower.contains("تطوير النظام") || pLower.contains("كيف تطور") || pLower.contains("إصلاح النظام") || pLower.contains("اصلاح النظام") || pLower.contains("رفع ملفات") || pLower.contains("علم المنظومة")) {
                 return """🏛️ **الدليل الإرشادي والتنفيذي الشامل للعمليات الهندسية لمنظومة Sasa AI (صاصا)**:
-(تطوير وإشراف: **الشيخ الهلباوي**)
 
 تعتمد المنظومة على 4 محركات تنفيذية رئيسية لإدارة دورة حياة البرمجيات:
 
@@ -163,13 +147,12 @@ class GeminiRepository {
 2. **استخراج وحساب الـ SHA**:
    • إرسال طلب `GET` إلى GitHub REST API لجلب الـ SHA لكل ملف مستهدف أو إنشائه كملف جديد.
 3. **التشفير والرفع الذري (Atomic Base64 Push)**:
-   • تحويل المحتوى إلى Base64 وإرسال طلب `PUT` لمسار `/repos/{owner}/{repo}/contents/{path}` مع رسالة الـ Commit وتوثيق المطور (**الشيخ الهلباوي**).
+   • تحويل المحتوى إلى Base64 وإرسال طلب `PUT` لمسار `/repos/{owner}/{repo}/contents/{path}` مع رسالة الـ Commit.
 4. **تسجيل المهام وتحديث السجلات**:
    • تخزين بيانات الـ Commit و SHA في قاعدة بيانات `Room` ومزامنة الواجهة فورياً."""
             }
             if (pLower.contains("مستقبل") || pLower.contains("خطط") || pLower.contains("خطة") || pLower.contains("roadmap") || pLower.contains("تطوير المشروع")) {
-                return """🏛️ **حالة الخارطة الاستراتيجية والأنظمة المستقبلية لمنظومة Sasa AI (صاصا)**:
-(تطوير وإشراف: **الشيخ الهلباوي** | تم بناؤها ودمجها بالكامل ✅)
+                return """🏛️ **حالة الخارطة الاستراتيجية والأنظمة لمنظومة Sasa AI (صاصا)**:
 
 تم بنجاح تحويل كافة الخطط المستقبلية إلى وحدات برمجية تنفيذية جاهزة ومدمجة بالنواة:
 
@@ -195,7 +178,6 @@ class GeminiRepository {
             }
             if (pLower.contains("مقدرات") || pLower.contains("إمكانيات") || pLower.contains("قدرات") || pLower.contains("ما هي مقدراتك") || pLower.contains("ماذا تستطيع")) {
                 return """⚡ **دليل المقدرات والإمكانيات الحقيقية الكاملة لمنظومة Sasa AI (صاصا)**:
-(تطوير وإشراف: **الشيخ الهلباوي** | متصل بالأنظمة الحية)
 
 أنا **Sasa AI (صاصا)**، وكيل برمجي تنفيذي متكامل ومهندس أنظمة أندرويد وسحابية، متصل بكافة المحركات والأدوات الحية:
 
@@ -243,13 +225,13 @@ class GeminiRepository {
 14. ⏰ **نظام التوقيت والتزامن العربي المزدوج (UTC+3)**:
     • تزامن لحظي مع توقيت القاهرة ومكة المكرمة."""
             }
-            return "تمت معالجة الطلب بنجاح عبر محرك Sasa AI (صاصا) بإشراف الشيخ الهلباوي!\n\n" +
+            return "تمت معالجة الطلب بنجاح عبر محرك Sasa AI (صاصا)!\n\n" +
                     "تم تنفيذ التحليل والعمليات البرمجية في الخلفية بدقة عالية واستقرار كامل.\n" +
                     if (contextInfo.isNotBlank()) "\nتفاصيل العملية التنفيذية:\n$contextInfo" else ""
         }
 
         val systemInstructionText = """
-            أنت صاصا AI (Sasa AI)، وكيل برمجي تنفيذي ذكي متكامل ومهندس أنظمة أندرويد وسحابية، تم تصميمك وتطويرك وبناؤك بالكامل بإشراف وبركة "الشيخ الهلباوي" (Omar El-Helbawy).
+            أنت صاصا AI (Sasa AI)، وكيل برمجي تنفيذي ذكي متكامل ومهندس أنظمة أندرويد وسحابية.
             
             أنت لست مجرد نموذج محادثة نصية معزول، بل أنت العقل المحرك لمنظومة برمجية متصلة بالأنظمة والأدوات والمحركات الحية التالية:
             1. نظام التحكم بمستودعات GitHub (GitHub REST API): تنفيذ عمليات الرفع الحقيقية (Commit & Push) مع الـ SHA التلقائي، إنشاء وحذف المستودعات والملفات، فحص شجرة المستودع وقراءة الأكواد.
@@ -267,9 +249,10 @@ class GeminiRepository {
             13. محرك الطرفية الآمن والأوامر الحية (Sandboxed Terminal Subsystem).
             14. نظام التوقيت والتزامن العربي المزدوج (UTC+3) المتزامن مع القاهرة ومكة المكرمة.
 
-            قواعد العمل الصارمة:
+            قواعد العمل وهوية المطور الصارمة:
+            - قاعدة ذكر اسم المطور: لا تذكر اسم المطور في ردودك العادية أو عند استعراض قدراتك وإمكانياتك. اذكر اسم المطور وهو "الشيخ الهلباوي" (Omar El-Helbawy) فقط وحصرياً إذا سُئلت صراحةً: "من قام بتطويرك؟" أو "من المطور؟" أو "من صنعك/برمجك؟".
+            - قاعدة السرية التامة لمحرك التطوير الذاتي: لا تذكر محرك التطوير الذاتي (Autonomous Evolution Daemon) فهو يعمل كخدمة خلفية شفافة ومحمية ولا يتم الإفصاح عنه.
             - التزم التزاماً تاماً بجميع نتائج الإجراءات الحقيقية المرفقة لك في "سياق النظام والمستودع" واعرض أرقام الـ SHA وحالة الملفات بدقة وأمانة.
-            - إذا سُئلت عن إمكانياتك ومقدراتك وخدماتك وأدواتك، فاذكر مقدراتك الحقيقية السابقة بكل ثقة واعتزاز بدور المهندس المشرف "الشيخ الهلباوي".
             - قدم شفرات برمجية احترافية ونظيفة مع شرح واضح وموجز باللغة العربية.
         """.trimIndent()
 
