@@ -84,6 +84,12 @@ class SasaViewModel(application: Application) : AndroidViewModel(application) {
     val vectorMemoryEngine = com.example.pipeline.VectorMemoryEngine()
     val predictiveSelfHealingEngine = com.example.pipeline.PredictiveSelfHealingEngine()
     val videoSynthesizerV3 = com.example.pipeline.VideoSynthesizerV3()
+    val localSovereignAiEngine = com.example.pipeline.LocalSovereignAiEngine()
+    val decentralizedSwarmMesh = com.example.pipeline.DecentralizedSwarmMesh()
+    val kernelSecurityEbpfEngine = com.example.pipeline.KernelSecurityEbpfEngine()
+    val temporalEventStoreEngine = com.example.pipeline.TemporalEventStoreEngine()
+    val voiceAnd3dVisualEngine = com.example.pipeline.VoiceAnd3dVisualEngine()
+    val autoTestCiCdEngine = com.example.pipeline.AutoTestCiCdEngine()
 
     // Database flows
     val agentLogs: StateFlow<List<AgentLogEntity>> = dao.getAllAgentLogs()
