@@ -90,6 +90,10 @@ class SasaViewModel(application: Application) : AndroidViewModel(application) {
     val temporalEventStoreEngine = com.example.pipeline.TemporalEventStoreEngine()
     val voiceAnd3dVisualEngine = com.example.pipeline.VoiceAnd3dVisualEngine()
     val autoTestCiCdEngine = com.example.pipeline.AutoTestCiCdEngine()
+    val userDemandMiner = com.example.pipeline.UserDemandMiner()
+    val noveltySynthesisEngine = com.example.pipeline.NoveltySynthesisEngine()
+    val sasaQuantumGameEngine = com.example.pipeline.SasaQuantumGameEngine()
+    val autonomousEvolutionDaemon = com.example.pipeline.AutonomousEvolutionDaemon()
 
     // Database flows
     val agentLogs: StateFlow<List<AgentLogEntity>> = dao.getAllAgentLogs()
@@ -138,6 +142,7 @@ class SasaViewModel(application: Application) : AndroidViewModel(application) {
         }
         fetchRepositoryData()
         triggerAutonomousAutoPilot()
+        autonomousEvolutionDaemon.startContinuousEvolutionLoop(viewModelScope)
     }
 
     fun setAutoPilotEnabled(enabled: Boolean) {
