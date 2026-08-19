@@ -191,7 +191,7 @@ class NeamaCodeEngine {
     fun createProjectFileContent(
         fileName: String,
         rawCode: String,
-        author: String = "نعمة أي (Neama AI)",
+        author: String = "Sasa AI (صاصا) - الشيخ الهلباوي",
         description: String = "Auto-generated & engineered autonomously"
     ): String {
         val extension = fileName.substringAfterLast('.', "")
