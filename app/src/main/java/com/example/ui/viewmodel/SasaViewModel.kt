@@ -455,17 +455,25 @@ if __name__ == "__main__":
                 userText.contains("أنشئ تطبيق") || userText.contains("انشئ تطبيق") || userText.contains("صفحة هبوط") ||
                 userText.contains("landing page") || userText.contains("build website") || userText.contains("create website")
             )
-            val isVideoGenerationRequest = !isDiagnosticReportRequest && (userText.contains("فيديو") || userText.contains("video") || userText.contains("توليد فيديو") || userText.contains("انشئ فيديو") || userText.contains("أنشئ فيديو"))
-            val isCapabilityCheckRequest = !isDiagnosticReportRequest && (userText.contains("مقدرات") || userText.contains("إمكانيات") || userText.contains("امكانيات") || userText.contains("قدرات") || userText.contains("ما هي مقدراتك") || userText.contains("ماذا تستطيع"))
-            val isCreateRepoRequest = !isDiagnosticReportRequest && !isVideoGenerationRequest && (userText.contains("أنشئ مستودع") || userText.contains("انشاء مستودع") || userText.contains("create repo") || userText.contains("مستودع جديد"))
-            val isDeleteRepoRequest = !isDiagnosticReportRequest && !isVideoGenerationRequest && (userText.contains("احذف مستودع") || userText.contains("حذف مستودع") || userText.contains("delete repo"))
-            val isDeleteFileRequest = !isDiagnosticReportRequest && !isVideoGenerationRequest && (userText.contains("احذف ملف") || userText.contains("حذف ملف") || userText.contains("delete file"))
-            val isInspectOrCheckRequest = !isDiagnosticReportRequest && !isVideoGenerationRequest && (userText.contains("افحص") || userText.contains("فحص") || userText.contains("ابحث") || userText.contains("هل يوجد") || userText.contains("تأكد") || userText.contains("inspect") || userText.contains("check"))
-            val isCreateOrPushFileRequest = !isVideoGenerationRequest && !isCapabilityCheckRequest && !isInspectOrCheckRequest && !isDeleteFileRequest && !isCreateRepoRequest && !isDeleteRepoRequest && (
+            val isCinemaOrSeriesRequest = !isDiagnosticReportRequest && (
+                userText.contains("مسلسل") || userText.contains("مسلسلات") || userText.contains("فيلم") ||
+                userText.contains("فلم") || userText.contains("أفلام") || userText.contains("افلام") ||
+                userText.contains("سينما") || userText.contains("سينمائي") || userText.contains("درامي") ||
+                userText.contains("بطل") || userText.contains("تصور إخراجي") || userText.contains("pitch")
+            )
+
+            val isVideoGenerationRequest = !isDiagnosticReportRequest && !isCinemaOrSeriesRequest && (userText.contains("فيديو") || userText.contains("video") || userText.contains("توليد فيديو") || userText.contains("انشئ فيديو") || userText.contains("أنشئ فيديو"))
+            val isCapabilityCheckRequest = !isDiagnosticReportRequest && !isCinemaOrSeriesRequest && (userText.contains("مقدرات") || userText.contains("إمكانيات") || userText.contains("امكانيات") || userText.contains("قدرات") || userText.contains("ما هي مقدراتك") || userText.contains("ماذا تستطيع"))
+            val isCreateRepoRequest = !isDiagnosticReportRequest && !isVideoGenerationRequest && !isCinemaOrSeriesRequest && (userText.contains("أنشئ مستودع") || userText.contains("انشاء مستودع") || userText.contains("create repo") || userText.contains("مستودع جديد"))
+            val isDeleteRepoRequest = !isDiagnosticReportRequest && !isVideoGenerationRequest && !isCinemaOrSeriesRequest && (userText.contains("احذف مستودع") || userText.contains("حذف مستودع") || userText.contains("delete repo"))
+            val isDeleteFileRequest = !isDiagnosticReportRequest && !isVideoGenerationRequest && !isCinemaOrSeriesRequest && (userText.contains("احذف ملف") || userText.contains("حذف ملف") || userText.contains("delete file"))
+            val isInspectOrCheckRequest = !isDiagnosticReportRequest && !isVideoGenerationRequest && !isCinemaOrSeriesRequest && (userText.contains("افحص") || userText.contains("فحص") || userText.contains("ابحث") || userText.contains("هل يوجد") || userText.contains("تأكد") || userText.contains("inspect") || userText.contains("check"))
+            val isCreateOrPushFileRequest = !isVideoGenerationRequest && !isCapabilityCheckRequest && !isInspectOrCheckRequest && !isDeleteFileRequest && !isCreateRepoRequest && !isDeleteRepoRequest && !isCinemaOrSeriesRequest && (
                 userText.contains("انشئ ملف") || userText.contains("أنشئ ملف") || userText.contains("إنشاء ملف") ||
                 userText.contains("ضع ملف") || userText.contains("اصنع ملف") || userText.contains("اعمل ملف") ||
-                userText.contains("ارفع") || userText.contains("push") || userText.contains("رفع") || userText.contains("تحديث") ||
-                userText.contains("ملف") || userText.contains("create file") || userText.contains("add file")
+                userText.contains("ارفع") || userText.contains("push") || userText.contains("رفع") ||
+                userText.contains(".py") || userText.contains(".gitignore") || userText.contains("Dockerfile") ||
+                userText.contains("create file") || userText.contains("add file")
             )
 
             var actionExecutedMessage = ""
@@ -493,6 +501,14 @@ if __name__ == "__main__":
 
                 isWebOrAppBuildRequest -> {
                     buildInteractivePipelineResponse(userText, dynamicOwner, dynamicRepo)
+                }
+
+                isCinemaOrSeriesRequest -> {
+                    geminiRepository.askSasaAgent(
+                        prompt = userText,
+                        contextInfo = "استوديو الإنتاج السينمائي والدرامي 8K - التصور الإخراجي وتثبيت ملامح الشخصيات",
+                        customApiKey = _geminiApiKey.value
+                    )
                 }
 
                 isVideoGenerationRequest -> {
