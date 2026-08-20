@@ -105,11 +105,19 @@ fun AgentHubScreen(
     val isAutoPilot by viewModel.isAutoPilotEnabled.collectAsState()
     val autoPilotStatus by viewModel.autoPilotStatus.collectAsState()
     val thinkingStage by viewModel.thinkingStage.collectAsState()
+    var showCinemaStudioDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(agentLogs.size, isThinking) {
         if (agentLogs.isNotEmpty()) {
             listState.animateScrollToItem(agentLogs.size - 1)
         }
+    }
+
+    if (showCinemaStudioDialog) {
+        CinemaStudioDialog(
+            initialPrompt = "",
+            onDismiss = { showCinemaStudioDialog = false }
+        )
     }
 
     Column(
@@ -123,7 +131,7 @@ fun AgentHubScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Auto-Pilot Status Banner
+        // Auto-Pilot Status Banner & Studio Quick Actions
         AutoPilotCard(
             isAutoPilot = isAutoPilot,
             autoPilotStatus = autoPilotStatus,
@@ -133,7 +141,27 @@ fun AgentHubScreen(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
+        // Studio Quick Launch Banner
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(TechDarkSurfaceVariant)
+                .border(BorderStroke(1.dp, Brush.horizontalGradient(listOf(CyanPrimary, Color(0xFFEAB308)))))
+                .clickable { showCinemaStudioDialog = true }
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.PlayCircle, contentDescription = null, tint = Color(0xFFEAB308), modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("🎬 استوديو إنتاج وتصوير الأفلام والمسلسلات (8K Face-Lock)", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.White)
+            }
+            Text("فتح الاستوديو ❯", fontSize = 11.sp, color = CyanPrimary, fontWeight = FontWeight.Bold)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Chat Log Stream
         Box(
@@ -389,6 +417,19 @@ fun ChatMessageBubble(
 
     var showWebPreviewDialog by remember { mutableStateOf(false) }
     var showCodeDialog by remember { mutableStateOf(false) }
+    var showCinemaDialog by remember { mutableStateOf(false) }
+
+    val isCinemaRelated = remember(log.message) {
+        log.message.contains("سينمائي") || log.message.contains("أفلام") || log.message.contains("مسلسل") ||
+                log.message.contains("فيلم") || log.message.contains("فلم") || log.message.contains("Cinema") || log.message.contains("سينما")
+    }
+
+    if (showCinemaDialog) {
+        CinemaStudioDialog(
+            initialPrompt = log.message,
+            onDismiss = { showCinemaDialog = false }
+        )
+    }
 
     // Parse HTML preview content
     val htmlContent = remember(log.message) {
@@ -657,9 +698,36 @@ STAGE5: 🌐 تجهيز العرض والمعاينة التفاعلية | ال�
                     }
                 }
 
+                // Cinema Studio Action Button
+                if (isCinemaRelated && !isUser) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { showCinemaDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A)),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = Brush.horizontalGradient(listOf(CyanPrimary, Color(0xFFEAB308), GreenAccent))
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.PlayCircle, contentDescription = null, tint = Color(0xFFEAB308), modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("🎬 فتح استوديو إنتاج وتصوير الأفلام والمسلسلات", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFEAB308))
+                    }
+                }
+
                 // Next Steps Chips
                 if (nextStepsRaw != null) {
-                    NextStepsChipsRow(nextStepsRaw = nextStepsRaw, onStepClick = onNextStepClick)
+                    NextStepsChipsRow(
+                        nextStepsRaw = nextStepsRaw,
+                        onStepClick = { step ->
+                            if (step.contains("استوديو") || step.contains("صالة العرض") || step.contains("المسلسلات")) {
+                                showCinemaDialog = true
+                            } else {
+                                onNextStepClick(step)
+                            }
+                        }
+                    )
                 }
             }
         }
