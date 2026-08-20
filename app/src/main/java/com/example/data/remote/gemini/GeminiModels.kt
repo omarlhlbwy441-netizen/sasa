@@ -8,9 +8,16 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 @JsonClass(generateAdapter = true)
+data class GeminiSafetySetting(
+    val category: String,
+    val threshold: String
+)
+
+@JsonClass(generateAdapter = true)
 data class GeminiRequest(
     val contents: List<GeminiContent>,
     val generationConfig: GeminiGenerationConfig? = null,
+    val safetySettings: List<GeminiSafetySetting>? = null,
     val systemInstruction: GeminiContent? = null
 )
 
