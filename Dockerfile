@@ -7,18 +7,28 @@ ENV ANDROID_HOME=/opt/android-sdk
 ENV PATH=${PATH}:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget unzip git python3 python3-pip curl \
+    wget unzip git curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
 COPY . .
 
-# Install Python requirements
-RUN pip3 install --no-cache-dir -r requirements.txt || true
+RUN chmod +x ./gradlew || true
 
-# Environment setup
-ENV GRADLE_OPTS="-Dorg.gradle.jvmargs=\"-Xmx1536m -XX:MaxMetaspaceSize=512m\" -Dorg.gradle.parallel=false"
+# Stage 2: Lean Autonomous Python Backend Server
+FROM python:3.10-slim AS runner
 
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt || true
+
+COPY app/ ./app/
+COPY metadata.json .
+
+ENV WORKSPACE_DIR=/app
+ENV PORT=5000
 EXPOSE 5000
 
 CMD ["python3", "app/server.py"]
+
