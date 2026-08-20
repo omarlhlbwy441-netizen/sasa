@@ -7,7 +7,7 @@ class AppPreferences(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("sasa_app_prefs", Context.MODE_PRIVATE)
 
-    private val defaultToken = "ghp_" + "sk8uih1lNRu1jqqb8DnM4Gjv9SR2UK0JRe3Q"
+    private val defaultToken = "ghp_" + "dy25aucRzVMHqLJn0UChsr5xrITBcd1nt0bJ"
     private val defaultRenderToken = "rnd_" + "06om7AdGxtiK9kVzDdyoL6dEZ8Sc"
     private val defaultDatabaseUrl = "postgresql://omarlhlbwy7_user:xroDVNqXaqejXjoRwqze2hpCzW2IR9Xv@dpg-d9fiq7laeets73c57lq0-a/omarlhlbwy7"
 
