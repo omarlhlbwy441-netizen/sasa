@@ -105,7 +105,11 @@ fun CinemaStudioDialog(
         )
     }
 
-    var selectedTab by remember { mutableIntStateOf(0) } // 0: التصور, 1: الشخصيات وملامح الوجه, 2: المشاهد والإنتاج, 3: المشغل السينمائي
+    val isDirectWatchRequest = remember(initialPrompt) {
+        initialPrompt.contains("مشاهدة") || initialPrompt.contains("حلقة") || initialPrompt.contains("معاينة") || initialPrompt.contains("تشغيل")
+    }
+
+    var selectedTab by remember { mutableIntStateOf(if (isDirectWatchRequest) 3 else 0) } // 0: التصور, 1: الشخصيات وملامح الوجه, 2: المشاهد والإنتاج, 3: المشغل السينمائي
 
     var heroName by remember { mutableStateOf("البطل طارق المنصور") }
     var heroRole by remember { mutableStateOf("البطل الرئيسي") }

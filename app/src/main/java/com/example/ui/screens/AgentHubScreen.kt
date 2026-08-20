@@ -421,7 +421,8 @@ fun ChatMessageBubble(
 
     val isCinemaRelated = remember(log.message) {
         log.message.contains("سينمائي") || log.message.contains("أفلام") || log.message.contains("مسلسل") ||
-                log.message.contains("فيلم") || log.message.contains("فلم") || log.message.contains("Cinema") || log.message.contains("سينما")
+                log.message.contains("فيلم") || log.message.contains("فلم") || log.message.contains("Cinema") ||
+                log.message.contains("سينما") || log.message.contains("مشاهدة") || log.message.contains("حلقة")
     }
 
     if (showCinemaDialog) {
