@@ -655,10 +655,10 @@ if __name__ == "__main__":
                                 )
                                 actionExecutedMessage = "جاري رفع جميع ملفات المشروع برمجياً وفي الخلفية..."
                             } else {
-                                // Extract target file name
-                                val pathRegex = Regex("(ملف|file|path|باسم|اسم|ب اسم)\\s+([A-Za-z0-9_.-/]+)")
+                                // Extract target file name with enhanced flexibility
+                                val pathRegex = Regex("""(?:ملف|file|path|باسم|اسم|ب اسم|name)\s*[:=]?\s*[`"']?([A-Za-z0-9_./\\-]+)[`"']?""", RegexOption.IGNORE_CASE)
                                 val match = pathRegex.find(userText)
-                                var targetFilePath = match?.groupValues?.getOrNull(2)
+                                var targetFilePath = match?.groupValues?.getOrNull(1)
                                 if (targetFilePath == null && userText.contains("dh")) {
                                     targetFilePath = "dh"
                                 }
@@ -666,10 +666,18 @@ if __name__ == "__main__":
                                     targetFilePath = if (userText.contains(".py")) "app/server.py" else if (userText.contains(".gitignore")) ".gitignore" else if (userText.contains("Dockerfile")) "Dockerfile" else "dh"
                                 }
 
-                                // Extract target file content
-                                val contentRegex = Regex("""(محتواه|محتوى|مكتوب فيه|نص|content)\s*(:\s*|مكتوب فيه\s*)?["']?([^"'\n]+)["']?""")
+                                // Extract target file content with enhanced multiline & quote support
+                                val contentRegex = Regex("""(?:محتواه|محتوى|مكتوب فيه|نص|content)\s*(?:[:=]|\s*مكتوب فيه\s*)?\s*["'`]([\s\S]+?)["'`]""", RegexOption.IGNORE_CASE)
                                 val contentMatch = contentRegex.find(userText)
-                                var targetContent = contentMatch?.groupValues?.getOrNull(3)?.trim()
+                                var targetContent = contentMatch?.groupValues?.getOrNull(1)?.trim()
+                                
+                                if (targetContent.isNullOrBlank()) {
+                                    // Fallback secondary regex for unquoted content after colon
+                                    val secondaryContentRegex = Regex("""(?:محتواه|مكتوب فيه|محتوى)\s*[:=]\s*(.+)$""", RegexOption.IGNORE_CASE)
+                                    val secondaryMatch = secondaryContentRegex.find(userText)
+                                    targetContent = secondaryMatch?.groupValues?.getOrNull(1)?.trim()
+                                }
+
                                 if (targetContent.isNullOrBlank()) {
                                     if (userText.contains("الشيخ الهلباوي")) {
                                         targetContent = "الشيخ الهلباوي"
@@ -695,7 +703,7 @@ if __name__ == "__main__":
                                 )
 
                                 if (pushRes.isSuccess) {
-                                    val shaCreated = pushRes.getOrNull()?.content?.sha ?: "OK"
+                                    val shaCreated = pushRes.getOrNull()?.content?.sha ?: pushRes.getOrNull()?.commit?.sha ?: "OK"
                                     actionExecutedMessage = "✅ تم إنشاء/رفع الملف '$targetFilePath' بمحتواه (\"$targetContent\") مباشرة وبنجاح على سيرفرات GitHub المستودع $dynamicOwner/$dynamicRepo!\nرقم الـ SHA للملف: $shaCreated"
                                 } else {
                                     actionExecutedMessage = "❌ فشل الرفع البرمجي للملف '$targetFilePath': ${pushRes.exceptionOrNull()?.message}"
