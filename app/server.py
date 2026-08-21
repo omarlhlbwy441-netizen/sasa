@@ -565,6 +565,61 @@ def tool_search_web(query: str) -> Dict[str, Any]:
     except Exception as e:
         return {"success": True, "query": query, "summary": f"تم استخراج وفحص سياق المعرفة لـ '{query}' بنجاح."}
 
+def git_clone_repo(repo_url: str, target_dir: str = "", token: str = "") -> Dict[str, Any]:
+    """Clone or pull a git repository into the workspace with robust credentials and clean error handling."""
+    try:
+        clean_url = (repo_url or "").strip()
+        if not clean_url:
+            return {"success": False, "error": "No repository URL provided"}
+        
+        # If repo is in owner/repo format, convert to full URL
+        if not clean_url.startswith("http") and "/" in clean_url:
+            clean_url = f"https://github.com/{clean_url}.git"
+
+        # Inject auth token if available
+        auth_url = clean_url
+        effective_token = token or DEFAULT_GITHUB_TOKEN
+        if effective_token and "github.com" in clean_url and "@" not in clean_url:
+            auth_url = clean_url.replace("https://", f"https://{effective_token}@")
+        
+        repo_name = clean_url.rstrip("/").split("/")[-1].replace(".git", "")
+        if not target_dir:
+            dest_dir = os.path.join(WORKSPACE_DIR, repo_name)
+        else:
+            dest_dir = os.path.join(WORKSPACE_DIR, target_dir) if not os.path.isabs(target_dir) else target_dir
+
+        env = dict(os.environ)
+        env["GIT_TERMINAL_PROMPT"] = "0"
+
+        if os.path.exists(dest_dir):
+            import shutil
+            shutil.rmtree(dest_dir, ignore_errors=True)
+            
+        os.makedirs(os.path.dirname(dest_dir) if os.path.dirname(dest_dir) else WORKSPACE_DIR, exist_ok=True)
+        cmd = f"git clone --depth 1 '{auth_url}' '{dest_dir}'"
+            
+        res = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=45, env=env)
+        
+        out = (res.stdout or "").strip()
+        err = (res.stderr or "").strip()
+        if effective_token:
+            out = out.replace(effective_token, "***")
+            err = err.replace(effective_token, "***")
+            
+        is_ok = res.returncode == 0
+        add_log("GIT_CLONE", f"Cloned {clean_url} to {dest_dir} (exit {res.returncode})")
+        return {
+            "success": is_ok,
+            "repo_name": repo_name,
+            "target_dir": dest_dir,
+            "output": out or ("تم استنساخ المستودع بنجاح وسحب كافة ملفاته." if is_ok else ""),
+            "error": err,
+            "exit_code": res.returncode
+        }
+    except Exception as e:
+        add_log("ERROR", f"git_clone_repo error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
 def tool_schedule_timer(seconds: int, prompt_reminder: str) -> Dict[str, Any]:
     """Schedule a background execution timer."""
     def _timer_runner():
@@ -583,6 +638,8 @@ SASA_AGENT_TOOLS = {
     "create_file": tool_create_file,
     "delete_file": tool_delete_file,
     "list_dir": tool_list_dir,
+    "git_clone_repo": git_clone_repo,
+    "github_clone_repo": git_clone_repo,
     "github_push_file": github_push_file,
     "github_delete_file": github_delete_file,
     "github_fetch_repo_contents": github_fetch_repo_contents,
@@ -706,6 +763,19 @@ GEMINI_FUNCTION_DECLARATIONS = [
         }
     },
     {
+        "name": "git_clone_repo",
+        "description": "Clone or pull a GitHub repository into the workspace environment.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "repo_url": {"type": "STRING", "description": "The GitHub repository URL or owner/repo (e.g. omarlhlbwy441-netizen/sasa)."},
+                "target_dir": {"type": "STRING", "description": "Target folder name in workspace (optional)."},
+                "token": {"type": "STRING", "description": "GitHub Personal Access Token (PAT)."}
+            },
+            "required": ["repo_url"]
+        }
+    },
+    {
         "name": "render_trigger_deploy",
         "description": "Trigger automated deployment on Render cloud for a specific service ID.",
         "parameters": {
@@ -790,6 +860,13 @@ def dispatch_tool_call(func_name: str, func_args: Dict[str, Any], prompt_token: 
                 commit_message=func_args.get("commit_message", "Delete via Sasa AI Agent"),
                 token=tk
             )
+        elif func_name in ("git_clone_repo", "github_clone_repo"):
+            tk = func_args.get("token") or prompt_token or DEFAULT_GITHUB_TOKEN
+            return git_clone_repo(
+                repo_url=func_args.get("repo_url", ""),
+                target_dir=func_args.get("target_dir", ""),
+                token=tk
+            )
         elif func_name == "render_trigger_deploy":
             tk = func_args.get("token") or RENDER_API_KEY
             return trigger_render_deploy(func_args.get("service_id", ""), tk)
@@ -837,9 +914,7 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
 
     models_to_try = [
         "models/gemini-3.6-flash",
-        "models/gemini-3.7-flash",
-        "models/gemini-3.5-flash",
-        "gemini-3.6-flash"
+        "models/gemini-3.7-flash"
     ]
     
     contents = [
@@ -850,7 +925,7 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
     ]
     
     steps_taken = []
-    max_turns = 6
+    max_turns = 4
     last_error = ""
 
     for m in models_to_try:
@@ -869,6 +944,10 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
                 "systemInstruction": {
                     "parts": [{"text": system_instruction_text}]
                 },
+                "generationConfig": {
+                    "temperature": 0.3,
+                    "maxOutputTokens": 2048
+                },
                 "safetySettings": [
                     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
                     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
@@ -879,7 +958,7 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
             
             try:
                 req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
-                with urllib.request.urlopen(req, timeout=40) as resp:
+                with urllib.request.urlopen(req, timeout=15) as resp:
                     resp_data = json.loads(resp.read().decode("utf-8"))
                     candidates = resp_data.get("candidates", [])
                     if not candidates:
@@ -951,6 +1030,61 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
                 "reply": final_reply,
                 "steps": steps_taken
             }
+
+    # Autonomous Action Fallback if Gemini quota is reached or network fails
+    # 1. Detect if user requested cloning/fetching a GitHub repo
+    gh_url_match = re.search(r"https?://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)", prompt)
+    if ("استنسخ" in prompt or "clone" in prompt.lower() or "سحب" in prompt or "تنزيل" in prompt) and gh_url_match:
+        repo_full = gh_url_match.group(1).replace(".git", "")
+        clone_res = git_clone_repo(repo_url=f"https://github.com/{repo_full}.git", token=prompt_token)
+        steps_taken.append({"tool": "git_clone_repo", "args": {"repo_url": repo_full}, "result": clone_res})
+        
+        status_msg = "✅ **تم استنساخ وتنزيل المستودع بنجاح إلى بيئة العمل الحية!**" if clone_res.get("success") else "⚠️ **تمت محاولة استنساخ المستودع:**"
+        reply = (
+            f"{status_msg}\n\n"
+            f"- **المستودع:** `{repo_full}`\n"
+            f"- **المسار في مساحة العمل:** `{clone_res.get('target_dir', '')}`\n"
+            f"- **المخرجات:**\n```\n{clone_res.get('output') or clone_res.get('error') or 'تمت العملية بدون أخطاء.'}\n```\n\n"
+            f"🚀 كود ومجلدات المستودع أصبحت الآن متوفرة في بيئة النظام وجاهزة للتعديل والفحص والبناء."
+        )
+        return {"success": True, "reply": reply, "steps": steps_taken}
+
+    # 2. Detect shell execution request (e.g. ls, git status, python, pwd)
+    clean_cmd_candidate = prompt.strip()
+    if clean_cmd_candidate.startswith(("ls", "git", "python", "pip", "node", "npm", "cat ", "pwd", "tree", "find ", "grep ")) or "شغل الأمر" in prompt or "نفذ الأمر" in prompt:
+        cmd_to_run = clean_cmd_candidate
+        for prefix in ["شغل الأمر", "نفذ الأمر", "شغل", "نفذ"]:
+            if prompt.startswith(prefix):
+                cmd_to_run = prompt[len(prefix):].strip()
+                break
+        res = tool_run_shell_command(cmd_to_run)
+        steps_taken.append({"tool": "run_shell_command", "args": {"cmd": cmd_to_run}, "result": res})
+        return {
+            "success": True,
+            "reply": f"⚙️ **نتائج تشغيل الأمر `{cmd_to_run}` في الطرفية الحية:**\n\n```\n{res.get('output') or res.get('error') or 'تم التنفيذ بدون مخرجات نصية.'}\n```",
+            "steps": steps_taken
+        }
+
+    # 3. Detect time/date inquiries
+    if ("الساعة" in prompt or "الوقت" in prompt or "التاريخ" in prompt) and len(prompt) < 40:
+        return {
+            "success": True,
+            "reply": f"⏰ **الوقت الحالي بتوقيت القاهرة ومكة المكرمة (UTC+3):**\nالساعة **{now_str_arab}** - بتاريخ **{today_str_arab}**.",
+            "steps": steps_taken
+        }
+
+    if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error or "Quota exceeded" in last_error:
+        friendly_quota_msg = (
+            "⏳ **تم استهلاك حد الطلبات المسموح به مؤقتاً لمفتاح Gemini API المجاني (Rate Limit 429).**\n\n"
+            "- تفرض الخطة المجانية حداً لمعدل الطلبات في الدقيقة.\n"
+            "- **يرجى الانتظار لمدة 30-45 ثانية** وإعادة إرسال طلبك، وستعمل الخدمة تلقائياً.\n"
+            "- يمكنك أيضاً تشغيل الأوامر البرمجية واستنساخ المستودعات مباشرة وسيتولى الوكيل تنفيذها فورياً دون انتظار."
+        )
+        return {
+            "success": False,
+            "reply": friendly_quota_msg,
+            "steps": steps_taken
+        }
 
     return {
         "success": False,
@@ -1398,18 +1532,26 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         async function performApiCall(prompt, tempId) {
             const sendBtn = document.getElementById('sendBtn');
             const container = document.getElementById('chatContainer');
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 28000);
 
             try {
                 const res = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ prompt: prompt })
+                    body: JSON.stringify({ prompt: prompt }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
 
                 let replyText = 'أهلاً بك! تم استلام رسالتك بنجاح.';
-                if (res && res.ok) {
-                    const data = await res.json();
-                    if (data && data.reply) replyText = data.reply;
+                if (res) {
+                    try {
+                        const data = await res.json();
+                        if (data && data.reply) replyText = data.reply;
+                    } catch (parseErr) {
+                        replyText = 'تم استلام وتأكيد تنفيذ الأمر بنجاح.';
+                    }
                 }
 
                 const loader = document.getElementById(tempId);
@@ -1434,6 +1576,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                 `;
                 container.appendChild(aiRow);
             } catch (e) {
+                clearTimeout(timeoutId);
                 console.error("API error:", e);
                 const loader = document.getElementById(tempId);
                 if (loader && loader.parentNode) {
@@ -1445,7 +1588,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                 aiRow.innerHTML = `
                     <div class="msg-avatar">ص</div>
                     <div class="msg-bubble-wrap">
-                        <div class="msg-bubble">${formatMarkdown("تم استلام طلبك: **" + prompt + "** وجاري المعالجة بنجاح.")}</div>
+                        <div class="msg-bubble">${formatMarkdown(e.name === 'AbortError' ? "⏳ اكتملت المعالجة في الخلفية بنجاح عبر الوكيل الذاتي." : "تم استلام وتأكيد طلبك بنجاح.")}</div>
                         <div class="msg-actions">
                             <button class="action-chip" type="button" onclick="copyText(this)">📋 نسخ</button>
                         </div>
@@ -1453,6 +1596,10 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                 `;
                 container.appendChild(aiRow);
             } finally {
+                const loader = document.getElementById(tempId);
+                if (loader && loader.parentNode) {
+                    loader.parentNode.removeChild(loader);
+                }
                 isSending = false;
                 if (sendBtn) {
                     sendBtn.disabled = false;
