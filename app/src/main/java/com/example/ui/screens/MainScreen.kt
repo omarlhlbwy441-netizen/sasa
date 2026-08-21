@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Source
+import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -95,6 +96,32 @@ fun MainScreen(viewModel: SasaViewModel) {
                     onClick = { selectedTab = 1 },
                     icon = {
                         Icon(
+                            imageVector = Icons.Default.Terminal,
+                            contentDescription = "استوديو التطوير"
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = "استوديو التطوير",
+                            fontSize = 10.sp,
+                            fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Black,
+                        selectedTextColor = CyanPrimary,
+                        indicatorColor = CyanPrimary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    modifier = Modifier.testTag("tab_dev_studio")
+                )
+
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    icon = {
+                        Icon(
                             imageVector = Icons.Default.Source,
                             contentDescription = "مستودع GitHub"
                         )
@@ -102,8 +129,8 @@ fun MainScreen(viewModel: SasaViewModel) {
                     label = {
                         Text(
                             text = "GitHub",
-                            fontSize = 11.sp,
-                            fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal
+                            fontSize = 10.sp,
+                            fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -117,19 +144,19 @@ fun MainScreen(viewModel: SasaViewModel) {
                 )
 
                 NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3 },
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Dns,
-                            contentDescription = "خدمات الخلفية"
+                            contentDescription = "الخدمات"
                         )
                     },
                     label = {
                         Text(
                             text = "الخدمات",
-                            fontSize = 11.sp,
-                            fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal
+                            fontSize = 10.sp,
+                            fontWeight = if (selectedTab == 3) FontWeight.Bold else FontWeight.Normal
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -143,8 +170,8 @@ fun MainScreen(viewModel: SasaViewModel) {
                 )
 
                 NavigationBarItem(
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
+                    selected = selectedTab == 4,
+                    onClick = { selectedTab = 4 },
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Settings,
@@ -154,8 +181,8 @@ fun MainScreen(viewModel: SasaViewModel) {
                     label = {
                         Text(
                             text = "الإعدادات",
-                            fontSize = 11.sp,
-                            fontWeight = if (selectedTab == 3) FontWeight.Bold else FontWeight.Normal
+                            fontSize = 10.sp,
+                            fontWeight = if (selectedTab == 4) FontWeight.Bold else FontWeight.Normal
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -181,7 +208,10 @@ fun MainScreen(viewModel: SasaViewModel) {
                     agentLogs = agentLogs,
                     isThinking = isAgentThinking
                 )
-                1 -> GitHubScreen(
+                1 -> DeveloperStudioScreen(
+                    viewModel = viewModel
+                )
+                2 -> GitHubScreen(
                     viewModel = viewModel,
                     repoOwner = repoOwner,
                     repoName = repoName,
@@ -193,12 +223,12 @@ fun MainScreen(viewModel: SasaViewModel) {
                     isPushing = isPushingCode,
                     pushResult = pushResult
                 )
-                2 -> BackgroundServiceScreen(
+                3 -> BackgroundServiceScreen(
                     viewModel = viewModel,
                     isServiceRunning = isServiceRunning,
                     serviceLogs = serviceLogs
                 )
-                3 -> SettingsScreen(
+                4 -> SettingsScreen(
                     viewModel = viewModel,
                     githubToken = githubToken,
                     repoOwner = repoOwner,
