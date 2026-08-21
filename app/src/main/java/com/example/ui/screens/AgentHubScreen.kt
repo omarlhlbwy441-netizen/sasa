@@ -108,19 +108,11 @@ fun AgentHubScreen(
     val autoPilotStatus by viewModel.autoPilotStatus.collectAsState()
     val thinkingStage by viewModel.thinkingStage.collectAsState()
     var showCinemaStudioDialog by remember { mutableStateOf(false) }
-    var showTokensDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(agentLogs.size, isThinking) {
         if (agentLogs.isNotEmpty()) {
             listState.animateScrollToItem(agentLogs.size - 1)
         }
-    }
-
-    if (showTokensDialog) {
-        SecurityTokensDialog(
-            viewModel = viewModel,
-            onDismiss = { showTokensDialog = false }
-        )
     }
 
     if (showCinemaStudioDialog) {
@@ -138,8 +130,7 @@ fun AgentHubScreen(
     ) {
         // Supervisor Badge Header
         SupervisorBadgeCard(
-            onClearLogs = { viewModel.clearAgentLogs() },
-            onOpenTokensDialog = { showTokensDialog = true }
+            onClearLogs = { viewModel.clearAgentLogs() }
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -353,10 +344,7 @@ fun AutoPilotCard(
 }
 
 @Composable
-fun SupervisorBadgeCard(
-    onClearLogs: () -> Unit,
-    onOpenTokensDialog: () -> Unit
-) {
+fun SupervisorBadgeCard(onClearLogs: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -409,17 +397,6 @@ fun SupervisorBadgeCard(
                     fontSize = 12.sp,
                     color = GreenAccent,
                     fontWeight = FontWeight.Medium
-                )
-            }
-
-            IconButton(
-                onClick = onOpenTokensDialog,
-                modifier = Modifier.testTag("manage_tokens_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Key,
-                    contentDescription = "إدارة المفاتيح والأمان",
-                    tint = CyanPrimary
                 )
             }
 
@@ -1141,181 +1118,6 @@ fun LiveRealtimeThinkingCard(currentStage: Int) {
                             )
                         }
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SecurityTokensDialog(
-    viewModel: SasaViewModel,
-    onDismiss: () -> Unit
-) {
-    val currentGithubToken by viewModel.githubToken.collectAsState()
-    val currentOwner by viewModel.repoOwner.collectAsState()
-    val currentRepo by viewModel.repoName.collectAsState()
-    val currentGeminiKey by viewModel.geminiApiKey.collectAsState()
-
-    var inputGithubToken by remember { mutableStateOf(currentGithubToken) }
-    var inputOwner by remember { mutableStateOf(currentOwner) }
-    var inputRepo by remember { mutableStateOf(currentRepo) }
-    var inputGeminiKey by remember { mutableStateOf(currentGeminiKey) }
-    var saveStatus by remember { mutableStateOf<String?>(null) }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = TechDarkSurface),
-            border = BorderStroke(1.5.dp, Brush.horizontalGradient(listOf(CyanPrimary, GreenAccent)))
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(18.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Security,
-                            contentDescription = null,
-                            tint = GreenAccent,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "إدارة مفاتيح الأمان والتوكنات",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
-                    }
-                    IconButton(onClick = onDismiss) {
-                        Icon(imageVector = Icons.Default.Close, contentDescription = "إغلاق", tint = Color.Gray)
-                    }
-                }
-
-                Text(
-                    text = "قم بتعيين التوكنات ومستودع العمل النشط. التوكن يتيح لصاصا AI التعديل، الرفع، الحذف، والإنشاء في أي مستودع تحدده دون تعريض بياناتك العامة للخطر.",
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 15.sp,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                OutlinedTextField(
-                    value = inputGithubToken,
-                    onValueChange = { inputGithubToken = it },
-                    label = { Text("GitHub Token (PAT)", fontSize = 11.sp) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CyanPrimary,
-                        unfocusedBorderColor = TechDarkBorder,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
-                    ),
-                    singleLine = true
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = inputOwner,
-                        onValueChange = { inputOwner = it },
-                        label = { Text("مالك المستودع (Owner)", fontSize = 10.sp) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanPrimary,
-                            unfocusedBorderColor = TechDarkBorder,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
-                        ),
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = inputRepo,
-                        onValueChange = { inputRepo = it },
-                        label = { Text("اسم المستودع (Repo)", fontSize = 10.sp) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanPrimary,
-                            unfocusedBorderColor = TechDarkBorder,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
-                        ),
-                        singleLine = true
-                    )
-                }
-
-                OutlinedTextField(
-                    value = inputGeminiKey,
-                    onValueChange = { inputGeminiKey = it },
-                    label = { Text("Gemini API Key (اختياري للذكاء العالي)", fontSize = 11.sp) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = GreenAccent,
-                        unfocusedBorderColor = TechDarkBorder,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
-                    ),
-                    singleLine = true
-                )
-
-                if (saveStatus != null) {
-                    Text(
-                        text = saveStatus ?: "",
-                        fontSize = 12.sp,
-                        color = GreenAccent,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Button(
-                    onClick = {
-                        if (inputGithubToken.isNotBlank()) {
-                            viewModel.updateToken(inputGithubToken.trim())
-                        }
-                        if (inputOwner.isNotBlank() && inputRepo.isNotBlank()) {
-                            viewModel.updateRepoDetails(inputOwner.trim(), inputRepo.trim())
-                        }
-                        if (inputGeminiKey.isNotBlank()) {
-                            viewModel.updateGeminiKey(inputGeminiKey.trim())
-                        }
-                        viewModel.fetchRepositoryData()
-                        saveStatus = "✅ تم حفظ المفاتيح والربط بنجاح!"
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(44.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GreenAccent,
-                        contentColor = Color.Black
-                    )
-                ) {
-                    Icon(imageVector = Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "حفظ واعتماد التوكنات فوراً", fontWeight = FontWeight.Bold)
                 }
             }
         }
