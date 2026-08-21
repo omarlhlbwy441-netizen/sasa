@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ForkRight
 import androidx.compose.material.icons.filled.History
@@ -152,6 +154,16 @@ if __name__ == "__main__":
                         customRepoOwner = parsed.first,
                         customRepoName = parsed.second,
                         customToken = targetTokenInput
+                    )
+                },
+                onDeleteFile = {
+                    val parsed = viewModel.parseRepoOwnerAndName(targetRepoInput)
+                    viewModel.deleteFileFromRepository(
+                        owner = parsed.first,
+                        repo = parsed.second,
+                        path = filePath,
+                        commitMessage = commitMessage.ifBlank { "auto: Delete $filePath via Sasa AI Agent" },
+                        token = targetTokenInput.ifBlank { null }
                     )
                 }
             )
@@ -349,7 +361,8 @@ fun DirectCommitPushCard(
     isPushing: Boolean,
     pushResult: String?,
     onGenerateAiMessage: () -> Unit,
-    onPushCode: () -> Unit
+    onPushCode: () -> Unit,
+    onDeleteFile: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -587,32 +600,54 @@ if __name__ == "__main__":
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Commit & Push Button
-            Button(
-                onClick = onPushCode,
-                enabled = !isPushing,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .testTag("commit_and_push_button"),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = GreenAccent,
-                    contentColor = Color.Black
-                )
+            // Commit & Push and Delete Action Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (isPushing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = Color.Black,
-                        strokeWidth = 2.dp
+                Button(
+                    onClick = onPushCode,
+                    enabled = !isPushing,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .testTag("commit_and_push_button"),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GreenAccent,
+                        contentColor = Color.Black
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "جاري الحفظ والتعديل في GitHub...", fontWeight = FontWeight.Bold)
-                } else {
-                    Icon(imageVector = Icons.Default.CloudUpload, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "التزام ورفع مباشر إلى المستودع (Commit & Push)", fontWeight = FontWeight.Bold)
+                ) {
+                    if (isPushing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.Black,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "جاري الحفظ...", fontWeight = FontWeight.Bold)
+                    } else {
+                        Icon(imageVector = Icons.Default.CloudUpload, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(text = "رفع وتحديث (Push)", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                }
+
+                Button(
+                    onClick = onDeleteFile,
+                    enabled = !isPushing && filePath.isNotBlank(),
+                    modifier = Modifier
+                        .height(48.dp)
+                        .testTag("delete_git_file_button"),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = RoseError.copy(alpha = 0.85f),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "حذف الملف")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "حذف الملف", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
 
