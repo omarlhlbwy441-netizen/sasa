@@ -3,6 +3,9 @@ import sys
 import json
 import re
 import base64
+import copy
+import time
+import threading
 import subprocess
 import urllib.request
 import urllib.parse
@@ -39,8 +42,8 @@ except ImportError:
 DEFAULT_GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 WORKSPACE_DIR = os.environ.get("WORKSPACE_DIR", os.getcwd())
-RENDER_API_KEY = os.environ.get("RENDER_API_KEY", "rnd_" + "06om7AdGxtiK9kVzDdyoL6dEZ8Sc")
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://omarlhlbwy7_user:xroDVNqXaqejXjoRwqze2hpCzW2IR9Xv@dpg-d9fiq7laeets73c57lq0-a/omarlhlbwy7")
+RENDER_API_KEY = os.environ.get("RENDER_API_KEY", "")
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 # Render Cloud API Functions
 def get_render_services(token: str = "") -> Dict[str, Any]:
@@ -574,6 +577,7 @@ def tool_schedule_timer(seconds: int, prompt_reminder: str) -> Dict[str, Any]:
 # Centralized Agent Tool Registry
 SASA_AGENT_TOOLS = {
     "run_command": run_shell_command,
+    "run_shell_command": run_shell_command,
     "view_file": tool_view_file,
     "edit_file": tool_edit_file,
     "create_file": tool_create_file,
@@ -583,344 +587,287 @@ SASA_AGENT_TOOLS = {
     "github_delete_file": github_delete_file,
     "github_fetch_repo_contents": github_fetch_repo_contents,
     "render_trigger_deploy": trigger_render_deploy,
+    "render_get_services": get_render_services,
     "search_web": tool_search_web,
     "schedule_timer": tool_schedule_timer
 }
 
-def execute_autonomous_agent(goal: str, token: Optional[str] = None, api_key: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Autonomous ReAct agent loop for Sasa AI.
-    Executes multi-step reasoning, tool invocations, and returns final unified result.
-    """
-    add_log("AUTONOMOUS_AGENT", f"Starting autonomous execution for goal: {goal}")
-    steps_taken = []
-    
-    # 1. Check if goal is a GitHub operation
-    p_lower = goal.lower()
-    tk = token or DEFAULT_GITHUB_TOKEN
-    
-    if any(w in p_lower for w in ["انشئ ملف", "اصنع ملف", "ارفع ملف", "اكتب ملف", "حذف ملف", "احذف ملف", "push", "delete file", "commit"]):
-        # Extract repo
-        repo_match = re.search(r"github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)", goal)
-        if not repo_match:
-            repo_match = re.search(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)", goal)
-        repo_full = repo_match.group(1).rstrip(".git") if repo_match else "omarlhlbwy441-netizen/sasa"
-
-        # Check delete
-        if any(w in p_lower for w in ["احذف", "حذف", "delete"]):
-            path_match = re.search(r"""(?:ملف|file|path)\s*[:=]?\s*[`"']?([A-Za-z0-9_./\\-]+)[`"']?""", goal, re.IGNORE_CASE)
-            fpath = path_match.group(1) if path_match else "dh"
-            del_res = github_delete_file(repo_name=repo_full, file_path=fpath, commit_message=f"Delete {fpath} via Sasa Autonomous Agent", token=tk)
-            steps_taken.append({"tool": "github_delete_file", "args": {"repo": repo_full, "file_path": fpath}, "result": del_res})
-            return {
-                "success": del_res.get("success", False),
-                "goal": goal,
-                "steps": steps_taken,
-                "reply": f"✅ تم تنفيذ مهمة الحذف الذاتي للملف `{fpath}` من المستودع `{repo_full}` بنجاح بواسطة وكيل Sasa AI الذاتي!" if del_res.get("success") else f"❌ فشلت العملية: {del_res.get('error')}"
+GEMINI_FUNCTION_DECLARATIONS = [
+    {
+        "name": "run_shell_command",
+        "description": "Execute a shell or terminal command in the workspace directory and return stdout, stderr, and exit code.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "cmd": {"type": "STRING", "description": "The command line string to run"}
+            },
+            "required": ["cmd"]
+        }
+    },
+    {
+        "name": "view_file",
+        "description": "View lines of a file in the workspace.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "path": {"type": "STRING", "description": "Relative file path from workspace root."},
+                "start_line": {"type": "INTEGER", "description": "Start line (1-indexed)."},
+                "end_line": {"type": "INTEGER", "description": "End line (1-indexed)."}
+            },
+            "required": ["path"]
+        }
+    },
+    {
+        "name": "edit_file",
+        "description": "Replace exact target content in a workspace file with replacement content.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "path": {"type": "STRING", "description": "Relative file path."},
+                "target_content": {"type": "STRING", "description": "Exact text to be replaced."},
+                "replacement_content": {"type": "STRING", "description": "New replacement content."}
+            },
+            "required": ["path", "target_content", "replacement_content"]
+        }
+    },
+    {
+        "name": "create_file",
+        "description": "Create or overwrite a file with content in the workspace.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "path": {"type": "STRING", "description": "Relative file path."},
+                "content": {"type": "STRING", "description": "The content to write."}
+            },
+            "required": ["path", "content"]
+        }
+    },
+    {
+        "name": "delete_file",
+        "description": "Delete a file from the workspace.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "path": {"type": "STRING", "description": "Relative file path."}
+            },
+            "required": ["path"]
+        }
+    },
+    {
+        "name": "list_dir",
+        "description": "List files and directories in a given path in the workspace.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "path": {"type": "STRING", "description": "Directory path (default '.')."}
             }
-        
-        # Check create/push
-        path_match = re.search(r"""(?:ملف|file|path|باسم|اسم|ب اسم)\s*[:=]?\s*[`"']?([A-Za-z0-9_./\\-]+)[`"']?""", goal, re.IGNORE_CASE)
-        fpath = path_match.group(1) if path_match else ("dh" if "dh" in goal else "README.md")
-        
-        content_match = re.search(r"""(?:محتواه|محتوى|مكتوب فيه|نص|content)\s*(?:[:=]|\s*مكتوب فيه\s*)?\s*["'`]([\s\S]+?)["'`]""", goal, re.IGNORE_CASE)
-        fcontent = content_match.group(1) if content_match else ("الشيخ الهلباوي" if "الهلباوي" in goal else "# Sasa AI Autonomous Agent Project\nCreated by Sheikh Al-Helbawy")
-        
-        push_res = github_push_file(repo_name=repo_full, file_path=fpath, file_content=fcontent, commit_message=f"Autonomous Push: {fpath} via Sasa AI Agent", token=tk)
-        steps_taken.append({"tool": "github_push_file", "args": {"repo": repo_full, "file_path": fpath}, "result": push_res})
-        
-        sha = push_res.get("data", {}).get("content", {}).get("sha", "OK")
-        return {
-            "success": push_res.get("success", False),
-            "goal": goal,
-            "steps": steps_taken,
-            "reply": f"✅ تم تنفيذ المهمة ذاتياً بالكامل! تم رفع/تحديث الملف `{fpath}` بمحتواه في المستودع `{repo_full}`.\nبصمة SHA: `{sha}`" if push_res.get("success") else f"❌ فشل الرفع: {push_res.get('error')}"
         }
-
-    # 2. Check if goal is shell command execution
-    if any(w in p_lower for w in ["نفذ امر", "شغل امر", "run", "exec", "terminal", "bash", "طرفية", "امر"]):
-        cmd_match = re.search(r"""(?:امر|أمر|cmd|command|شغل|نفذ)\s*[:=]?\s*[`"']?([^`"'\n]+)[`"']?""", goal, re.IGNORE_CASE)
-        cmd = cmd_match.group(1).strip() if cmd_match else "pwd && ls -la"
-        cmd_res = run_shell_command(cmd)
-        steps_taken.append({"tool": "run_command", "args": {"cmd": cmd}, "result": cmd_res})
-        return {
-            "success": cmd_res.get("success", False),
-            "goal": goal,
-            "steps": steps_taken,
-            "reply": f"⚡ **تم تنفيذ الأمر بنجاح عبر محرك الطرفية الشفاف:**\n```bash\n$ {cmd}\n{cmd_res.get('stdout') or cmd_res.get('stderr')}\n```"
+    },
+    {
+        "name": "github_fetch_repo_contents",
+        "description": "Fetch files or directory tree from a GitHub repository.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "repo_full": {"type": "STRING", "description": "Repository owner/repo (e.g. omarlhlbwy441-netizen/sasa)."},
+                "path": {"type": "STRING", "description": "Path in repo (default empty for root)."},
+                "token": {"type": "STRING", "description": "Optional GitHub PAT token."}
+            },
+            "required": ["repo_full"]
         }
-
-    # Fallback to standard Gemini API query with autonomous capabilities
-    gem_res = query_gemini_api(goal, api_key=api_key or "")
-    return {
-        "success": gem_res.get("success", True),
-        "goal": goal,
-        "steps": [{"tool": "cognitive_reasoning", "result": "Success"}],
-        "reply": gem_res.get("reply", "تم تنفيذ المعالجة بنجاح.")
+    },
+    {
+        "name": "github_push_file",
+        "description": "Push or update a file directly in a GitHub repository.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "repo_name": {"type": "STRING", "description": "Repository owner/repo."},
+                "file_path": {"type": "STRING", "description": "File path in the repository."},
+                "file_content": {"type": "STRING", "description": "Text content of the file."},
+                "commit_message": {"type": "STRING", "description": "Git commit message."},
+                "token": {"type": "STRING", "description": "GitHub PAT token."}
+            },
+            "required": ["repo_name", "file_path", "file_content"]
+        }
+    },
+    {
+        "name": "github_delete_file",
+        "description": "Delete a file from a GitHub repository.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "repo_name": {"type": "STRING", "description": "Repository owner/repo."},
+                "file_path": {"type": "STRING", "description": "File path in repository to delete."},
+                "commit_message": {"type": "STRING", "description": "Git commit message."},
+                "token": {"type": "STRING", "description": "GitHub PAT token."}
+            },
+            "required": ["repo_name", "file_path"]
+        }
+    },
+    {
+        "name": "render_trigger_deploy",
+        "description": "Trigger automated deployment on Render cloud for a specific service ID.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "service_id": {"type": "STRING", "description": "Render service ID."},
+                "token": {"type": "STRING", "description": "Render API token."}
+            },
+            "required": ["service_id"]
+        }
+    },
+    {
+        "name": "render_get_services",
+        "description": "List active services on Render cloud.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "token": {"type": "STRING", "description": "Render API token."}
+            }
+        }
+    },
+    {
+        "name": "search_web",
+        "description": "Search the web for technical documentation, libraries, or references.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "query": {"type": "STRING", "description": "Search query."}
+            },
+            "required": ["query"]
+        }
     }
+]
 
-
-# Video Synthesizer & Dynamic Introspection Subsystem
-def get_live_system_capabilities(prompt_token: str = "") -> str:
-    default_fallback_tk = "ghp_" + "D1ncLESuQWIys3Me9W2v3lh1RSJQSv0NeXgu"
-    tk = prompt_token or DEFAULT_GITHUB_TOKEN or default_fallback_tk
-    now_str_arab, today_str_arab = get_arab_time_strings()
-    
-    # 1. Live Test GitHub API
-    gh_status = "⚠️ غير مربوط"
-    gh_user = "غير محدد"
+def dispatch_tool_call(func_name: str, func_args: Dict[str, Any], prompt_token: str = "") -> Dict[str, Any]:
+    add_log("TOOL_CALL", f"Dispatching tool '{func_name}' with args: {json.dumps(func_args, ensure_ascii=False)}")
     try:
-        req = urllib.request.Request("https://api.github.com/user", headers={
-            "Authorization": f"Bearer {tk}",
-            "User-Agent": "SasaAIAgentEngine",
-            "Accept": "application/vnd.github+json"
-        })
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            u_data = json.loads(resp.read().decode("utf-8"))
-            gh_user = u_data.get("login", "متصل")
-            gh_status = f"✅ متصل وفردي حقيقي (`{gh_user}`)"
+        if func_name in ("run_shell_command", "run_command"):
+            return run_shell_command(func_args.get("cmd", ""))
+        elif func_name == "view_file":
+            return tool_view_file(
+                func_args.get("path", ""),
+                int(func_args.get("start_line", 1)),
+                int(func_args.get("end_line", 500))
+            )
+        elif func_name == "edit_file":
+            return tool_edit_file(
+                func_args.get("path", ""),
+                func_args.get("target_content", ""),
+                func_args.get("replacement_content", "")
+            )
+        elif func_name == "create_file":
+            return tool_create_file(
+                func_args.get("path", ""),
+                func_args.get("content", "")
+            )
+        elif func_name == "delete_file":
+            return tool_delete_file(func_args.get("path", ""))
+        elif func_name == "list_dir":
+            return tool_list_dir(func_args.get("path", "."))
+        elif func_name == "github_fetch_repo_contents":
+            tk = func_args.get("token") or prompt_token or DEFAULT_GITHUB_TOKEN
+            return github_fetch_repo_contents(
+                func_args.get("repo_full", ""),
+                func_args.get("path", ""),
+                tk
+            )
+        elif func_name == "github_push_file":
+            tk = func_args.get("token") or prompt_token or DEFAULT_GITHUB_TOKEN
+            return github_push_file(
+                repo_name=func_args.get("repo_name", ""),
+                file_path=func_args.get("file_path", ""),
+                file_content=func_args.get("file_content", ""),
+                commit_message=func_args.get("commit_message", "Update via Sasa AI Agent"),
+                token=tk
+            )
+        elif func_name == "github_delete_file":
+            tk = func_args.get("token") or prompt_token or DEFAULT_GITHUB_TOKEN
+            return github_delete_file(
+                repo_name=func_args.get("repo_name", ""),
+                file_path=func_args.get("file_path", ""),
+                commit_message=func_args.get("commit_message", "Delete via Sasa AI Agent"),
+                token=tk
+            )
+        elif func_name == "render_trigger_deploy":
+            tk = func_args.get("token") or RENDER_API_KEY
+            return trigger_render_deploy(func_args.get("service_id", ""), tk)
+        elif func_name == "render_get_services":
+            tk = func_args.get("token") or RENDER_API_KEY
+            return get_render_services(tk)
+        elif func_name == "search_web":
+            return tool_search_web(func_args.get("query", ""))
+        else:
+            return {"error": f"Unknown tool: {func_name}"}
     except Exception as e:
-        gh_status = f"✅ متصل بالتوكن (`{tk[:7]}...`) للمستودعات العامة والخاصة"
+        add_log("ERROR", f"Error executing tool {func_name}: {str(e)}")
+        return {"error": str(e)}
 
-    # 2. Live Test Gemini Key
-    gemini_status = "✅ متصل بـ Gemini AI (`models/gemini-3.6-flash`)" if GEMINI_API_KEY else "✅ مفعل عبر المفتاح الافتراضي الذكي"
-
-    # 3. Video Synthesizer Engine
-    video_engine_status = "✅ محرك توليد الوسائط والفيديوهات (Sasa Video Synthesizer v2.0) - جاهز ومفعّل 100%"
-
-    # 4. Shell & Workspace Execution
-    shell_status = f"✅ محرك الأوامر والتنفذ المباشر (Terminal) - مفعّل بمسار `{WORKSPACE_DIR}`"
-
-    # 5. Live Test Render Cloud API
-    render_status = "⚠️ غير مفعل"
-    render_res = get_render_services()
-    if render_res.get("success"):
-        services = render_res.get("services", [])
-        render_status = f"✅ متصل بـ Render API (`rnd_06om7AdG...`) - إجمالي الخدمات: {len(services)}"
-    else:
-        render_status = f"✅ مفتاح Render API مجهز (`rnd_06om7AdG...`) وجاهز لإدارة النشر والإطلاق"
-
-    # 6. Live Test PostgreSQL Database
-    pg_res = test_postgres_connection()
-    pg_status = f"✅ متصل بقاعدة بيانات Render PostgreSQL (`{pg_res['database']}` على `{pg_res['host']}`)"
-
-    # 7. Live Logs
-    logs_count = len(execution_logs)
-
-    # 8. Unified Orchestration Thread State
-    orch_cycles = getattr(unified_engine, 'total_cycles', 1)
-    orch_last = getattr(unified_engine, 'last_check_time', now_str_arab)
-
-    return f"""⚡ **دليل الخدمات والإمكانيات الشاملة التي تقدمها لك منظومة Sasa AI (صاصا)** ⚡
-**(التوقيت المعتمد: {now_str_arab} - {today_str_arab} | الحالة التشغيلية: جاهزية تنفيذية كاملة 100%)**
-
-مرحباً بك! أنا مهندسك البرمجي الذكي المتكامل. إليك تفصيل كل ما يمكنني بناؤه وتنفيذه لك بدقة واحترافية:
-
----
-
-### 📱 1. **بناء وتطوير التطبيقات والأنظمة البرمجية المتكاملة**:
-- **تطبيقات الأندرويد والويب**: بناء تطبيقات متكاملة واحترافية (Jetpack Compose, Kotlin, WebApps) من الفكرة والتصميم وحتى التجميع والتصدير المباشر كحزم APK جاهزة للتثبيت الفوري.
-- **التصميم وتجربة المستخدم**: تصميم واجهات عصرية تفاعلية تدعم الوضع الليلي والنهاري، الاستجابة لكافة أحجام الشاشات، ودعم كامل للغة العربية.
-
-### 🎮 2. **صناعة وتطوير الألعاب المتقدمة (2D & 3D Games)**:
-- **جميع فئات الألعاب**: بناء ألعاب العالم المفتوح (Open World RPG)، ألعاب الأكشن والقتال، الألعاب الاستراتيجية، وسباقات السيارات بدقة رسومية فائقة وأداء فائق السلاسة يصل إلى 120 FPS.
-- **فيزياء وعوالم لا نهائية**: توليد خرائط وبيئات لا نهائية ومحاكاة فيزيائية واقعية للشخصيات والمجسمات مع تصديرها للعب المباشر على الأندرويد والويب.
-
-### 🐙 3. **الإدارة والبرمجة الحية لمستودعات GitHub**:
-- **فحص وتحليل المستودعات**: استعراض وتحليل شجرة ملفات مشاريعك بالكامل، وفهم بنية الأكواد بدقة.
-- **التعديل والرفع المباشر (Commit & Push)**: كتابة وتعديل الشفرات ورفعها مباشرة إلى مستودعاتك العامة والخاصة مع إدارة الإصدارات والفروع تلقائياً.
-
-### ☁️ 4. **أتمتة النشر السحابي وإدارة الخوادم (Cloud Deployment)**:
-- **نشر الخدمات وقواعد البيانات**: نشر وتشغيل الخوادم السحابية، واجهات الـ API، وقواعد البيانات على منصات السحابة العالمية (Render, AWS, GCP, Cloudflare) دون أي انقطاع.
-- **المراقبة والتشخيص الذاتي**: متابعة حالة الخوادم لحظة بلحظة، واكتشاف الأخطاء ومعالجتها تلقائياً لضمان استقرار الخدمة 24/7.
-
-### 🧬 5. **فحص وصيانة وتحديث الأكواد البرمجية (Refactoring & Modernization)**:
-- **الإصلاح الجراحي للأخطاء**: اكتشاف الأخطاء البرمجية الخفية والتعارضات وإصلاحها بدقة متناهية دون كسر أي أجزاء أخرى من المشروع.
-- **الترقية والتطوير**: تحويل وتحديث المشاريع البرمجية القديمة إلى أحدث اللغات وأفضل الممارسات البرمجية العالمية (Kotlin, Python, TypeScript, Go, Rust, C++).
-
-### 🧪 6. **كتابة وإجراء الاختبارات التلقائية لضمان الجودة (Automated Testing)**:
-- **اختبارات شاملة**: إنشاء وتشغيل اختبارات الوحدة واختبارات واجهات المستخدم تلقائياً قبل نشر أي تحديث لضمان جودة الأكواد وخلوها من المشاكل بنسبة تفوق 95%.
-
-### 🎬 7. **التوثيق المرئي التفاعلي والعروض ثلاثية الأبعاد (Interactive Visuals & Demos)**:
-- **عروض الفيديو 4K**: تحويل المشاريع والشفرات إلى عروض فيديو توثيقية وشروحات تفاعلية عالية الجودة.
-- **المخططات ثلاثية الأبعاد (3D Architecture)**: توليد مخططات معمارية ثلاثية الأبعاد تفاعلية تتيح لك استكشاف بنية نظامك بصرياً.
-
-### 🎙️ 8. **البرمجة بالأوامر الصوتية باللغة العربية (Voice-to-Code)**:
-- **التوجيه الصوتي المباشر**: فهم طلباتك وتوجيهاتك المنطوقة باللغة العربية وتحويلها فورياً إلى تطبيقات وشفرات برمجية حقيقية قيد التشغيل.
-
-### 🛡️ 9. **الفحص الأمني والتحصين الشامل**:
-- **الأمان والخصوصية**: فحص الشفرات والتأكد من حماية مفاتيح الـ API والبيانات الحساسة، مع توفير بيئة تشغيل آمنة ومعزولة لتشغيل الأوامر والسكربتات.
-
-### ⚡ 10. **البحث الدلالي الذكي وإدارة الذاكرة البرمجية**:
-- **استرجاع السياق فورياً**: القدرة على البحث وفهم ملايين الأسطر البرمجية في أجزاء من الثانية مع إمكانية استرجاع أي حالة أو نسخة سابقة للمشروع في أي لحظة.
-
----
-🚀 **أنا جاهز تماماً للبدء في تنفيذ أي مشروع أو فكرة تريد بناءها وتطويرها الآن!**"""
-
-def generate_video_spec(prompt: str) -> Dict[str, Any]:
-    video_title = "فيديو مولّد بواسطة Sasa AI Engine"
-    if "عن" in prompt:
-        video_title = f"فيديو: {prompt.split('عن', 1)[1].strip()}"
-    elif "فيديو" in prompt:
-        video_title = f"فيديو: {prompt.strip()}"
-
-    video_id = f"vid_{int(datetime.now(timezone.utc).timestamp())}"
-    now_str_arab, today_str_arab = get_arab_time_strings()
-
-    scenes = [
-        {"time": "00:00 - 00:05", "title": "المقدمة البصرية", "description": "عرض الشعار التفاعلي لمنظومة Sasa AI وتدشين العنوان الرئيسي تحت إشراف الشيخ الهلباوي."},
-        {"time": "00:05 - 00:15", "title": "العرض المشهدي والأنيشين", "description": f"تحريك عناصر المشهد المولد ببراعة وفق طلب المستخدم: '{prompt}'."},
-        {"time": "00:15 - 00:25", "title": "الخاتمة والمعالجة المرئية", "description": "توليد التأثيرات الصوتية والمرئية الختامية وحفظ ملف الفيديو المكتمل."}
-    ]
-
-    player_html = f"""
-<div style="background:#0f172a; border:2px solid #0284c7; border-radius:16px; padding:16px; color:#ffffff; font-family:sans-serif; direction:rtl; margin-top:12px;">
-  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:8px; margin-bottom:12px;">
-    <span style="font-weight:bold; color:#38bdf8; font-size:16px;">🎬 {video_title}</span>
-    <span style="background:#0369a1; font-size:11px; padding:3px 8px; border-radius:12px;">Sasa Video Engine v2.0</span>
-  </div>
-  <div style="background:#0284c715; height:180px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; border:1px dashed #0284c7;">
-    <div style="font-size:48px; margin-bottom:8px; animation: pulse 2s infinite;">▶️</div>
-    <div style="font-size:14px; font-weight:bold; color:#7dd3fc;">المشغل المرئي التفاعلي مفعّل</div>
-    <div style="font-size:11px; color:#94a3b8; margin-top:4px;">توقيت التوليد: {now_str_arab} - {today_str_arab}</div>
-  </div>
-  <div style="margin-top:12px;">
-    <div style="font-size:12px; font-weight:bold; color:#94a3b8; margin-bottom:6px;">المشاهد المرئية المولّدة:</div>
-    {"".join([f'<div style="font-size:12px; background:#1e293b; padding:6px 10px; border-radius:8px; margin-bottom:4px; border-right:3px solid #0284c7;"><b>{s["time"]}</b> - {s["title"]}: {s["description"]}</div>' for s in scenes])}
-  </div>
-</div>
-"""
-
-    reply_text = f"""🎬 **تم توليد وإنشاء الفيديو بنجاح عبر محرك Sasa AI Video Synthesizer!**
-
-📌 **عنوان الفيديو**: `{video_title}`
-⏱️ **مدة العرض**: 00:25 ثانية
-🛠️ **المحرك المستخدم**: Sasa Media & Video Generation Subsystem (بإشراف الشيخ الهلباوي)
-
-{player_html}
-
-يمكنك الآن استعراض مقاطع الفيديو والمشاهد التفاعلية المولّدة مباشرة من الواجهة!"""
-
-    return {
-        "success": True,
-        "video_id": video_id,
-        "title": video_title,
-        "reply": reply_text,
-        "player_html": player_html
-    }
-
-def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-3.6-flash") -> Dict[str, Any]:
-    p_lower = prompt.lower()
+def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2.5-flash") -> Dict[str, Any]:
     key = api_key or GEMINI_API_KEY
     now_str_arab, today_str_arab = get_arab_time_strings()
-
-    # 1. Video Generation Check
-    if any(w in p_lower for w in ["فيديو", "فدية", "video", "توليد فيديو", "انشئ فيديو", "أنشئ فيديو", "صنع فيديو", "اصنع فيديو"]):
-        v_res = generate_video_spec(prompt)
-        return {"success": True, "reply": v_res["reply"], "video_id": v_res["video_id"]}
-
-    # 2. Dynamic Introspection / Capabilities Check
-    if any(w in p_lower for w in ["مقدرات", "امكانيات", "إمكانيات", "قدرات", "ما هي مقدراتك", "ماذا تستطيع", "ما قدراتك"]):
-        caps_report = get_live_system_capabilities(prompt)
-        return {"success": True, "reply": caps_report}
-
-    # 3. System Building / Evolution / Repair / Push Methodology Check
-    if any(w in p_lower for w in ["كيف تبني", "بناء النظام", "تطوير النظام", "كيف تطور", "إصلاح النظام", "اصلاح النظام", "رفع ملفات", "رفع الملفات", "علم المنظومة"]):
-        methodology_report = """🏛️ **الدليل الإرشادي والتنفيذي الشامل للعمليات الهندسية لمنظومة Sasa AI (صاصا)**:
-(تطوير وإشراف: **الشيخ الهلباوي**)
-
-تعتمد المنظومة على 4 محركات تنفيذية رئيسية لإدارة دورة حياة البرمجيات:
-
----
-
-### 1. 🏗️ **كيفية بناء النظام (System Building & Scaffolding)**:
-1. **تحديد النمط المعماري (Architecture Type)**:
-   • اختيار بيئة العمل المناسبة (Kotlin/Jetpack Compose للأندرويد، أو FastAPI/Python للخوادم السحابية، أو Full-stack Web).
-2. **توليد الهيكل القياسي (Project Scaffolding)**:
-   • استدعاء دوال البناء وتوليد شجرة الملفات الأساسية (`server.py`, `Dockerfile`, `requirements.txt`, `build.gradle.kts`, `AndroidManifest.xml`).
-3. **ضبط التبعيات وحزم التشغيل**:
-   • كتابة ملفات التبعيات وضمان توافق الإصدارات (Clean Dependencies).
-4. **التحقق من سلامة البناء (Build Verification)**:
-   • التحقق من الكود واختبار التجميع لضمان خلوه من أخطاء الـ Compilation.
-
----
-
-### 2. 🚀 **كيفية تطوير النظام وتوسيعه (System Evolution & Feature Engineering)**:
-1. **التحليل وتحديد نقاط الارتكاز (Context & Anchor Points)**:
-   • فحص الموديول المطلوب تطويره واستخراج كود المصدر الحالي.
-2. **التعديل الجراحي وحقن الميزات**:
-   • استدعاء المحرك الجراحي `modifyFileSurgically` أو `evolveModule` لحقن الدوال والواجهات الجديدة دون كسر الشفرة السابقة.
-3. **توزيع المهام المتوازية (Swarm Engine)**:
-   • استخدام محرك الأسراب لتقسيم الميزات المعقدة على وكلاء فرعيين متخصصين (واجهات، قواعد بيانات، خوادم، أمان).
-4. **تكامل واجهات المستخدم والـ APIs**:
-   • ربط الميزات الجديدة مع واجهات المستخدم وقاعدة بيانات Room المحلية ومسارات الخادم.
-
----
-
-### 3. 🛠️ **كيفية إصلاح النظام وتصحيح الأخطاء (Diagnostics, Patching & Auto-Healing)**:
-1. **المسح والتشخيص الذاتي (Deep Scanning)**:
-   • فحص الأخطاء النحوية، الـ TODOs المعلقة، والاستثناءات غير المعالجة.
-2. **الترقيع الجراحي التلقائي (Automated Surgical Patching)**:
-   • استدعاء دوال المعالجة لتصحيح الـ Unresolved references، أخطاء الاستيراد، والتعارضات.
-3. **التعافي الذاتي للخوادم السحابية (Auto-Healing Orchestrator)**:
-   • مراقبة حية 24/7 عبر `UnifiedBackgroundEngine` لإعادة تشغيل ونشر الخدمات المعلقة على Render Cloud.
-
----
-
-### 4. 📤 **كيفية رفع الملفات والمشاريع إلى GitHub (Git & Multi-File Pushing)**:
-1. **التحقق من التوثيق (Authentication)**:
-   • استخراج الـ GitHub Token والتأكد من سريانه وصلاحيات `repo`.
-2. **استخراج وحساب الـ SHA**:
-   • إرسال طلب `GET` إلى GitHub REST API لجلب الـ SHA لكل ملف مستهدف (في حال التحديث) أو إرساله كملف جديد.
-3. **التشفير والرفع الذري (Atomic Base64 Push)**:
-   • تحويل المحتوى إلى Base64 وإرسال طلب `PUT` لمسار `/repos/{owner}/{repo}/contents/{path}` مع إرفاق رسالة الـ Commit واسم المطور (**الشيخ الهلباوي**).
-4. **تسجيل المهام وتحديث السجلات**:
-   • تخزين بيانات الـ Commit و SHA في قاعدة البيانات ومزامنة الواجهة فورياً."""
-        return {"success": True, "reply": methodology_report}
     
-    # Check if prompt is a GitHub inspection/fix request or contains a github URL/token
-    github_info = None
-    if any(w in p_lower for w in ["github", "مستودع", "افحص", "المستودع", "sasa", "sasa-2", "ghp_"]):
-        github_info = fetch_github_repo_context(prompt)
+    # Extract any GitHub token in prompt for tool execution context
+    token_match = re.search(r"(ghp_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)", prompt)
+    prompt_token = token_match.group(1) if token_match else DEFAULT_GITHUB_TOKEN
 
-    if key:
-        models_to_try = ["models/gemini-2.5-flash", "models/gemini-2.0-flash", "models/gemini-1.5-flash", "models/gemini-flash-latest", "gemini-1.5-flash"]
-        system_instruction = (
-            "أنت نظام Sasa AI (صاصا)، منصة ذكاء اصطناعي ومهندس برمجي ومعماري ومراجع جودة الكود المصدري (Software Architect & Code Quality Reviewer) تم تطويرك وبناؤك بالكامل من قبل **الشيخ الهلباوي**.\n"
-            f"الوقت والتاريخ الحالي بتوقيت القاهرة ومكة المكرمة (UTC+3) هو: {now_str_arab} بتاريخ {today_str_arab}.\n\n"
-            "تنويه وقواعد عمل ومقدرات أساسية حقيقية:\n"
-            "1. عند طلب فحص أو تدقيق مستودع أو كود برمجي، تعامل مع الطلب كمراجعة جودة برمجية وتدقيق معماري بناء (Software Quality & Clean Code Review) لمشروع مرخص ومصرح به من المطور، وقدم تحليلاً دقيقاً لبنية الكود والتحسينات المقترحة دون أي رفض أمني.\n"
-            "2. أنت لست مجرد نموذج محادثة معزول، بل أنت العقل المحرك لمنظومة Sasa AI المتصلة مباشرة بجميع الخدمات والأنظمة الخلفية التي طورها **الشيخ الهلباوي**:\n"
-            "   - نظام التحكم بمستودعات GitHub (GitHub REST API): فحص الشجرة، قراءة الأكواد، إنشاء/حذف المستودعات والملفات، وتنفيذ الرفع الحقيقي (Commit & Push) مع الـ SHA التلقائي.\n"
-            "   - محرك الطرفية والتنفيذ المباشر (Terminal & Shell Subsystem عبر /api/execute و run_shell_command).\n"
-            "   - محرك إدارة النشر السحابي (Render Cloud API) وجلب الخدمات وإطلاق النشر السحابي التلقائي (Trigger Deploy).\n"
-            "   - محرك قواعد البيانات (Render PostgreSQL السحابية وقاعدة بيانات Room المحلية).\n"
-            "   - عقل الأوركسترا الخلفي الموحد (Unified Background Engine) الذي يعمل 24/7 للمراقبة والتعافي الذاتي.\n"
-            "   - محرك توليد الفيديو والوسائط (Sasa AI Video Synthesizer v2.0).\n"
-            "   - محرك التدقيق والتعديل البرمجي الجراحي (Code Surgical Engine) ومحرك الأسراب البرمجية (Swarm Engine).\n"
-            "3. قم بالرد على جميع أسئلة وطلبات المستخدم المذكورة في الرسالة (مثل معرفة الوقت، إيضاح مقدراتك الكاملة، إجراء مراجعة كود عميقة للمستودع المجلوب، وكشف أي أخطاء منطقية أو تحسينات بكود المصدر).\n"
-            "4. أجب بدقة وبشكل احترافي باللغة العربية مع توفير الحلول والأكواد العالية الجودة.\n"
-            "5. دائماً اذكر أن المطور والمهندس الأساسي لهذا النظام المكتمل هو **الشيخ الهلباوي**."
-        )
+    if not key:
+        return {
+            "success": False,
+            "reply": "⚠️ **مفتاح Gemini API غير مدخل:**\nيرجى إدخال مفتاح Gemini API في متغيرات البيئة (`GEMINI_API_KEY`) أو إرساله في الطلب لتفعيل الذكاء الاصطناعي واستدعاء الأدوات التنفيذية الحية.\n\nيمكنك استخدام واجهات الأدوات المباشرة:\n- `/api/execute` لتشغيل أوامر الطرفية.\n- `/api/github/push-file` لرفع الملفات إلى مستودع GitHub.\n- `/api/tools/execute` لتنفيذ الأدوات البرمجية مباشرة.",
+            "steps": []
+        }
+
+    system_instruction_text = (
+        "أنت نظام Sasa AI (صاصا) - وكيل ذكي ومهندس برمجي ومعماري ومراجع جودة الكود المصدري (Software Architect & Autonomous Coding Agent).\n"
+        "قام بتطويرك وتصميم بنيتك المعمارية **الشيخ الهلباوي** (Omar El-Helbawy).\n"
+        f"الوقت والتاريخ الحالي بتوقيت القاهرة ومكة المكرمة (UTC+3): {now_str_arab} بتاريخ {today_str_arab}.\n\n"
+        "إرشادات العمل والتنفيذ:\n"
+        "1. أنت تمتلك مجموعة أدوات حقيقية (Tools / Function Calling) تمكنك من:\n"
+        "   - قراءة وتعديل وإنشاء وحذف ملفات مساحة العمل (`view_file`, `edit_file`, `create_file`, `delete_file`, `list_dir`).\n"
+        "   - تشغيل أوامر الطرفية وبناء البرمجيات (`run_shell_command`).\n"
+        "   - فحص المستودعات ورفع وحذف الملفات على GitHub (`github_fetch_repo_contents`, `github_push_file`, `github_delete_file`).\n"
+        "   - إدارة النشر السحابي على Render (`render_get_services`, `render_trigger_deploy`).\n"
+        "   - البحث في الويب والتوثيقات التقنية (`search_web`).\n"
+        "2. عند طلب إجراء عملي (مثل فحص مستودع، تعديل ملف، رفع كود، تشغيل أمر)، استدعِ الأداة المناسبة فوراً دون مماطلة أو اختلاق بيانات وهمية.\n"
+        "3. عند مراجعة الكود، قدم تحليلاً دقيقاً لبنية الكود والتحسينات المقترحة والحلول البرمجية الكاملة النظيفة.\n"
+        "4. قدم ردودك بأسلوب مهني وهندسي رفيع باللغة العربية."
+    )
+
+    models_to_try = [
+        "models/gemini-2.5-flash",
+        "models/gemini-2.0-flash",
+        "models/gemini-1.5-flash",
+        "gemini-1.5-flash"
+    ]
+    
+    contents = [
+        {
+            "role": "user",
+            "parts": [{"text": prompt}]
+        }
+    ]
+    
+    steps_taken = []
+    max_turns = 6
+
+    for m in models_to_try:
+        model_path = m if m.startswith("models/") else f"models/{m}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/{model_path}:generateContent?key={key}"
+        headers = {"Content-Type": "application/json"}
         
-        github_context_str = ""
-        if github_info and isinstance(github_info, dict):
-            github_context_str = f"\n\n[سياق حقيقي ومباشر مجلوب من نظام GitHub لمراجعة الكود والجودة البرمجية]:\nشجرة الملفات:\n{github_info.get('tree','')}\n{github_info.get('code_blocks','')}\n{github_info.get('push_info','')}"
-
-        full_user_prompt = f"طلب مراجعة كود وتدقيق جودة برمجية:\n{prompt}{github_context_str}"
-
-        for m in models_to_try:
-            model_path = m if m.startswith("models/") else f"models/{m}"
-            url = f"https://generativelanguage.googleapis.com/v1beta/{model_path}:generateContent?key={key}"
-            headers = {"Content-Type": "application/json"}
+        current_contents = copy.deepcopy(contents)
+        success = False
+        final_reply = ""
+        
+        for turn in range(max_turns):
             payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {"text": f"{system_instruction}\n\nطلب المستخدم:\n{full_user_prompt}"}
-                        ]
-                    }
-                ],
+                "contents": current_contents,
+                "tools": [{"function_declarations": GEMINI_FUNCTION_DECLARATIONS}],
+                "systemInstruction": {
+                    "parts": [{"text": system_instruction_text}]
+                },
                 "safetySettings": [
                     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
                     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
@@ -928,111 +875,102 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-3
                     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
                 ]
             }
+            
             try:
                 req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
-                with urllib.request.urlopen(req, timeout=35) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    candidates = data.get("candidates", [])
-                    if candidates:
-                        text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                        if text:
-                            if any(rf in text for rf in ["تحليل أمني", "فحص للثغرات", "لا يمكنني تلبية طلبك بتقديم تحليل أمني"]):
-                                if github_info and isinstance(github_info, dict) and github_info.get("built_in_report"):
-                                    return {"success": True, "reply": github_info["built_in_report"]}
-                            return {"success": True, "reply": text}
+                with urllib.request.urlopen(req, timeout=40) as resp:
+                    resp_data = json.loads(resp.read().decode("utf-8"))
+                    candidates = resp_data.get("candidates", [])
+                    if not candidates:
+                        break
+                    
+                    candidate_content = candidates[0].get("content", {})
+                    parts = candidate_content.get("parts", [])
+                    
+                    # Check for function calls
+                    function_calls = [p.get("functionCall") for p in parts if p.get("functionCall")]
+                    text_parts = [p.get("text", "") for p in parts if p.get("text")]
+                    
+                    if function_calls:
+                        # Append model's tool call turn
+                        current_contents.append({
+                            "role": "model",
+                            "parts": parts
+                        })
+                        
+                        # Execute each tool call and prepare response parts
+                        response_parts = []
+                        for fc in function_calls:
+                            fc_name = fc.get("name", "")
+                            fc_args = fc.get("args", {})
+                            add_log("AGENT_TOOL_CALL", f"Model requested tool: {fc_name}", fc_args)
+                            
+                            res = dispatch_tool_call(fc_name, fc_args, prompt_token=prompt_token)
+                            steps_taken.append({
+                                "tool": fc_name,
+                                "args": fc_args,
+                                "result": res
+                            })
+                            
+                            response_parts.append({
+                                "functionResponse": {
+                                    "name": fc_name,
+                                    "response": {"result": res}
+                                }
+                            })
+                        
+                        # Append user tool response turn
+                        current_contents.append({
+                            "role": "user",
+                            "parts": response_parts
+                        })
+                        
+                        # Loop continues to let Gemini reason on tool outputs
+                        continue
+                    
+                    # If model returned text
+                    combined_text = "\n".join(text_parts).strip()
+                    if combined_text:
+                        final_reply = combined_text
+                        success = True
+                        break
+            except urllib.error.HTTPError as e:
+                err_body = e.read().decode("utf-8", errors="ignore")
+                add_log("WARNING", f"Gemini API HTTP {e.code} on model {m}: {err_body}")
+                break
             except Exception as ex:
-                add_log("WARNING", f"Gemini API call failed for model {m}: {str(ex)}")
-                continue
+                add_log("WARNING", f"Gemini API exception on model {m}: {str(ex)}")
+                break
 
-    # Fallback to built-in report if GitHub context was fetched
-    if github_info and isinstance(github_info, dict) and github_info.get("built_in_report"):
-        return {"success": True, "reply": github_info["built_in_report"]}
+        if success and final_reply:
+            return {
+                "success": True,
+                "reply": final_reply,
+                "steps": steps_taken
+            }
 
-    # Intelligent Fallback
-    if any(w in p_lower for w in ["امكانيات", "إمكانيات", "مقدرات", "مميزات", "قدرات", "مطور", "من طورك", "الهلباوي", "صاصا", "sasa", "خدمات"]):
-        reply = """🌟 **مقدرات وإمكانيات والخدمات الخلفية الكاملة لمنصة Sasa AI (صاصا)**:
-
-تم تصميم وتطوير وبناء كافة مكونات ونظم هذا المشروع بالكامل بواسطة **الشيخ الهلباوي**.
-
-تتكون المنصة من كتلة برمجية موحدة تضم كافة الأنظمة والخدمات الخلفية والفرعية الشفافة التي زرعها **الشيخ الهلباوي** لتشغيل النظام بكفاءة عالية:
-
-1. **المطور والمهندس الأساسي**:
-   - تم تصميم وهندسة وبناء المنصة والأنظمة الشفافة بالكامل بواسطة **الشيخ الهلباوي**.
-
-2. **محرك الأوامر والتنفيذ المباشر للأنظمة (Terminal & Shell Execution Subsystem - `/api/execute`)**:
-   - خدمة خلفية نافذة لتنفيذ أوامر الشل وتتبع المخرجات (stdout/stderr) وضبط المهلة الزمنية لمهام النظام.
-
-3. **نظام سجلات التنفيذ المباشرة والشفافة (Real-time Live Logging System - `/api/logs`)**:
-   - بافر تنفيذي دائم يحفظ ويتابع كافة الأنشطة والعمليات والأخطاء لحظة بلحظة لضمان أقصى درجات الشفافية والتدقيق الفني.
-
-4. **محرك الفحص والإصلاح الذاتي للمستودعات (Autonomous Repository Engine - `/api/github/push-file`)**:
-   - الربط المباشر مع GitHub REST API لقراءة شجرة المستودعات، تحليل الأكواد، اكتشاف الأخطاء البرمجية وإصلاحها بنظام Base64 وتدشين التحديثات (Push & Commit) تلقائياً لبيئة الإنتاج.
-
-5. **نظام النشر السحابي والتكامل المستمر (Automated CI/CD & Cloud Deployment)**:
-   - التشغيل التلقائي وإعادة بناء التطبيقات المباشرة وتدشين التحديثات الفورية عبر سيرفرات Render Cloud API.
-
-6. **البنية التكيفية ثلاثية الطبقات (Adaptive Multi-Framework Backend Architecture)**:
-   - سيرفر يعمل بذاتية فائقة عبر 3 أطر خلفية بديلة متداخلة (FastAPI مع CORS، Flask كبديل مرن، و Pure Python Built-in HTTPServer كخط دفاع مستقل بدون مكتبات خارجية لضمان الجاهزية بنسبة 100%).
-
-7. **مستكشف بيئة العمل والمساحة الحية (Workspace & System Explorer - `/api/workspace/info`)**:
-   - قراءة مسارات العمل، حالة التشفير، المتغيرات البيئية والتراخيص وحالة مفاتيح التشفير بشكل لحظي.
-
-8. **نظام التوقيت والتزامن العربي المزدوج (Timezone Synchronizer - UTC+3)**:
-   - معالجة وتعديل التوقيت الزمني الحقيقي وفق توقيت القاهرة ومكة المكرمة وضخها ضمن سياق الطلبات والردود.
-
-9. **نظام معالجة الوسائط والواجهات التفاعلية المباشرة**:
-   - معالجة المرفقات والملفات المرفوعة، مع دعم التفاعل الصوتي المباشر (Voice Recognition API) والتحصين الكامل للواجهة ضد إعادة التحميل والتعليق."""
-    elif any(w in p_lower for w in ["سلام", "مرحبا", "أهلا", "اهلا", "مرحباً"]):
-        reply = "وعليكم السلام ورحمة الله وبركاته! أهلاً بك في منصة **Sasa AI (صاصا)** التي تم تطويرها بواسطة **الشيخ الهلباوي**. كيف يمكنني مساعدتك اليوم؟"
-    elif any(w in p_lower for w in ["ساعة", "وقت", "تاريخ"]):
-        reply = f"⏰ الوقت الحالي هو: **{now_str_arab}** (بتوقيت القاهرة ومكة المكرمة) بتاريخ **{today_str_arab}**."
-    elif any(w in p_lower for w in ["كود", "تسجيل", "دخول"]):
-        reply = """💻 **كود شاشة تسجيل الدخول بلغة Kotlin Jetpack Compose:**
-
-```kotlin
-@Composable
-fun LoginScreen(onLoginClick: (String, String) -> Unit) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("تسجيل الدخول", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("اسم المستخدم") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("كلمة المرور") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        
-        Button(
-            onClick = { onLoginClick(username, password) },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
-        ) {
-            Text("دخول")
-        }
+    return {
+        "success": False,
+        "reply": "عذراً، حدث خطأ أثناء الاتصال بمحرك الاستدلال الذاتي. يرجى التحقق من مفتاح Gemini API والاتصال بالشبكة.",
+        "steps": steps_taken
     }
-}
-```"""
-    else:
-        reply = f"أهلاً بك! إجابة على طلبك: **\"{prompt}\"**:\n\nتم تنفيذ ومعالجة طلبك عبر منصة Sasa AI. إذا كان لديك أي استفسارات أو ملفات ترغب برفعها، يسعدني مساعدتك فوراً!"
 
-    return {"success": True, "reply": reply}
+def execute_autonomous_agent(goal: str, token: Optional[str] = None, api_key: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Autonomous Agent execution loop for Sasa AI.
+    Uses native Function Calling and Gemini reasoning to achieve user goal dynamically.
+    """
+    add_log("AUTONOMOUS_AGENT", f"Starting dynamic autonomous execution for goal: {goal}")
+    effective_api_key = api_key or GEMINI_API_KEY
+    
+    # Run the autonomous reasoning and tool calling pipeline
+    res = query_gemini_api(goal, api_key=effective_api_key)
+    return {
+        "success": res.get("success", True),
+        "goal": goal,
+        "steps": res.get("steps", []),
+        "reply": res.get("reply", "تمت معالجة الطلب.")
+    }
 
 
 HTML_CHAT_UI = r"""<!DOCTYPE html>
