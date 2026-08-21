@@ -415,6 +415,7 @@ if __name__ == "__main__":
             if (tokenMatch != null) {
                 dynamicToken = tokenMatch.value
                 _githubToken.value = dynamicToken
+                appPrefs.githubToken = dynamicToken
             }
 
             // 2. Repo URL extraction
@@ -428,6 +429,8 @@ if __name__ == "__main__":
                     dynamicRepo = repoGroup.removeSuffix(".git")
                     _repoOwner.value = dynamicOwner
                     _repoName.value = dynamicRepo
+                    appPrefs.repoOwner = dynamicOwner
+                    appPrefs.repoName = dynamicRepo
                     break
                 }
             }
