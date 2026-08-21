@@ -327,9 +327,16 @@ if __name__ == "__main__":
         }
     }
 
+    fun updateToken(token: String) {
+        _githubToken.value = token
+        appPrefs.githubToken = token
+    }
+
     fun updateRepoDetails(owner: String, repo: String) {
         _repoOwner.value = owner
         _repoName.value = repo
+        appPrefs.repoOwner = owner
+        appPrefs.repoName = repo
     }
 
     fun updateServerUrl(url: String) {
