@@ -836,10 +836,10 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
     )
 
     models_to_try = [
-        "models/gemini-2.5-flash",
-        "models/gemini-2.0-flash",
-        "models/gemini-1.5-flash",
-        "gemini-1.5-flash"
+        "models/gemini-3.6-flash",
+        "models/gemini-3.7-flash",
+        "models/gemini-3.5-flash",
+        "gemini-3.6-flash"
     ]
     
     contents = [
@@ -851,6 +851,7 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
     
     steps_taken = []
     max_turns = 6
+    last_error = ""
 
     for m in models_to_try:
         model_path = m if m.startswith("models/") else f"models/{m}"
@@ -864,7 +865,7 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
         for turn in range(max_turns):
             payload = {
                 "contents": current_contents,
-                "tools": [{"function_declarations": GEMINI_FUNCTION_DECLARATIONS}],
+                "tools": [{"functionDeclarations": GEMINI_FUNCTION_DECLARATIONS}],
                 "systemInstruction": {
                     "parts": [{"text": system_instruction_text}]
                 },
@@ -936,11 +937,13 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
                         break
             except urllib.error.HTTPError as e:
                 err_body = e.read().decode("utf-8", errors="ignore")
+                last_error = f"HTTP {e.code}: {err_body}"
                 add_log("WARNING", f"Gemini API HTTP {e.code} on model {m}: {err_body}")
-                break
+                continue
             except Exception as ex:
+                last_error = str(ex)
                 add_log("WARNING", f"Gemini API exception on model {m}: {str(ex)}")
-                break
+                continue
 
         if success and final_reply:
             return {
@@ -951,7 +954,7 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
 
     return {
         "success": False,
-        "reply": "عذراً، حدث خطأ أثناء الاتصال بمحرك الاستدلال الذاتي. يرجى التحقق من مفتاح Gemini API والاتصال بالشبكة.",
+        "reply": f"عذراً، حدث خطأ أثناء الاتصال بمحرك الاستدلال الذاتي.\nالتفاصيل: {last_error}" if last_error else "عذراً، حدث خطأ أثناء الاتصال بمحرك الاستدلال الذاتي. يرجى التحقق من مفتاح Gemini API والاتصال بالشبكة.",
         "steps": steps_taken
     }
 
