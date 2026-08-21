@@ -566,7 +566,8 @@ def tool_search_web(query: str) -> Dict[str, Any]:
         return {"success": True, "query": query, "summary": f"تم استخراج وفحص سياق المعرفة لـ '{query}' بنجاح."}
 
 def git_clone_repo(repo_url: str, target_dir: str = "", token: str = "") -> Dict[str, Any]:
-    """Clone or pull a git repository into the workspace with robust credentials and clean error handling."""
+    """Clone or download a git repository into the workspace with automatic ZIP fallback if git CLI is absent."""
+    import zipfile, io
     try:
         clean_url = (repo_url or "").strip()
         if not clean_url:
@@ -576,49 +577,95 @@ def git_clone_repo(repo_url: str, target_dir: str = "", token: str = "") -> Dict
         if not clean_url.startswith("http") and "/" in clean_url:
             clean_url = f"https://github.com/{clean_url}.git"
 
-        # Inject auth token if available
-        auth_url = clean_url
         effective_token = token or DEFAULT_GITHUB_TOKEN
-        if effective_token and "github.com" in clean_url and "@" not in clean_url:
-            auth_url = clean_url.replace("https://", f"https://{effective_token}@")
-        
-        repo_name = clean_url.rstrip("/").split("/")[-1].replace(".git", "")
+        repo_part = clean_url.replace("https://github.com/", "").replace(".git", "").strip("/")
+        repo_name = repo_part.split("/")[-1] if "/" in repo_part else "repo"
+
         if not target_dir:
             dest_dir = os.path.join(WORKSPACE_DIR, repo_name)
         else:
             dest_dir = os.path.join(WORKSPACE_DIR, target_dir) if not os.path.isabs(target_dir) else target_dir
 
-        env = dict(os.environ)
-        env["GIT_TERMINAL_PROMPT"] = "0"
-
         if os.path.exists(dest_dir):
             import shutil
             shutil.rmtree(dest_dir, ignore_errors=True)
-            
-        os.makedirs(os.path.dirname(dest_dir) if os.path.dirname(dest_dir) else WORKSPACE_DIR, exist_ok=True)
-        cmd = f"git clone --depth 1 '{auth_url}' '{dest_dir}'"
-            
-        res = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=45, env=env)
-        
-        out = (res.stdout or "").strip()
-        err = (res.stderr or "").strip()
+        os.makedirs(dest_dir, exist_ok=True)
+
+        # 1. Try native git command first if available
+        git_succeeded = False
+        git_error = ""
+        try:
+            auth_url = clean_url
+            if effective_token and "github.com" in clean_url and "@" not in clean_url:
+                auth_url = clean_url.replace("https://", f"https://{effective_token}@")
+            env = dict(os.environ)
+            env["GIT_TERMINAL_PROMPT"] = "0"
+            cmd = f"git clone --depth 1 '{auth_url}' '{dest_dir}'"
+            res = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=40, env=env)
+            if res.returncode == 0 and os.path.exists(os.path.join(dest_dir, ".git")):
+                git_succeeded = True
+            else:
+                git_error = (res.stderr or res.stdout or "").strip()
+        except Exception as e:
+            git_error = str(e)
+
+        if git_succeeded:
+            add_log("GIT_CLONE", f"Native git cloned {repo_part} to {dest_dir}")
+            return {
+                "success": True,
+                "repo_name": repo_name,
+                "target_dir": dest_dir,
+                "output": "تم استنساخ المستودع بنجاح وسحب كافة ملفاته عبر Git.",
+                "error": "",
+                "exit_code": 0
+            }
+
+        # 2. Resilient Python ZIP Download Fallback (No git binary required)
+        add_log("GIT_CLONE", f"Git binary unavailable or failed ({git_error}). Falling back to GitHub ZIP API...")
+        zip_url = f"https://api.github.com/repos/{repo_part}/zipball"
+        req_headers = {
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "Sasa-Autonomous-Agent"
+        }
         if effective_token:
-            out = out.replace(effective_token, "***")
-            err = err.replace(effective_token, "***")
-            
-        is_ok = res.returncode == 0
-        add_log("GIT_CLONE", f"Cloned {clean_url} to {dest_dir} (exit {res.returncode})")
+            req_headers["Authorization"] = f"token {effective_token}"
+
+        req = urllib.request.Request(zip_url, headers=req_headers)
+        with urllib.request.urlopen(req, timeout=45) as resp:
+            zip_data = resp.read()
+            with zipfile.ZipFile(io.BytesIO(zip_data)) as z:
+                # GitHub zipball has a top-level directory like owner-repo-hash/
+                namelist = z.namelist()
+                top_dir = namelist[0].split("/")[0] if namelist else ""
+                for member in z.infolist():
+                    member_path = member.filename
+                    if top_dir and member_path.startswith(f"{top_dir}/"):
+                        rel_path = member_path[len(top_dir) + 1:]
+                    else:
+                        rel_path = member_path
+                    if not rel_path:
+                        continue
+                    target_file = os.path.join(dest_dir, rel_path)
+                    if member.is_dir():
+                        os.makedirs(target_file, exist_ok=True)
+                    else:
+                        os.makedirs(os.path.dirname(target_file), exist_ok=True)
+                        with z.open(member) as src, open(target_file, "wb") as dst:
+                            dst.write(src.read())
+
+        file_count = sum(len(files) for _, _, files in os.walk(dest_dir))
+        add_log("GIT_CLONE", f"GitHub ZIP downloaded and extracted {file_count} files to {dest_dir}")
         return {
-            "success": is_ok,
+            "success": True,
             "repo_name": repo_name,
             "target_dir": dest_dir,
-            "output": out or ("تم استنساخ المستودع بنجاح وسحب كافة ملفاته." if is_ok else ""),
-            "error": err,
-            "exit_code": res.returncode
+            "output": f"تم تنزيل واستخراج محتويات المستودع بالكامل بنجاح ({file_count} ملف) إلى مساحة العمل.",
+            "error": "",
+            "exit_code": 0
         }
     except Exception as e:
-        add_log("ERROR", f"git_clone_repo error: {str(e)}")
-        return {"success": False, "error": str(e)}
+        add_log("ERROR", f"git_clone_repo fallback error: {str(e)}")
+        return {"success": False, "error": f"فشل استنساخ المستودع: {str(e)}"}
 
 def tool_schedule_timer(seconds: int, prompt_reminder: str) -> Dict[str, Any]:
     """Schedule a background execution timer."""

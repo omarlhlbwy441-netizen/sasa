@@ -18,6 +18,10 @@ RUN chmod +x ./gradlew || true
 # Stage 2: Lean Autonomous Python Backend Server
 FROM python:3.10-slim AS runner
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git curl \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY requirements.txt .
