@@ -41,8 +41,11 @@ class GeminiRepository {
         contextInfo: String = "",
         customApiKey: String? = null
     ): String {
-        val apiKey: String = customApiKey?.takeIf { it.isNotBlank() }
-            ?: runCatching { BuildConfig.GEMINI_API_KEY }.getOrDefault("")
+        val apiKey: String = if (!customApiKey.isNullOrBlank()) {
+            customApiKey
+        } else {
+            runCatching { BuildConfig.GEMINI_API_KEY }.getOrNull() ?: ""
+        }
 
         if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
             val pLower = prompt.lowercase()
