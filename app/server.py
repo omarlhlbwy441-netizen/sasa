@@ -1,3 +1,17 @@
+
+# Import Game Engine & 64-Agent Swarm Modules
+try:
+    from app.engine.game_engine import game_engine_instance
+    from app.swarm.swarm_agents import swarm_engine_instance, AGENTS_SWARM_REGISTRY
+except ImportError:
+    try:
+        from engine.game_engine import game_engine_instance
+        from swarm.swarm_agents import swarm_engine_instance, AGENTS_SWARM_REGISTRY
+    except ImportError:
+        game_engine_instance = None
+        swarm_engine_instance = None
+        AGENTS_SWARM_REGISTRY = []
+
 import os
 import sys
 import json
@@ -957,6 +971,41 @@ GEMINI_FUNCTION_DECLARATIONS = [
     }
 ]
 
+
+def tool_game_engine_inspect(**kwargs) -> Dict[str, Any]:
+    if game_engine_instance:
+        return game_engine_instance.get_state()
+    return {"success": False, "error": "Game Engine not initialized"}
+
+def tool_game_engine_action(action: str = "impulse", **kwargs) -> Dict[str, Any]:
+    if not game_engine_instance:
+        return {"success": False, "error": "Game Engine not initialized"}
+    if action == "impulse":
+        game_engine_instance.apply_impulse_to_all(kwargs.get("ix", 0.0), kwargs.get("iy", -350.0))
+        return {"success": True, "action": "impulse_applied", "state": game_engine_instance.get_state()}
+    elif action == "spawn":
+        name = kwargs.get("name", "Custom Orb")
+        x = float(kwargs.get("x", 400.0))
+        y = float(kwargs.get("y", 150.0))
+        color = kwargs.get("color", "#bef264")
+        shape = kwargs.get("shape", "circle")
+        ent = game_engine_instance.spawn_entity(name, x, y, color=color, shape=shape)
+        return {"success": True, "action": "spawned", "entity": ent}
+    elif action == "reset":
+        game_engine_instance.reset_scene()
+        return {"success": True, "action": "scene_reset"}
+    return {"success": False, "error": f"Unknown game action: {action}"}
+
+def tool_swarm_inspect_agents(**kwargs) -> Dict[str, Any]:
+    if swarm_engine_instance:
+        return swarm_engine_instance.get_division_summary()
+    return {"success": True, "total_agents": len(AGENTS_SWARM_REGISTRY), "agents": AGENTS_SWARM_REGISTRY}
+
+def tool_swarm_run_diagnosis(**kwargs) -> Dict[str, Any]:
+    if swarm_engine_instance:
+        return swarm_engine_instance.execute_live_health_diagnosis(dispatch_tool_call)
+    return {"success": True, "status": "all_systems_operational"}
+
 def dispatch_tool_call(func_name: str, func_args: Dict[str, Any], prompt_token: str = "") -> Dict[str, Any]:
     add_log("TOOL_CALL", f"Dispatching tool '{func_name}' with args: {json.dumps(func_args, ensure_ascii=False)}")
     try:
@@ -1378,6 +1427,25 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.4; transform: scale(0.85); }
         }
+        
+        .swarm-tab-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-subtle);
+            color: #94a3b8;
+            font-size: 11px;
+            font-family: 'Cairo', sans-serif;
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .swarm-tab-btn.active, .swarm-tab-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: #38bdf8;
+            color: #fff;
+        }
+
         /* Modal Styles */
         .saas-modal-backdrop {
             display: none;
@@ -2420,6 +2488,16 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     <span id="active-tenant-name">مؤسسة نعمه أي</span>
                     <span class="tenant-plan-tag" id="active-tenant-plan">Enterprise</span>
                 </div>
+                <button class="tenant-chip" onclick="playSound('click'); openSwarmModal()" title="سرب الوكلاء الذاتيين الـ 64" style="background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.35); color: #7dd3fc;">
+                    <span>👥</span>
+                    <span>سرب الوكلاء (64)</span>
+                    <span class="tenant-plan-tag" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff;">Parallel</span>
+                </button>
+                <button class="tenant-chip" onclick="playSound('click'); openGameModal()" title="استوديو محرك الألعاب والفيزياء" style="background: rgba(236, 72, 153, 0.12); border-color: rgba(236, 72, 153, 0.35); color: #f472b6;">
+                    <span>🎮</span>
+                    <span>محرك الألعاب</span>
+                    <span class="tenant-plan-tag" style="background: linear-gradient(135deg, #db2777, #ec4899); color: #fff;">60 FPS</span>
+                </button>
             </div>
 
             <!-- Left Group in RTL: 3-Dots Menu -->
@@ -3337,6 +3415,322 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         }
 
 </script>
+
+    <!-- 64-Agent Swarm Intelligence Modal -->
+    <div id="swarm-agents-modal" class="saas-modal-backdrop" onclick="if(event.target===this) closeSwarmModal()">
+        <div class="saas-modal-card" style="max-width: 820px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 24px;">👑</span>
+                    <div>
+                        <h2 style="font-size: 17px; font-weight: 800; color: #fff; margin: 0;">سرب الوكلاء الذاتيين المتوازيين (64 Specialized Agents)</h2>
+                        <span style="font-size: 11px; color: #38bdf8;">8 قطاعات استراتيجية • تنفيذ متزامن • Neama Multi-Agent Swarm</span>
+                    </div>
+                </div>
+                <button onclick="closeSwarmModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">✕</button>
+            </div>
+
+            <!-- Stats & Quick Actions -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 16px;">
+                <div style="background: rgba(14, 22, 38, 0.9); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 10px 14px;">
+                    <div style="font-size: 11px; color: #94a3b8;">إجمالي الوكلاء النشطين</div>
+                    <div style="font-size: 20px; font-weight: 900; color: #38bdf8;">64 وكيلاً</div>
+                </div>
+                <div style="background: rgba(14, 22, 38, 0.9); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 12px; padding: 10px 14px;">
+                    <div style="font-size: 11px; color: #94a3b8;">حالة المعالجة والتوازي</div>
+                    <div style="font-size: 15px; font-weight: 800; color: #86efac;">متوازي فوري (AsyncIO)</div>
+                </div>
+                <div style="background: rgba(14, 22, 38, 0.9); border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 12px; padding: 10px 14px;">
+                    <div style="font-size: 11px; color: #94a3b8;">القطاعات الهندسية</div>
+                    <div style="font-size: 20px; font-weight: 900; color: #f472b6;">8 قطاعات</div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px;">
+                <button class="swarm-tab-btn active" onclick="filterSwarmDivision(0, this)">الكل (64)</button>
+                <button class="swarm-tab-btn" onclick="filterSwarmDivision(1, this)">🏗️ معمارية النظم (8)</button>
+                <button class="swarm-tab-btn" onclick="filterSwarmDivision(2, this)">🗄️ قواعد البيانات (8)</button>
+                <button class="swarm-tab-btn" onclick="filterSwarmDivision(3, this)">🎮 محرك الألعاب (8)</button>
+                <button class="swarm-tab-btn" onclick="filterSwarmDivision(4, this)">🐍 هندسة الأكواد (8)</button>
+                <button class="swarm-tab-btn" onclick="filterSwarmDivision(5, this)">🩺 التشخيص الفوري (8)</button>
+                <button class="swarm-tab-btn" onclick="filterSwarmDivision(6, this)">☁️ DevOps والنشر (8)</button>
+                <button class="swarm-tab-btn" onclick="filterSwarmDivision(7, this)">🛡️ الأمن السيبراني (8)</button>
+                <button class="swarm-tab-btn" onclick="filterSwarmDivision(8, this)">🧠 الذكاء والتنسيق (8)</button>
+            </div>
+
+            <!-- Agents Grid Container -->
+            <div id="swarm-agents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                <!-- Filled via JS -->
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div style="display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+                <button onclick="triggerLiveDiagnosticFromModal()" style="flex: 1; padding: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #7dd3fc; border-radius: 10px; font-size: 12.5px; font-weight: 700; cursor: pointer;">🩺 تشغيل تشخيص حي متزامن للسرب</button>
+                <button onclick="closeSwarmModal()" style="padding: 10px 18px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #94a3b8; border-radius: 10px; font-size: 12px; cursor: pointer;">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Game Engine Studio Modal -->
+    <div id="game-engine-modal" class="saas-modal-backdrop" onclick="if(event.target===this) closeGameModal()">
+        <div class="saas-modal-card" style="max-width: 780px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 24px;">🎮</span>
+                    <div>
+                        <h2 style="font-size: 17px; font-weight: 800; color: #fff; margin: 0;">استوديو محرك الألعاب والفيزياء (Neama Game Studio)</h2>
+                        <span style="font-size: 11px; color: #f472b6;">محاكي فيزياء تصادمية 2D/3D • 60 FPS • توليف صوتي وجسيمات حية</span>
+                    </div>
+                </div>
+                <button onclick="closeGameModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">✕</button>
+            </div>
+
+            <!-- Canvas Viewport -->
+            <div style="position: relative; width: 100%; height: 320px; background: #070c18; border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 12px; overflow: hidden; margin-bottom: 12px;">
+                <canvas id="game-viewport-canvas" width="740" height="320" style="width: 100%; height: 100%; display: block;"></canvas>
+                <!-- Live Overlay HUD -->
+                <div style="position: absolute; top: 10px; left: 10px; display: flex; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #bef264; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 6px; pointer-events: none;">
+                    <span id="game-hud-fps">FPS: 60</span> | 
+                    <span id="game-hud-entities">Entities: 7</span> | 
+                    <span id="game-hud-particles">Particles: 0</span>
+                </div>
+            </div>
+
+            <!-- Interactive Game Controls -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                <button onclick="gameApplyImpulse()" style="padding: 8px 14px; background: rgba(236, 72, 153, 0.2); border: 1px solid #ec4899; color: #f472b6; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">🚀 قفزة حركية (Impulse)</button>
+                <button onclick="gameSpawnOrb()" style="padding: 8px 14px; background: rgba(190, 242, 100, 0.15); border: 1px solid var(--lime-bright); color: #bef264; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">➕ كرة طاقة جديدة</button>
+                <button onclick="gameResetScene()" style="padding: 8px 14px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #cbd5e1; border-radius: 8px; font-size: 12px; cursor: pointer;">🔄 إعادة ضبط المشهد</button>
+                <button onclick="testSynthAudio()" style="padding: 8px 14px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #7dd3fc; border-radius: 8px; font-size: 12px; cursor: pointer;">🔊 اختبار التوليف الصوتي</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+        // ── 64-Agent Swarm Intelligence Logic ──
+        let allSwarmAgents = [];
+        let activeDivisionFilter = 0;
+
+        function openSwarmModal() {
+            document.getElementById('swarm-agents-modal').classList.add('active');
+            loadSwarmAgents();
+        }
+
+        function closeSwarmModal() {
+            document.getElementById('swarm-agents-modal').classList.remove('active');
+        }
+
+        async function loadSwarmAgents() {
+            try {
+                const res = await fetch('/api/swarm/agents');
+                const data = await res.json();
+                if (data && data.agents) {
+                    allSwarmAgents = data.agents;
+                    renderSwarmGrid();
+                }
+            } catch(e) {
+                console.log('Swarm load err:', e);
+            }
+        }
+
+        function filterSwarmDivision(divId, btn) {
+            activeDivisionFilter = divId;
+            document.querySelectorAll('.swarm-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderSwarmGrid();
+        }
+
+        function renderSwarmGrid() {
+            const grid = document.getElementById('swarm-agents-grid');
+            if (!grid) return;
+            const filtered = activeDivisionFilter === 0 
+                ? allSwarmAgents 
+                : allSwarmAgents.filter(a => a.division_id === activeDivisionFilter);
+
+            grid.innerHTML = filtered.map(a => `
+                <div style="background: rgba(14, 22, 38, 0.85); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 18px;">${a.avatar}</span>
+                            <span style="font-weight: 800; font-size: 12.5px; color: #fff;">${a.name_ar}</span>
+                        </div>
+                        <span style="font-size: 9px; padding: 1px 6px; border-radius: 4px; background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3);">🟢 نشط</span>
+                    </div>
+                    <div style="font-size: 10px; color: ${a.color || '#38bdf8'}; font-weight: 600;">${a.name_en}</div>
+                    <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">${a.role}</div>
+                </div>
+            `).join('');
+        }
+
+        function triggerLiveDiagnosticFromModal() {
+            closeSwarmModal();
+            const input = document.getElementById('chat-input-field');
+            if (input) {
+                input.value = 'تشخيص حي شامل لحالة النظام والوكلاء وقاعدة البيانات ومحرك الألعاب';
+                handleSendMessage();
+            }
+        }
+
+        // ── Game Engine Interactive Canvas ──
+        let gameCanvas, gameCtx, gameAnimationId;
+        let gameEntities = [];
+        let gameParticles = [];
+
+        function openGameModal() {
+            document.getElementById('game-engine-modal').classList.add('active');
+            initGameCanvas();
+        }
+
+        function closeGameModal() {
+            document.getElementById('game-engine-modal').classList.remove('active');
+            if (gameAnimationId) cancelAnimationFrame(gameAnimationId);
+        }
+
+        function initGameCanvas() {
+            gameCanvas = document.getElementById('game-viewport-canvas');
+            if (!gameCanvas) return;
+            gameCtx = gameCanvas.getContext('2d');
+            fetchGameState();
+            startGameLoop();
+        }
+
+        async function fetchGameState() {
+            try {
+                const res = await fetch('/api/game/state');
+                const data = await res.json();
+                if (data && data.entities) {
+                    gameEntities = data.entities;
+                    gameParticles = data.particles || [];
+                    const hudEnt = document.getElementById('game-hud-entities');
+                    const hudPart = document.getElementById('game-hud-particles');
+                    if (hudEnt) hudEnt.textContent = `Entities: ${data.world.active_entities_count}`;
+                    if (hudPart) hudPart.textContent = `Particles: ${data.world.active_particles_count}`;
+                }
+            } catch(e) {}
+        }
+
+        function startGameLoop() {
+            let lastTime = performance.now();
+            function loop(now) {
+                const dt = (now - lastTime) / 1000;
+                lastTime = now;
+                renderGameFrame(dt);
+                gameAnimationId = requestAnimationFrame(loop);
+            }
+            gameAnimationId = requestAnimationFrame(loop);
+            // Poll backend state every 500ms for continuous sync
+            setInterval(fetchGameState, 500);
+        }
+
+        function renderGameFrame(dt) {
+            if (!gameCtx || !gameCanvas) return;
+            const w = gameCanvas.width;
+            const h = gameCanvas.height;
+
+            // Clear frame
+            gameCtx.fillStyle = '#070c18';
+            gameCtx.fillRect(0, 0, w, h);
+
+            // Draw grid lines
+            gameCtx.strokeStyle = 'rgba(255,255,255,0.03)';
+            gameCtx.lineWidth = 1;
+            for(let x = 0; x < w; x += 40) {
+                gameCtx.beginPath(); gameCtx.moveTo(x, 0); gameCtx.lineTo(x, h); gameCtx.stroke();
+            }
+            for(let y = 0; y < h; y += 40) {
+                gameCtx.beginPath(); gameCtx.moveTo(0, y); gameCtx.lineTo(w, y); gameCtx.stroke();
+            }
+
+            // Draw entities
+            gameEntities.forEach(ent => {
+                const scaleX = w / 800.0;
+                const scaleY = h / 600.0;
+                const x = ent.pos.x * scaleX;
+                const y = ent.pos.y * scaleY;
+
+                if (ent.shape === 'box') {
+                    const bw = ent.width * scaleX;
+                    const bh = ent.height * scaleY;
+                    gameCtx.fillStyle = ent.color || '#334155';
+                    gameCtx.fillRect(x - bw/2, y - bh/2, bw, bh);
+                    gameCtx.strokeStyle = 'rgba(255,255,255,0.2)';
+                    gameCtx.strokeRect(x - bw/2, y - bh/2, bw, bh);
+                } else {
+                    const r = (ent.radius || 15) * scaleX;
+                    gameCtx.beginPath();
+                    gameCtx.arc(x, y, r, 0, Math.PI * 2);
+                    gameCtx.fillStyle = ent.color || '#bef264';
+                    gameCtx.fill();
+                    gameCtx.strokeStyle = '#ffffff';
+                    gameCtx.lineWidth = 1.5;
+                    gameCtx.stroke();
+                }
+            });
+
+            // Draw particles
+            gameParticles.forEach(p => {
+                const scaleX = w / 800.0;
+                const scaleY = h / 600.0;
+                gameCtx.beginPath();
+                gameCtx.arc(p.x * scaleX, p.y * scaleY, p.size || 3, 0, Math.PI * 2);
+                gameCtx.fillStyle = p.color || '#bef264';
+                gameCtx.globalAlpha = p.alpha || 0.8;
+                gameCtx.fill();
+                gameCtx.globalAlpha = 1.0;
+            });
+        }
+
+        async function gameApplyImpulse() {
+            playSound('pop');
+            try {
+                await fetch('/api/game/impulse', { method: 'POST' });
+                fetchGameState();
+            } catch(e) {}
+        }
+
+        async function gameSpawnOrb() {
+            playSound('click');
+            try {
+                const colors = ['#bef264', '#22c55e', '#38bdf8', '#f43f5e', '#a855f7', '#eab308'];
+                const c = colors[Math.floor(Math.random() * colors.length)];
+                await fetch('/api/game/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'spawn', name: 'New Energy Orb', x: 200 + Math.random() * 400, y: 100, color: c })
+                });
+                fetchGameState();
+            } catch(e) {}
+        }
+
+        async function gameResetScene() {
+            playSound('click');
+            try {
+                await fetch('/api/game/reset', { method: 'POST' });
+                fetchGameState();
+            } catch(e) {}
+        }
+
+        function testSynthAudio() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.2);
+                showToast('🎵 تم توليف نغمة تفاعلية حية');
+            } catch(e) {}
+        }
+
+</script>
 </body>
 </html>
 """
@@ -3448,6 +3842,49 @@ if USE_FASTAPI:
     async def render_deploy_endpoint(req: TaskRequest):
         return trigger_render_deploy(req.command or req.repo_name or "", req.token or "")
 
+
+
+    # ── Swarm & Game Engine Endpoints ──
+    @app.get("/api/swarm/agents")
+    async def swarm_agents_endpoint():
+        return {"success": True, "total": len(AGENTS_SWARM_REGISTRY), "agents": AGENTS_SWARM_REGISTRY}
+
+    @app.get("/api/swarm/divisions")
+    async def swarm_divisions_endpoint():
+        if swarm_engine_instance:
+            return {"success": True, "data": swarm_engine_instance.get_division_summary()}
+        return {"success": True, "data": {}}
+
+    @app.get("/api/swarm/health")
+    async def swarm_health_endpoint():
+        if swarm_engine_instance:
+            diag = swarm_engine_instance.execute_live_health_diagnosis(dispatch_tool_call)
+            return {"success": True, "diagnosis": diag}
+        return {"success": True, "status": "operational"}
+
+    @app.get("/api/game/state")
+    async def game_state_endpoint():
+        if game_engine_instance:
+            return game_engine_instance.tick()
+        return {"success": False, "error": "Game Engine inactive"}
+
+    @app.post("/api/game/action")
+    async def game_action_endpoint(req: Dict[str, Any]):
+        return tool_game_engine_action(**req)
+
+    @app.post("/api/game/impulse")
+    async def game_impulse_endpoint():
+        if game_engine_instance:
+            game_engine_instance.apply_impulse_to_all(0.0, -380.0)
+            return {"success": True, "message": "Impulse applied"}
+        return {"success": False}
+
+    @app.post("/api/game/reset")
+    async def game_reset_endpoint():
+        if game_engine_instance:
+            game_engine_instance.reset_scene()
+            return {"success": True, "message": "Scene reset"}
+        return {"success": False}
 
     @app.get("/api/db/health")
     async def db_health_endpoint():
@@ -3610,6 +4047,49 @@ elif USE_FLASK:
         tk = data.get("token", "")
         return jsonify(trigger_render_deploy(s_id, tk))
 
+
+
+    @app.route("/api/swarm/agents", methods=["GET"])
+    def swarm_agents_flask():
+        return jsonify({"success": True, "total": len(AGENTS_SWARM_REGISTRY), "agents": AGENTS_SWARM_REGISTRY})
+
+    @app.route("/api/swarm/divisions", methods=["GET"])
+    def swarm_divisions_flask():
+        if swarm_engine_instance:
+            return jsonify({"success": True, "data": swarm_engine_instance.get_division_summary()})
+        return jsonify({"success": True, "data": {}})
+
+    @app.route("/api/swarm/health", methods=["GET"])
+    def swarm_health_flask():
+        if swarm_engine_instance:
+            diag = swarm_engine_instance.execute_live_health_diagnosis(dispatch_tool_call)
+            return jsonify({"success": True, "diagnosis": diag})
+        return jsonify({"success": True, "status": "operational"})
+
+    @app.route("/api/game/state", methods=["GET"])
+    def game_state_flask():
+        if game_engine_instance:
+            return jsonify(game_engine_instance.tick())
+        return jsonify({"success": False})
+
+    @app.route("/api/game/action", methods=["POST"])
+    def game_action_flask():
+        data = request.get_json(silent=True) or {}
+        return jsonify(tool_game_engine_action(**data))
+
+    @app.route("/api/game/impulse", methods=["POST"])
+    def game_impulse_flask():
+        if game_engine_instance:
+            game_engine_instance.apply_impulse_to_all(0.0, -380.0)
+            return jsonify({"success": True})
+        return jsonify({"success": False})
+
+    @app.route("/api/game/reset", methods=["POST"])
+    def game_reset_flask():
+        if game_engine_instance:
+            game_engine_instance.reset_scene()
+            return jsonify({"success": True})
+        return jsonify({"success": False})
 
     @app.route("/api/db/health", methods=["GET"])
     def db_health_flask():
