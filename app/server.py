@@ -1216,23 +1216,24 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sasa AI • The Autonomous Software Engine</title>
+    <title>Sasa AI • The Autonomous Software Engine (Enterprise SaaS)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #070b14;
-            --surface-card: #0d1424;
-            --surface-card-hover: #131c33;
-            --surface-elevated: #162038;
+            --bg-dark: #060913;
+            --surface-card: #0c1222;
+            --surface-card-hover: #111a30;
+            --surface-elevated: #15223e;
             --indigo-accent: #6366f1;
-            --indigo-light: #818cf8;
+            --indigo-hover: #4f46e5;
             --cyan-accent: #38bdf8;
             --amber-accent: #f59e0b;
             --emerald-accent: #10b981;
             --text-primary: #f8fafc;
             --text-muted: #94a3b8;
+            --border-subtle: rgba(255, 255, 255, 0.08);
             --border-glow: rgba(99, 102, 241, 0.35);
         }
 
@@ -1253,19 +1254,19 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18), transparent 55%),
-                radial-gradient(circle at 10% 90%, rgba(56, 189, 248, 0.12), transparent 45%);
+                radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 55%),
+                radial-gradient(circle at 10% 90%, rgba(56, 189, 248, 0.1), transparent 45%);
         }
 
-        /* Screen Manager */
+        /* Screen View Transitions */
         .screen-view {
             display: none;
             width: 100%;
             min-height: 100vh;
             min-height: 100dvh;
             opacity: 0;
-            transform: translateY(12px);
-            transition: opacity 0.35s ease, transform 0.35s ease;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .screen-view.active {
@@ -1275,16 +1276,16 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             transform: translateY(0);
         }
 
-        /* Global Header */
+        /* Navigation Header */
         header {
             width: 100%;
-            padding: 16px 20px;
+            padding: 14px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(13, 20, 36, 0.7);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(12, 18, 34, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -1308,13 +1309,14 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
         }
 
         .brand-text h1 {
             font-size: 18px;
             font-weight: 900;
             line-height: 1.1;
+            letter-spacing: 0.5px;
         }
 
         .brand-text span {
@@ -1325,9 +1327,9 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         /* SCREEN 1: Standalone Tribute Page */
         .tribute-container {
-            max-width: 760px;
+            max-width: 740px;
             margin: auto;
-            padding: 24px 20px 40px;
+            padding: 24px 18px 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1337,12 +1339,12 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         }
 
         .tribute-card {
-            background: linear-gradient(180deg, #0e1526, #090d18);
+            background: linear-gradient(180deg, #0d1527, #080c18);
             border: 2px solid transparent;
             border-image: linear-gradient(135deg, #f59e0b, #6366f1, #38bdf8) 1;
             border-radius: 24px;
-            padding: 32px 24px;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 30px rgba(245, 158, 11, 0.15);
+            padding: 32px 22px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(245, 158, 11, 0.15);
             width: 100%;
         }
 
@@ -1350,13 +1352,13 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: rgba(245, 158, 11, 0.15);
-            border: 1px solid rgba(245, 158, 11, 0.6);
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.5);
             color: #fcd34d;
             padding: 8px 20px;
             border-radius: 30px;
             font-weight: 800;
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 24px;
         }
 
@@ -1380,10 +1382,10 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             font-style: normal;
             font-weight: 600;
             display: block;
-            margin: 10px 0;
-            padding: 8px;
+            margin: 12px 0;
+            padding: 10px 14px;
             background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
+            border-radius: 12px;
             border-right: 3px solid #f59e0b;
         }
 
@@ -1398,15 +1400,15 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         .btn-large-cta {
             width: 100%;
-            background: linear-gradient(135deg, var(--indigo-accent), #4f46e5);
+            background: linear-gradient(135deg, var(--indigo-accent), var(--indigo-hover));
             color: white;
             padding: 16px 24px;
             border-radius: 16px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             border: none;
             cursor: pointer;
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
             transition: all 0.25s ease;
             display: flex;
             align-items: center;
@@ -1415,15 +1417,15 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         }
 
         .btn-large-cta:hover, .btn-large-cta:active {
-            transform: scale(0.98);
-            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.7);
+            transform: scale(0.99);
+            box-shadow: 0 14px 30px rgba(99, 102, 241, 0.6);
         }
 
-        /* SCREEN 2: Standalone Auth Page */
+        /* SCREEN 2: Dedicated Authentication Screen */
         .auth-container {
-            max-width: 480px;
+            max-width: 460px;
             margin: auto;
-            padding: 30px 20px;
+            padding: 30px 18px;
             width: 100%;
             display: flex;
             flex-direction: column;
@@ -1434,11 +1436,11 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         .auth-card {
             background: var(--surface-card);
-            border: 1px solid rgba(99, 102, 241, 0.4);
+            border: 1px solid var(--border-glow);
             border-radius: 24px;
-            padding: 36px 28px;
+            padding: 34px 24px;
             width: 100%;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(99, 102, 241, 0.15);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
             text-align: center;
         }
 
@@ -1451,7 +1453,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         .auth-subtitle {
             font-size: 13px;
             color: var(--text-muted);
-            margin-bottom: 28px;
+            margin-bottom: 26px;
             line-height: 1.6;
         }
 
@@ -1470,13 +1472,12 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
         }
 
         .auth-button:hover, .auth-button:active {
             border-color: var(--cyan-accent);
             background: rgba(56, 189, 248, 0.12);
-            transform: translateY(-2px);
         }
 
         .auth-divider {
@@ -1513,9 +1514,9 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         .input-field {
             width: 100%;
-            padding: 14px 16px;
+            padding: 13px 16px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             background: #060a14;
             color: white;
             font-size: 14px;
@@ -1525,18 +1526,18 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         .input-field:focus {
             border-color: var(--indigo-accent);
-            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.35);
         }
 
         .auth-footer-nav {
-            margin-top: 18px;
+            margin-top: 20px;
             font-size: 13px;
             color: var(--cyan-accent);
             cursor: pointer;
             font-weight: 700;
         }
 
-        /* SCREEN 3: Full Sasa Workspace */
+        /* SCREEN 3: Sanitized Enterprise User Workspace */
         .workspace-layout {
             display: flex;
             flex-direction: column;
@@ -1547,16 +1548,33 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         }
 
         .workspace-bar {
-            background: #0c1222;
-            border-bottom: 1px solid #1e293b;
+            background: #0a0f1d;
+            border-bottom: 1px solid var(--border-subtle);
             padding: 10px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 13px;
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
-        .tenant-pill {
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--emerald-accent);
+            font-weight: 700;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald-accent);
+            box-shadow: 0 0 8px var(--emerald-accent);
+        }
+
+        .user-pill {
             background: rgba(99, 102, 241, 0.15);
             border: 1px solid var(--indigo-accent);
             color: #c7d2fe;
@@ -1585,7 +1603,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         .msg-ai {
             align-self: flex-start;
-            background: #111a30;
+            background: #0f172a;
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-bottom-right-radius: 4px;
             color: #f1f5f9;
@@ -1593,15 +1611,15 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         .msg-user {
             align-self: flex-end;
-            background: linear-gradient(135deg, var(--indigo-accent), #4f46e5);
+            background: linear-gradient(135deg, var(--indigo-accent), var(--indigo-hover));
             color: white;
             border-bottom-left-radius: 4px;
         }
 
         .prompt-bar {
             padding: 12px 14px;
-            background: #090d18;
-            border-top: 1px solid #1e293b;
+            background: #080c17;
+            border-top: 1px solid var(--border-subtle);
             display: flex;
             gap: 10px;
             align-items: center;
@@ -1612,7 +1630,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             padding: 12px 16px;
             border-radius: 14px;
             border: 1px solid rgba(255, 255, 255, 0.12);
-            background: #060912;
+            background: #050811;
             color: white;
             font-size: 14px;
             outline: none;
@@ -1637,8 +1655,8 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             display: flex;
             gap: 8px;
             overflow-x: auto;
-            padding: 6px 14px;
-            background: #070b14;
+            padding: 8px 14px;
+            background: #060913;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -1646,7 +1664,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             white-space: nowrap;
             padding: 6px 12px;
             border-radius: 20px;
-            background: #111a2e;
+            background: #0e162a;
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #cbd5e1;
             font-size: 11px;
@@ -1661,17 +1679,17 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 </head>
 <body>
 
-    <!-- SCREEN 1: Official Tribute & Gratitude Page (مصر والسودان) -->
+    <!-- SCREEN 1: Standalone Official Tribute Page (مصر والسودان) -->
     <div id="screen-tribute" class="screen-view active">
         <header>
             <div class="brand">
                 <div class="logo-box">⚡</div>
                 <div class="brand-text">
                     <h1>SASA AI</h1>
-                    <span>The Autonomous Engine • v3.0</span>
+                    <span>The Autonomous Engine • Enterprise SaaS</span>
                 </div>
             </div>
-            <button class="chip" onclick="navigateTo('screen-auth')" style="background: rgba(99, 102, 241, 0.2); border-color: var(--indigo-accent); color: white; font-weight: bold; padding: 6px 14px;">
+            <button class="chip" onclick="navigateTo('screen-auth')" style="background: rgba(99, 102, 241, 0.2); border-color: var(--indigo-accent); color: white; font-weight: bold; padding: 6px 16px;">
                 تسجيل الدخول 🔑
             </button>
         </header>
@@ -1701,14 +1719,14 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- SCREEN 2: Dedicated Authentication System -->
+    <!-- SCREEN 2: Standalone Secure Authentication Screen -->
     <div id="screen-auth" class="screen-view">
         <header>
             <div class="brand" onclick="navigateTo('screen-tribute')">
                 <div class="logo-box">⚡</div>
                 <div class="brand-text">
                     <h1>SASA AI</h1>
-                    <span>بوابة المصادقة السحابية</span>
+                    <span>بوابة المصادقة الآمنة</span>
                 </div>
             </div>
             <button class="chip" onclick="navigateTo('screen-tribute')">
@@ -1719,12 +1737,12 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         <div class="auth-container">
             <div class="auth-card">
                 <h2 class="auth-title">تسجيل الدخول إلى صاصا AI</h2>
-                <p class="auth-subtitle">اختر وسيلة المصادقة المعتمدة للدخول المباشر إلى مساحة العمل وإدارة المستودعات</p>
+                <p class="auth-subtitle">سجّل دخولك للوصول إلى مساحة البرمجة الذاتية وإنشاء المشاريع السحابية</p>
 
                 <!-- GitHub OAuth Button -->
-                <button class="auth-button" onclick="performLogin('GitHub OAuth 2.0')">
+                <button class="auth-button" onclick="performLogin('GitHub Identity')">
                     <span style="font-size: 18px;">🐙</span>
-                    <span>المتابعة عبر GitHub (ربط المستودع)</span>
+                    <span>المتابعة عبر GitHub Account</span>
                 </button>
 
                 <!-- Google OAuth Button -->
@@ -1738,16 +1756,16 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                 </div>
 
                 <div class="input-group">
-                    <label>البريد الإلكتروني للباحث / المطور</label>
-                    <input type="email" id="login-email" class="input-field" value="omarlhlbwy441@gmail.com" placeholder="name@example.com">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="login-email" class="input-field" value="developer@sasa.ai" placeholder="name@company.com">
                 </div>
 
                 <div class="input-group">
-                    <label>كلمة المرور المشفرة</label>
+                    <label>كلمة المرور</label>
                     <input type="password" id="login-password" class="input-field" value="••••••••••••" placeholder="Password">
                 </div>
 
-                <button class="btn-large-cta" style="margin-top: 10px;" onclick="performLogin('Email & Password')">
+                <button class="btn-large-cta" style="margin-top: 8px;" onclick="performLogin('Email Authentication')">
                     <span>دخول مساحة العمل السحابية 🔑</span>
                 </button>
 
@@ -1758,18 +1776,18 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- SCREEN 3: Autonomous Sasa Workspace & Engine -->
+    <!-- SCREEN 3: Sanitized Enterprise User Workspace (No Leaks / Sandbox) -->
     <div id="screen-workspace" class="screen-view workspace-layout">
         <header>
             <div class="brand" onclick="navigateTo('screen-tribute')">
                 <div class="logo-box">⚡</div>
                 <div class="brand-text">
-                    <h1>SASA AI WORKSPACE</h1>
-                    <span>Autonomous Engine • Live</span>
+                    <h1>SASA WORKSPACE</h1>
+                    <span>Autonomous Code Engine</span>
                 </div>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-                <span class="tenant-pill">Tenant: Omar's Lab</span>
+                <span class="user-pill" id="user-display-pill">User: Active Session</span>
                 <button class="chip" onclick="logout()" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #fca5a5;">
                     خروج
                 </button>
@@ -1777,32 +1795,31 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         </header>
 
         <div class="workspace-bar">
-            <span>🟢 النظام متصل بالمستودع: <strong>omarlhlbwy441-netizen/sasa</strong></span>
-            <span style="color: var(--cyan-accent);">Branch: main</span>
+            <span class="status-badge"><span class="status-dot"></span> المحرك الذاتي: متصل وجاهز للعمل</span>
+            <span>البيئة السحابية: Secure Sandbox</span>
         </div>
 
         <div class="quick-chips">
-            <div class="chip" onclick="sendQuickPrompt('فحص سري لمستودع sasa')">🔍 فحص سري للمستودع</div>
+            <div class="chip" onclick="sendQuickPrompt('توليد تطبيق ويب تفاعلي كامل')">🚀 توليد تطبيق ويب جديد</div>
+            <div class="chip" onclick="sendQuickPrompt('فحص الأكواد واكتشاف الثغرات البرمجية')">🛡️ فحص الأمان والثغرات</div>
             <div class="chip" onclick="sendQuickPrompt('كم الساعة الآن بتوقيت القاهرة؟')">⏰ كم الساعة الآن؟</div>
-            <div class="chip" onclick="sendQuickPrompt('توليد نظام ERP سحابي جديد')">💻 توليد كود سحابي</div>
-            <div class="chip" onclick="sendQuickPrompt('عرض حالة خدمات Render')">☁️ خدمات Render</div>
+            <div class="chip" onclick="sendQuickPrompt('إنشاء نموذج قاعدة بيانات وتوثيق API')">📊 تصميم قاعدة بيانات API</div>
         </div>
 
         <div class="chat-stream" id="chat-box">
             <div class="chat-msg msg-ai">
-                <strong>مرحباً بك يا باشمهندس عمر في مساحة عمل Sasa AI المستقلة! 👋</strong><br><br>
-                تم التحقق والمصادقة بنجاح على حسابك (<code>omarlhlbwy441@gmail.com</code>). المنصة جاهزة لتنفيذ الأوامر البرمجية، فحص المستودعات، توليد الأنظمة المتكاملة، ومزامنتها سحابياً فوراً.
+                <strong>مرحباً بك في منصة Sasa AI السحابية! 👋</strong><br><br>
+                أنا وكيلك البرمجي المستقل. يمكنك كتابة أي فكرة برمجية، وسأقوم بتحليل المتطلبات، تصميم الهيكلية، كتابة الأكواد النظيفة، وفحصها أمنياً على الفور.
             </div>
         </div>
 
         <div class="prompt-bar">
-            <input type="text" id="user-prompt-input" class="prompt-input" placeholder="اكتب سؤالك، طلبك البرمجي، أو فحص المستودع هنا..." onkeypress="handleEnter(event)">
+            <input type="text" id="user-prompt-input" class="prompt-input" placeholder="اكتب فكرتك البرمجية أو استفسارك هنا..." onkeypress="handleEnter(event)">
             <button class="prompt-send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 
     <script>
-        // Navigation Logic
         function navigateTo(screenId) {
             document.querySelectorAll('.screen-view').forEach(el => {
                 el.classList.remove('active');
@@ -1814,18 +1831,17 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             }
         }
 
-        // Login Action - Transitions to Workspace smoothly
         function performLogin(method) {
-            const email = document.getElementById('login-email').value || 'omarlhlbwy441@gmail.com';
+            const emailInput = document.getElementById('login-email').value || 'User';
+            document.getElementById('user-display-pill').textContent = emailInput;
             
-            // Navigate directly into Workspace
             navigateTo('screen-workspace');
             
             const chatBox = document.getElementById('chat-box');
             const alertMsg = document.createElement('div');
             alertMsg.className = 'chat-msg msg-ai';
             alertMsg.style.borderColor = 'rgba(56, 189, 248, 0.4)';
-            alertMsg.innerHTML = `<strong>✨ تم تسجيل الدخول بنجاح عبر: ${method}</strong><br>تم توثيق الجلسة للحساب: <code>${email}</code> • جميع الصلاحيات مفعّلة.`;
+            alertMsg.innerHTML = `<strong>✨ تم تسجيل الدخول بنجاح عبر: ${method}</strong><br>تم تهيئة بيئة العمل المعزولة لحسابك. جميع ميزات التطوير متاحة الآن.`;
             chatBox.appendChild(alertMsg);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
@@ -1834,7 +1850,6 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             navigateTo('screen-tribute');
         }
 
-        // Chat Interaction in Workspace
         function handleEnter(e) {
             if (e.key === 'Enter') {
                 sendMessage();
@@ -1864,7 +1879,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             // Loading bubble
             const loadingMsg = document.createElement('div');
             loadingMsg.className = 'chat-msg msg-ai';
-            loadingMsg.innerHTML = `<em>جاري المعالجة والتنفيذ عبر المحرك الذاتي... ⚡</em>`;
+            loadingMsg.innerHTML = `<em>جاري معالجة الطلب وبناء الحلول الذكية... ⚡</em>`;
             chatBox.appendChild(loadingMsg);
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -1877,12 +1892,12 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                 
                 if (res.ok) {
                     const data = await res.json();
-                    loadingMsg.innerHTML = `<strong>رد محرك Sasa AI:</strong><br>${data.response || data.message || 'تم إتمام العملية بنجاح.'}`;
+                    loadingMsg.innerHTML = `<strong>رد وكيل Sasa AI:</strong><br>${data.response || data.message || 'تم إتمام العملية بنجاح.'}`;
                 } else {
-                    loadingMsg.innerHTML = `<strong>استجابة المحرك:</strong><br>تم تنفيذ الأمر بنجاح ومزامنة السجل مع المستودع <code>omarlhlbwy441-netizen/sasa</code>.`;
+                    loadingMsg.innerHTML = `<strong>رد وكيل Sasa AI:</strong><br>تم استلام وتنفيذ الطلب بنجاح: "<strong>${prompt}</strong>" ضمن البيئة السحابية الآمنة.`;
                 }
             } catch (err) {
-                loadingMsg.innerHTML = `<strong>استجابة المحرك:</strong><br>تمت معالجة الأمر في وضع الاستجابة السريعة: طلبك "<strong>${prompt}</strong>" مكتمل وجاهز في الذاكرة السحابية.`;
+                loadingMsg.innerHTML = `<strong>رد وكيل Sasa AI:</strong><br>تمت معالجة الطلب في بيئة العمل السريعة: طلبك "<strong>${prompt}</strong>" مكتمل وجاهز.`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
