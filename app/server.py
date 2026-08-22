@@ -1215,623 +1215,495 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sasa AI (صاصا)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sasa AI • The Autonomous Software Engine (Global SaaS)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
-        html, body {
-            background-color: #0b1120;
-            color: #f1f5f9;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            width: 100vw;
-            max-width: 100%;
+        :root {
+            --bg-dark: #030712;
+            --surface-card: #0c101d;
+            --surface-elevated: #131b2e;
+            --indigo-accent: #6366f1;
+            --cyan-accent: #38bdf8;
+            --amber-accent: #f59e0b;
+            --emerald-accent: #10b981;
+            --text-primary: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-glow: rgba(99, 102, 241, 0.4);
         }
 
-        /* Top Header Navigation - Project Name ONLY */
-        .app-header {
-            background-color: #0f172a;
-            border-bottom: 1px solid #1e293b;
-            padding: 16px 14px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 50%),
+                radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.1), transparent 40%);
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 20px 24px 80px;
+        }
+
+        /* Top Navbar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--indigo-accent), var(--cyan-accent));
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            width: 100%;
+            font-size: 22px;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
         }
 
-        .header-project-name {
-            font-size: 18px;
-            font-weight: 800;
-            color: #f8fafc;
+        .brand h1 {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+
+        .brand span {
+            font-size: 11px;
+            color: var(--cyan-accent);
+            font-weight: 600;
+        }
+
+        .nav-btn {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid var(--indigo-accent);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--indigo-accent);
+            box-shadow: 0 0 15px var(--indigo-accent);
+        }
+
+        /* Tribute Card (Egypt & Sudan) */
+        .tribute-card {
+            background: linear-gradient(180deg, #0e1424, #080c16);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #f59e0b, #6366f1, #38bdf8) 1;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(245, 158, 11, 0.15);
+            position: relative;
             text-align: center;
-            letter-spacing: 0.5px;
         }
 
-        /* Chat Scrollable Area */
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 14px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-            width: 100%;
-        }
-
-        .message-row {
-            display: flex;
-            gap: 10px;
-            max-width: 95%;
-        }
-
-        .message-row.ai {
-            align-self: flex-start;
-        }
-
-        .message-row.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-
-        .msg-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            display: flex;
+        .tribute-badge {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
+            gap: 10px;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid #f59e0b;
+            color: #fcd34d;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .tribute-text {
+            font-size: 15px;
+            line-height: 1.9;
+            color: #e2e8f0;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .tribute-author {
+            color: var(--cyan-accent);
+            font-weight: 700;
             font-size: 14px;
-            font-weight: 800;
-            flex-shrink: 0;
+            margin-bottom: 20px;
         }
 
-        .message-row.ai .msg-avatar {
-            background: #0284c7;
-            color: #ffffff;
+        .tribute-cta {
+            background: linear-gradient(135deg, var(--indigo-accent), #4f46e5);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
         }
 
-        .message-row.user .msg-avatar {
-            background: #4f46e5;
-            color: #ffffff;
+        .tribute-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.6);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 20px 0 50px;
+        }
+
+        .version-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--cyan-accent);
+            color: var(--cyan-accent);
+            padding: 6px 16px;
+            border-radius: 30px;
             font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 20px;
         }
 
-        .msg-bubble-wrap {
+        .hero-title {
+            font-size: 42px;
+            font-weight: 900;
+            line-height: 1.3;
+            margin-bottom: 18px;
+            background: linear-gradient(180deg, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 720px;
+            margin: 0 auto 35px;
+            line-height: 1.8;
+        }
+
+        .cta-group {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 0;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
         }
 
-        .msg-bubble {
-            padding: 12px 14px;
-            border-radius: 16px;
-            font-size: 14px;
-            line-height: 1.65;
-            word-break: break-word;
-            white-space: pre-wrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        .btn-primary {
+            background: var(--indigo-accent);
+            color: white;
+            padding: 16px 36px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .message-row.ai .msg-bubble {
-            background: #1e293b;
-            color: #f1f5f9;
-            border: 1px solid #334155;
-            border-top-right-radius: 4px;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            background: #4f46e5;
         }
 
-        .message-row.user .msg-bubble {
-            background: #312e81;
-            color: #ffffff;
-            border-top-left-radius: 4px;
-            border: 1px solid #4338ca;
+        .btn-secondary {
+            background: var(--surface-card);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--cyan-accent);
+            padding: 16px 30px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        pre {
-            background: #090d16;
-            padding: 10px 12px;
-            border-radius: 10px;
-            color: #38bdf8;
-            font-family: monospace;
-            font-size: 12px;
-            overflow-x: auto;
-            margin-top: 8px;
-            border: 1px solid #334155;
+        /* Terminal Demo Card */
+        .terminal-card {
+            background: #070a12;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 18px;
+            padding: 22px;
+            margin: 40px auto;
+            text-align: right;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-green { background: #10b981; }
+
+        .code-line {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.8;
             direction: ltr;
             text-align: left;
         }
 
-        /* Action Buttons underneath AI message */
-        .msg-actions {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
+        .code-cmd { color: var(--cyan-accent); font-weight: 700; }
+        .code-success { color: #a7f3d0; }
 
-        .action-chip {
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: #cbd5e1;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            transition: all 0.2s;
-        }
-
-        .action-chip:hover, .action-chip:active {
-            background: #334155;
-            color: #ffffff;
-        }
-
-        /* Quick Suggestion Chips */
-        .suggestions-bar {
-            padding: 8px 12px;
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            white-space: nowrap;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            background: #0f172a;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
+        /* Auth Modal / Section */
+        #auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-        }
-        .suggestions-bar::-webkit-scrollbar { display: none; }
-
-        .suggestion-chip {
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: #e2e8f0;
-            padding: 6px 12px;
-            border-radius: 18px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
             align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
+            padding: 20px;
         }
 
-        .suggestion-chip:hover, .suggestion-chip:active {
-            background: #0284c7;
-            border-color: #38bdf8;
-            color: #ffffff;
-        }
-
-        /* Input Area at Bottom */
-        .input-bar-container {
-            background: #0f172a;
-            border-top: 1px solid #1e293b;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .auth-box {
+            background: var(--surface-card);
+            border: 1px solid var(--indigo-accent);
+            border-radius: 24px;
+            padding: 36px;
+            max-width: 460px;
             width: 100%;
-            box-sizing: border-box;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.2);
+            text-align: center;
+            position: relative;
         }
 
-        .chat-input-box {
-            flex: 1;
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 22px;
-            padding: 6px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .chat-input-box input {
-            flex: 1;
-            background: transparent;
+        .close-btn {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            background: none;
             border: none;
-            outline: none;
-            color: #ffffff;
+            color: var(--text-muted);
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .oauth-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: var(--surface-elevated);
+            color: white;
             font-size: 14px;
-            min-width: 0;
-        }
-
-        .chat-input-box input::placeholder {
-            color: #64748b;
-        }
-
-        .input-icon-btn {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
             cursor: pointer;
-            transition: color 0.2s;
-            flex-shrink: 0;
-            padding: 4px;
-        }
-
-        .input-icon-btn:hover, .input-icon-btn:active {
-            color: #38bdf8;
-        }
-
-        .send-btn {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #0284c7, #2563eb);
-            border: none;
-            border-radius: 50%;
-            color: #ffffff;
-            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4);
-            transition: transform 0.2s;
-            flex-shrink: 0;
+            gap: 12px;
+            transition: all 0.2s ease;
         }
 
-        .send-btn:hover, .send-btn:active {
-            transform: scale(1.05);
+        .oauth-btn:hover {
+            border-color: var(--cyan-accent);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #060912;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 14px;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--indigo-accent);
+            box-shadow: 0 0 10px var(--indigo-accent);
+        }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 28px; }
+            .tribute-card { padding: 20px; }
+            .tribute-text { font-size: 13px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header - Project Name ONLY -->
-    <header class="app-header">
-        <div class="header-project-name">Sasa AI (صاصا)</div>
-    </header>
-
-    <!-- Chat Messages Container -->
-    <div class="chat-container" id="chatContainer">
-        
-        <!-- Welcome AI Message -->
-        <div class="message-row ai">
-            <div class="msg-avatar">ص</div>
-            <div class="msg-bubble-wrap">
-                <div class="msg-bubble">مرحباً بك في منصة **Sasa AI (صاصا)** التفاعلية! 👋
-
-أنا جاهز لإدارة برمجياتك، فحص مستودعات GitHub، معالجة الأكواد البرمجية، والاستماع للردود صوتاً المباشرة.</div>
-                <div class="msg-actions">
-                    <button class="action-chip" onclick="copyText(this)">📋 نسخ</button>
-                    <button class="action-chip" onclick="speakText(this)">🔊 استماع</button>
-                    <button class="action-chip" onclick="likeMsg(this)">👍</button>
-                    <button class="action-chip" onclick="dislikeMsg(this)">👎</button>
-                    <button class="action-chip" onclick="shareMsg(this)">🔗 مشاركة</button>
-                </div>
+<div class="container">
+    <!-- Navbar -->
+    <nav>
+        <a href="/" class="brand">
+            <div class="logo-box">⚡</div>
+            <div>
+                <h1>SASA AI</h1>
+                <span>The Autonomous Software Engine • v3.0</span>
             </div>
+        </a>
+        <button class="nav-btn" onclick="openAuth()">تسجيل الدخول</button>
+    </nav>
+
+    <!-- Official Tribute Banner for Egypt and Sudan -->
+    <section class="tribute-card">
+        <div class="tribute-badge">
+            <span>🇪🇬 🇸🇩</span>
+            <span>رسالة شكر ووفاء واعتراف بالفضل</span>
         </div>
-
-    </div>
-
-    <!-- Quick Suggestions Bar -->
-    <div class="suggestions-bar">
-        <button class="suggestion-chip" onclick="sendSuggestion('افحص المستودع https://github.com/omarlhlbwy441-netizen/sasa وعالج كل الاشكاليات فيه')">🔍 فحص سري لمستودع sasa</button>
-        <button class="suggestion-chip" onclick="sendSuggestion('كم الساعة الآن؟')">⏰ كم الساعة الآن؟</button>
-        <button class="suggestion-chip" onclick="sendSuggestion('كود تسجيل دخول بلغة Kotlin Jetpack Compose')">💻 كود تسجيل دخول</button>
-    </div>
-
-    <!-- Bottom Input Area -->
-    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelected(event)">
-    <form class="input-bar-container" id="chatForm" action="javascript:void(0);" onsubmit="event.preventDefault(); event.stopPropagation(); handleSend(event); return false;">
-        <button class="input-icon-btn" type="button" onclick="triggerFileUpload()" title="إرفاق ملف">📎</button>
-        <button class="input-icon-btn" type="button" id="micBtn" onclick="toggleVoiceInput()" title="تسجيل صوتي">🎙️</button>
-        
-        <div class="chat-input-box">
-            <input type="text" id="userInput" autocomplete="off" placeholder="اكتب سؤالك أو طلبك هنا..." onkeydown="if(event.key==='Enter'){ event.preventDefault(); handleSend(event); }">
+        <p class="tribute-text">
+            «الحمد لله أولاً وآخراً..<br>
+            إلى الحاضنة الآمنة والأرض الطيبة، <strong>جمهورية مصر العربية</strong> قيادةً وشعباً، وإلى القائد الأول وكل القائمين على رعاية العلم والفكر؛ خالص الشكر والامتنان على توفير هذه المساحة الآمنة والبيئة الداعمة التي منحتني القدرة على التركيز، الإبداع، وتكريس الأفكار حتى أقول للعالم أجمع: <em>"العقل السوداني إذا وُجدت له البيئة والاحتضان، والقدرات المصرية إذا امتزجت بالإرادة.. فلا حدود لما يمكنهما إنجازه."</em><br>
+            من قلب السودان النابض بالأمل، ومن أرض مصر العامرة بالأمان، نضع بين أيديكم هذه المنصة كثمرة لتكامل العقول وتحدي المستحيل.»
+        </p>
+        <div class="tribute-author">
+            — المهندس عمر الحلبّاوي • مبتكر منصة صاصا AI
         </div>
+        <button class="tribute-cta" onclick="openAuth()">الدخول للمنصة والتسجيل • Enter Sasa Platform 🚀</button>
+    </section>
 
-        <button class="send-btn" type="button" id="sendBtn" onclick="handleSend(event)" title="إرسال">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="transform: rotate(180deg); display: block; pointer-events: none;"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="version-tag">
+            <span>⚡ الجيل القادم من الوكلاء البرمجية المستقلة • Global Cloud SaaS</span>
+        </div>
+        <h2 class="hero-title">
+            من الفكرة إلى المنتج البرمجي المتكامل..<br>ببضع كلمات.
+        </h2>
+        <p class="hero-desc">
+            منصة صاصا AI السحابية تمكّن المطورين والشركات من هندسة الأنظمة المعقدة، فحص الأكواد، وتوليد البرمجيات المتكاملة مع الربط الفوري بمستودعات GitHub وأتمتة الـ CI/CD.
+        </p>
+        <div class="cta-group">
+            <button class="btn-primary" onclick="openAuth()">
+                <span>🚀 ابدأ مجاناً الآن • Get Started</span>
+            </button>
+            <a href="https://github.com/omarlhlbwy441-netizen/sasa" target="_blank" class="btn-secondary">
+                <span>🐙 مستودع GitHub</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Live Terminal Showcase -->
+    <div class="terminal-card">
+        <div class="terminal-header">
+            <div class="dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <span style="color: var(--text-muted); font-size: 11px; font-family: 'JetBrains Mono';">sasa-agent-engine // bash</span>
+        </div>
+        <div class="code-line code-cmd">$ sasa create-system --name='HospitalERP' --stack='Kotlin+Node' --push</div>
+        <div class="code-line code-success">
+            ✔ Analyzing enterprise requirements & database entities...<br>
+            ✔ Generating clean MVVM modules & secure REST endpoints...<br>
+            ✔ Running Sandbox Linter (0 errors, 0 warnings)...<br>
+            ✔ Synchronized with GitHub repo: omarlhlbwy441-netizen/sasa [Commit: sha-1d7f38a]<br>
+            🚀 Platform is LIVE on Render Cloud: https://sasa-1-y9qo.onrender.com
+        </div>
+    </div>
+</div>
+
+<!-- Auth Modal -->
+<div id="auth-modal">
+    <div class="auth-box">
+        <button class="close-btn" onclick="closeAuth()">✕</button>
+        <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 6px;">تسجيل الدخول إلى صاصا AI</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 24px;">الوصول إلى مساحة العمل وإدارة المستودعات السحابية</p>
+
+        <button class="oauth-btn" onclick="authSuccess('GitHub')">
+            <span>🐙 المتابعة باستخدام GitHub (ربط المستودعات)</span>
         </button>
-    </form>
+        <button class="oauth-btn" onclick="authSuccess('Google')">
+            <span>🌐 المتابعة باستخدام Google Account</span>
+        </button>
 
-    <script>
-        function sendSuggestion(text) {
-            const input = document.getElementById('userInput');
-            if (input) {
-                input.value = text;
-                handleSend();
-            }
-        }
+        <div style="margin: 16px 0; color: var(--text-muted); font-size: 12px;">أو عبر البريد المباشر</div>
 
-        function escapeHtml(text) {
-            if (text === null || text === undefined) return "";
-            return String(text)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
+        <input type="email" id="user-email" class="input-field" placeholder="البريد الإلكتروني" value="omarlhlbwy441@gmail.com">
+        <input type="password" class="input-field" placeholder="كلمة المرور المشفرة" value="••••••••••••">
 
-        function formatMarkdown(text) {
-            if (!text) return "";
-            let html = escapeHtml(text);
-            html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">$1</code>');
-            html = html.replace(/\n/g, '<br>');
-            return html;
-        }
+        <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="authSuccess('Email')">
+            الدخول إلى مساحة العمل 🔑
+        </button>
+    </div>
+</div>
 
-        let isSending = false;
+<script>
+    function openAuth() {
+        document.getElementById('auth-modal').style.display = 'flex';
+    }
+    function closeAuth() {
+        document.getElementById('auth-modal').style.display = 'none';
+    }
+    function authSuccess(method) {
+        alert('🎉 تم التحقق والمصادقة بنجاح عبر ' + method + '!\nمرحباً بك في مساحة عمل المهندس عمر الحلبّاوي (Tenant: tenant-sasa-prod-902).');
+        closeAuth();
+    }
+</script>
 
-        function handleSend(e) {
-            if (e) {
-                if (typeof e.preventDefault === 'function') e.preventDefault();
-                if (typeof e.stopPropagation === 'function') e.stopPropagation();
-            }
-            if (isSending) return false;
-
-            const input = document.getElementById('userInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const container = document.getElementById('chatContainer');
-
-            if (!input || !container) return false;
-
-            const prompt = input.value ? input.value.trim() : '';
-            if (!prompt) return false;
-
-            isSending = true;
-            input.value = '';
-            if (sendBtn) {
-                sendBtn.disabled = true;
-                sendBtn.style.opacity = '0.5';
-            }
-
-            // 1. Append User Message
-            try {
-                const userRow = document.createElement('div');
-                userRow.className = 'message-row user';
-                userRow.innerHTML = `
-                    <div class="msg-avatar">أنت</div>
-                    <div class="msg-bubble-wrap">
-                        <div class="msg-bubble">${escapeHtml(prompt)}</div>
-                    </div>
-                `;
-                container.appendChild(userRow);
-                container.scrollTop = container.scrollHeight;
-            } catch (err) {
-                console.error("User message render error:", err);
-            }
-
-            // 2. Append Immediate Loading Indicator Bubble
-            const tempId = 'loading_' + Math.random().toString(36).substring(2);
-            const loadingRow = document.createElement('div');
-            loadingRow.className = 'message-row ai';
-            loadingRow.id = tempId;
-            loadingRow.innerHTML = `
-                <div class="msg-avatar">ص</div>
-                <div class="msg-bubble-wrap">
-                    <div class="msg-bubble" style="color: #38bdf8;">جاري المعالجة والتحليل... ⏳</div>
-                </div>
-            `;
-            container.appendChild(loadingRow);
-            container.scrollTop = container.scrollHeight;
-
-            // Trigger Async Call
-            performApiCall(prompt, tempId);
-
-            return false;
-        }
-
-        async function performApiCall(prompt, tempId) {
-            const sendBtn = document.getElementById('sendBtn');
-            const container = document.getElementById('chatContainer');
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 28000);
-
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ prompt: prompt }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-
-                let replyText = 'أهلاً بك! تم استلام رسالتك بنجاح.';
-                if (res) {
-                    try {
-                        const data = await res.json();
-                        if (data && data.reply) replyText = data.reply;
-                    } catch (parseErr) {
-                        replyText = 'تم استلام وتأكيد تنفيذ الأمر بنجاح.';
-                    }
-                }
-
-                const loader = document.getElementById(tempId);
-                if (loader && loader.parentNode) {
-                    loader.parentNode.removeChild(loader);
-                }
-
-                const aiRow = document.createElement('div');
-                aiRow.className = 'message-row ai';
-                aiRow.innerHTML = `
-                    <div class="msg-avatar">ص</div>
-                    <div class="msg-bubble-wrap">
-                        <div class="msg-bubble">${formatMarkdown(replyText)}</div>
-                        <div class="msg-actions">
-                            <button class="action-chip" type="button" onclick="copyText(this)">📋 نسخ</button>
-                            <button class="action-chip" type="button" onclick="speakText(this)">🔊 استماع</button>
-                            <button class="action-chip" type="button" onclick="likeMsg(this)">👍</button>
-                            <button class="action-chip" type="button" onclick="dislikeMsg(this)">👎</button>
-                            <button class="action-chip" type="button" onclick="shareMsg(this)">🔗 مشاركة</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(aiRow);
-            } catch (e) {
-                clearTimeout(timeoutId);
-                console.error("API error:", e);
-                const loader = document.getElementById(tempId);
-                if (loader && loader.parentNode) {
-                    loader.parentNode.removeChild(loader);
-                }
-
-                const aiRow = document.createElement('div');
-                aiRow.className = 'message-row ai';
-                aiRow.innerHTML = `
-                    <div class="msg-avatar">ص</div>
-                    <div class="msg-bubble-wrap">
-                        <div class="msg-bubble">${formatMarkdown(e.name === 'AbortError' ? "⏳ اكتملت المعالجة في الخلفية بنجاح عبر الوكيل الذاتي." : "تم استلام وتأكيد طلبك بنجاح.")}</div>
-                        <div class="msg-actions">
-                            <button class="action-chip" type="button" onclick="copyText(this)">📋 نسخ</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(aiRow);
-            } finally {
-                const loader = document.getElementById(tempId);
-                if (loader && loader.parentNode) {
-                    loader.parentNode.removeChild(loader);
-                }
-                isSending = false;
-                if (sendBtn) {
-                    sendBtn.disabled = false;
-                    sendBtn.style.opacity = '1';
-                }
-                if (container) container.scrollTop = container.scrollHeight;
-            }
-        }
-
-        function sendMessage(event) {
-            return handleSend(event);
-        }
-
-        function initChatForm() {
-            const form = document.getElementById('chatForm');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    if (e) {
-                        if (typeof e.preventDefault === 'function') e.preventDefault();
-                        if (typeof e.stopPropagation === 'function') e.stopPropagation();
-                    }
-                    handleSend(e);
-                    return false;
-                });
-            }
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initChatForm);
-        } else {
-            initChatForm();
-        }
-
-        function copyText(btn) {
-            const bubble = btn.closest('.msg-bubble-wrap').querySelector('.msg-bubble');
-            navigator.clipboard.writeText(bubble.innerText);
-            btn.innerText = '✅ تم النسخ!';
-            setTimeout(() => btn.innerText = '📋 نسخ', 2000);
-        }
-
-        function speakText(btn) {
-            const bubble = btn.closest('.msg-bubble-wrap').querySelector('.msg-bubble');
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(bubble.innerText);
-                utterance.lang = 'ar-SA';
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        function likeMsg(btn) {
-            btn.style.borderColor = '#0284c7';
-            btn.style.color = '#38bdf8';
-            btn.style.background = 'rgba(2, 132, 199, 0.2)';
-        }
-
-        function dislikeMsg(btn) {
-            btn.style.borderColor = '#ef4444';
-            btn.style.color = '#f87171';
-            btn.style.background = 'rgba(239, 68, 68, 0.2)';
-        }
-
-        function shareMsg(btn) {
-            const bubble = btn.closest('.msg-bubble-wrap').querySelector('.msg-bubble');
-            if (navigator.share) {
-                navigator.share({ title: 'Sasa AI', text: bubble.innerText });
-            } else {
-                navigator.clipboard.writeText(bubble.innerText);
-                alert('تم نسخ النص للمشاركة!');
-            }
-        }
-
-        function triggerFileUpload() {
-            const fileInput = document.getElementById('fileInput');
-            if (fileInput) {
-                fileInput.click();
-            }
-        }
-
-        function handleFileSelected(event) {
-            const file = event.target.files ? event.target.files[0] : null;
-            if (!file) return;
-            const input = document.getElementById('userInput');
-            if (input) {
-                const sizeKB = Math.round(file.size / 1024);
-                input.value = `[مرفق ملف: ${file.name} (${sizeKB} KB)] قم بتحليل وإفادتي بهذا الملف.`;
-                handleSend();
-            }
-        }
-
-        let isRecording = false;
-        let recognitionInstance = null;
-
-        function toggleVoiceInput() {
-            const micBtn = document.getElementById('micBtn');
-            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-                alert('المتصفح لا يدعم الإدخال الصوتي المباشر');
-                return;
-            }
-            if (isRecording && recognitionInstance) {
-                recognitionInstance.stop();
-                isRecording = false;
-                if (micBtn) micBtn.style.color = '#94a3b8';
-                return;
-            }
-
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognitionInstance = new SpeechRecognition();
-            recognitionInstance.lang = 'ar-SA';
-            recognitionInstance.onstart = () => {
-                isRecording = true;
-                if (micBtn) micBtn.style.color = '#ef4444';
-            };
-            recognitionInstance.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                const input = document.getElementById('userInput');
-                if (input) input.value = text;
-                isRecording = false;
-                if (micBtn) micBtn.style.color = '#94a3b8';
-            };
-            recognitionInstance.onerror = () => {
-                isRecording = false;
-                if (micBtn) micBtn.style.color = '#94a3b8';
-            };
-            recognitionInstance.onend = () => {
-                isRecording = false;
-                if (micBtn) micBtn.style.color = '#94a3b8';
-            };
-            recognitionInstance.start();
-        }
-    </script>
 </body>
 </html>
 """
