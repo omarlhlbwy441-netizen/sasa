@@ -1,4 +1,15 @@
 
+try:
+    from app.integrations.universal_cloud import UniversalCloudClient, GIT_PROVIDERS, HOSTING_PROVIDERS
+except ImportError:
+    try:
+        from integrations.universal_cloud import UniversalCloudClient, GIT_PROVIDERS, HOSTING_PROVIDERS
+    except ImportError:
+        UniversalCloudClient = None
+        GIT_PROVIDERS = {}
+        HOSTING_PROVIDERS = {}
+
+
 # Import Game Engine & 64-Agent Swarm Modules
 try:
     from app.engine.game_engine import game_engine_instance
@@ -971,6 +982,45 @@ GEMINI_FUNCTION_DECLARATIONS = [
     }
 ]
 
+
+
+def tool_universal_create_repo(platform: str, repo_name: str, token: str = "", is_private: bool = False, description: str = "", custom_api_url: str = "") -> Dict[str, Any]:
+    if not UniversalCloudClient:
+        return {"success": False, "error": "Universal Cloud Client not available"}
+    eff_token = token or os.environ.get(f"{platform.upper()}_TOKEN", "") or (DEFAULT_GITHUB_TOKEN if platform.lower() == "github" else "")
+    return UniversalCloudClient.create_repository(
+        platform=platform,
+        repo_name=repo_name,
+        token=eff_token,
+        is_private=is_private,
+        description=description or f"Autonomous repo '{repo_name}' initialized by Neama AI Universal Engine",
+        custom_api_url=custom_api_url or None
+    )
+
+def tool_universal_deploy_hosting(provider: str, service_name: str, token: str = "", repo_url: str = "", branch: str = "main", env_vars: Dict[str, str] = None, service_type: str = "web_service", custom_endpoint: str = "") -> Dict[str, Any]:
+    if not UniversalCloudClient:
+        return {"success": False, "error": "Universal Cloud Client not available"}
+    eff_token = token or os.environ.get(f"{provider.upper()}_API_KEY", "") or os.environ.get(f"{provider.upper()}_TOKEN", "")
+    return UniversalCloudClient.deploy_or_create_hosting(
+        provider=provider,
+        service_name=service_name,
+        token=eff_token,
+        repo_url=repo_url,
+        branch=branch,
+        env_vars=env_vars,
+        service_type=service_type,
+        custom_endpoint=custom_endpoint or None
+    )
+
+def tool_universal_monitor_service(url: str) -> Dict[str, Any]:
+    if not UniversalCloudClient:
+        return {"success": False, "error": "Universal Cloud Client not available"}
+    return UniversalCloudClient.monitor_live_service(url)
+
+def tool_universal_get_ecosystem() -> Dict[str, Any]:
+    if not UniversalCloudClient:
+        return {"success": False, "error": "Universal Cloud Client not available"}
+    return UniversalCloudClient.get_supported_ecosystem()
 
 def tool_game_engine_inspect(**kwargs) -> Dict[str, Any]:
     if game_engine_instance:
@@ -2498,6 +2548,11 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     <span>محرك الألعاب</span>
                     <span class="tenant-plan-tag" style="background: linear-gradient(135deg, #db2777, #ec4899); color: #fff;">60 FPS</span>
                 </button>
+                <button class="tenant-chip" onclick="playSound('click'); openCloudModal()" title="الاستضافات والمستودعات الشاملة" style="background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35); color: #fbbf24;">
+                    <span>🌐</span>
+                    <span>المستودعات والاستضافات</span>
+                    <span class="tenant-plan-tag" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff;">Universal</span>
+                </button>
             </div>
 
             <!-- Left Group in RTL: 3-Dots Menu -->
@@ -3416,6 +3471,99 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
 </script>
 
+    
+    <!-- Universal Cloud & Multi-Platform Hosting Modal -->
+    <div id="universal-cloud-modal" class="saas-modal-backdrop" onclick="if(event.target===this) closeCloudModal()">
+        <div class="saas-modal-card" style="max-width: 840px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 24px;">🌐</span>
+                    <div>
+                        <h2 style="font-size: 17px; font-weight: 800; color: #fff; margin: 0;">مركز الاستضافات والمستودعات الشامل (Universal Cloud Orchestrator)</h2>
+                        <span style="font-size: 11px; color: #fbbf24;">إنشاء ومتابعة مستودعات واستضافات عبر جميع المنصات العالمية بدون قيود</span>
+                    </div>
+                </div>
+                <button onclick="closeCloudModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">✕</button>
+            </div>
+
+            <!-- Ecosystem Grid Badges -->
+            <div style="background: rgba(14, 22, 38, 0.85); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 12px; margin-bottom: 14px;">
+                <div style="font-size: 11.5px; font-weight: 700; color: #fbbf24; margin-bottom: 8px;">🚀 المنصات المدعومة عالمياً (Universal Compatibility):</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 11px;">
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">🐙 GitHub</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">🦊 GitLab</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">🪣 Bitbucket</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">☕ Codeberg / Gitea</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">☁️ Render</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">▲ Vercel</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">🔷 Netlify</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">🚂 Railway</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">🎈 Fly.io</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">🌊 DigitalOcean</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">⚡ Koyeb</span>
+                    <span style="background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);">🔌 Webhooks / REST APIs</span>
+                </div>
+            </div>
+
+            <!-- Operations Tabs -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <!-- 1. Create Repository Panel -->
+                <div style="background: rgba(14, 22, 38, 0.7); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                        <span>📦</span> <span>إنشاء مستودع جديد فوراً</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <select id="modal-repo-platform" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 7px; border-radius: 6px; font-family: 'Cairo'; font-size: 11.5px;">
+                            <option value="github">GitHub</option>
+                            <option value="gitlab">GitLab</option>
+                            <option value="bitbucket">Bitbucket</option>
+                            <option value="codeberg">Codeberg / Gitea</option>
+                        </select>
+                        <input id="modal-repo-name" type="text" placeholder="اسم المستودع (e.g. my-awesome-app)" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 7px; border-radius: 6px; font-family: 'Cairo'; font-size: 11.5px;">
+                        <input id="modal-repo-token" type="password" placeholder="التوكن (اتركه فارغاً لاستخدام التوكن الافتراضي)" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 7px; border-radius: 6px; font-family: 'Cairo'; font-size: 11.5px;">
+                        <button onclick="executeModalCreateRepo()" style="padding: 8px; background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #7dd3fc; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">🚀 إنشاء المستودع الآن</button>
+                    </div>
+                </div>
+
+                <!-- 2. Deploy Cloud Hosting Panel -->
+                <div style="background: rgba(14, 22, 38, 0.7); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                        <span>☁️</span> <span>إطلاق استضافة سحابية جديدة</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <select id="modal-host-provider" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 7px; border-radius: 6px; font-family: 'Cairo'; font-size: 11.5px;">
+                            <option value="render">Render Cloud</option>
+                            <option value="vercel">Vercel</option>
+                            <option value="netlify">Netlify</option>
+                            <option value="railway">Railway.app</option>
+                            <option value="generic_webhook">Custom Webhook / CI-CD</option>
+                        </select>
+                        <input id="modal-host-name" type="text" placeholder="اسم الخدمة / التطبيق" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 7px; border-radius: 6px; font-family: 'Cairo'; font-size: 11.5px;">
+                        <input id="modal-host-repo" type="text" placeholder="رابط المستودع (GitHub/GitLab Repo URL)" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 7px; border-radius: 6px; font-family: 'Cairo'; font-size: 11.5px;">
+                        <button onclick="executeModalDeployHost()" style="padding: 8px; background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">⚡ إطلاق الاستضافة السحابية</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Universal Live Monitoring Panel -->
+            <div style="background: rgba(14, 22, 38, 0.7); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; margin-bottom: 12px;">
+                <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span>📡</span> <span>مراقبة وفحص أي موقع أو استضافة حية في العالم (Global Health Ping)</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input id="modal-monitor-url" type="text" placeholder="https://example.com أو رابط استضافتك" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 8px 12px; border-radius: 6px; font-family: 'Cairo'; font-size: 12px;">
+                    <button onclick="executeModalMonitorUrl()" style="padding: 8px 16px; background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #86efac; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">فحص الاستجابة</button>
+                </div>
+                <div id="modal-monitor-result" style="margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; display: none;"></div>
+            </div>
+
+            <!-- Modal Close -->
+            <div style="display: flex; justify-content: flex-end;">
+                <button onclick="closeCloudModal()" style="padding: 8px 18px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #94a3b8; border-radius: 8px; font-size: 12px; cursor: pointer;">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 64-Agent Swarm Intelligence Modal -->
     <div id="swarm-agents-modal" class="saas-modal-backdrop" onclick="if(event.target===this) closeSwarmModal()">
         <div class="saas-modal-card" style="max-width: 820px;">
@@ -3844,6 +3992,24 @@ if USE_FASTAPI:
 
 
 
+
+    # ── Universal Git & Cloud Hosting Endpoints ──
+    @app.get("/api/cloud/ecosystem")
+    async def cloud_ecosystem_endpoint():
+        return tool_universal_get_ecosystem()
+
+    @app.post("/api/cloud/repo/create")
+    async def cloud_repo_create_endpoint(req: Dict[str, Any]):
+        return tool_universal_create_repo(**req)
+
+    @app.post("/api/cloud/hosting/deploy")
+    async def cloud_hosting_deploy_endpoint(req: Dict[str, Any]):
+        return tool_universal_deploy_hosting(**req)
+
+    @app.get("/api/cloud/monitor")
+    async def cloud_monitor_endpoint(url: str):
+        return tool_universal_monitor_service(url)
+
     # ── Swarm & Game Engine Endpoints ──
     @app.get("/api/swarm/agents")
     async def swarm_agents_endpoint():
@@ -4048,6 +4214,26 @@ elif USE_FLASK:
         return jsonify(trigger_render_deploy(s_id, tk))
 
 
+
+
+    @app.route("/api/cloud/ecosystem", methods=["GET"])
+    def cloud_ecosystem_flask():
+        return jsonify(tool_universal_get_ecosystem())
+
+    @app.route("/api/cloud/repo/create", methods=["POST"])
+    def cloud_repo_create_flask():
+        data = request.get_json(silent=True) or {}
+        return jsonify(tool_universal_create_repo(**data))
+
+    @app.route("/api/cloud/hosting/deploy", methods=["POST"])
+    def cloud_hosting_deploy_flask():
+        data = request.get_json(silent=True) or {}
+        return jsonify(tool_universal_deploy_hosting(**data))
+
+    @app.route("/api/cloud/monitor", methods=["GET"])
+    def cloud_monitor_flask():
+        target_url = request.args.get("url", "")
+        return jsonify(tool_universal_monitor_service(target_url))
 
     @app.route("/api/swarm/agents", methods=["GET"])
     def swarm_agents_flask():
