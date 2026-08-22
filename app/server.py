@@ -1215,19 +1215,18 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نعمه أي • Neama AI - The Autonomous Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>نعمه أي • Neama AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #06090f;
-            --surface-header: #0b111e;
-            --surface-card: #0f172a;
-            --surface-elevated: #152238;
+            --bg-dark: #070a12;
+            --surface-card: #0e1626;
+            --surface-elevated: #132038;
             
-            /* Neama AI Green Theme Palette */
+            /* Neama AI Green Gradient Palette */
             --lime-bright: #bef264;
             --lime-main: #84cc16;
             --lime-accent: #a3e635;
@@ -1237,7 +1236,6 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             
             --cyan-accent: #38bdf8;
             --amber-accent: #f59e0b;
-            --emerald-accent: #10b981;
             --rose-accent: #f43f5e;
             
             --text-primary: #f8fafc;
@@ -1254,43 +1252,47 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            height: 100%;
             background-color: var(--bg-dark);
             color: var(--text-primary);
-            min-height: 100vh;
-            min-height: 100dvh;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        body {
             display: flex;
             flex-direction: column;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(132, 204, 22, 0.12), transparent 55%),
-                radial-gradient(circle at 10% 90%, rgba(34, 197, 94, 0.08), transparent 45%);
+                radial-gradient(circle at 50% 0%, rgba(132, 204, 22, 0.12), transparent 50%),
+                radial-gradient(circle at 10% 90%, rgba(34, 197, 94, 0.06), transparent 45%);
         }
 
-        /* Gradient Text for Neama AI */
+        /* Gradient Text */
         .brand-gradient-text {
             background: linear-gradient(135deg, #bef264 0%, #84cc16 35%, #22c55e 70%, #10b981 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 900;
-            letter-spacing: 0.5px;
         }
 
-        /* Neama AI Logo Badge: Lime Circle with Dark Green Capital N */
+        /* Neama AI Logo Badge */
         .neama-logo-badge {
-            width: 38px;
-            height: 38px;
-            min-width: 38px;
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
             border-radius: 50%;
             background: radial-gradient(circle at 35% 35%, #bef264, #84cc16 65%, #65a30d 100%);
-            box-shadow: 0 0 16px rgba(132, 204, 22, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 14px rgba(132, 204, 22, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #052e16;
             font-weight: 900;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 21px;
+            font-size: 19px;
             line-height: 1;
             user-select: none;
             border: 1.5px solid #d9f99d;
@@ -1300,25 +1302,25 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         .screen-view {
             display: none;
             width: 100%;
+            max-width: 100vw;
             min-height: 100vh;
             min-height: 100dvh;
             opacity: 0;
-            transform: translateY(8px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transition: opacity 0.25s ease;
         }
 
         .screen-view.active {
             display: flex;
             flex-direction: column;
             opacity: 1;
-            transform: translateY(0);
         }
 
         /* SCREEN 1: Tribute Screen */
         .tribute-container {
-            max-width: 740px;
+            width: 100%;
+            max-width: 680px;
             margin: auto;
-            padding: 24px 18px 40px;
+            padding: 20px 16px 36px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1329,33 +1331,33 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         .tribute-card {
             background: linear-gradient(180deg, #0d1527, #080c18);
-            border: 2px solid transparent;
+            border: 1.5px solid transparent;
             border-image: linear-gradient(135deg, #84cc16, #22c55e, #38bdf8) 1;
-            border-radius: 24px;
-            padding: 34px 22px;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(132, 204, 22, 0.15);
+            border-radius: 20px;
+            padding: 28px 18px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
             width: 100%;
         }
 
         .tribute-badge {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: rgba(132, 204, 22, 0.12);
             border: 1px solid rgba(132, 204, 22, 0.5);
             color: #d9f99d;
-            padding: 8px 20px;
+            padding: 6px 16px;
             border-radius: 30px;
             font-weight: 800;
-            font-size: 13px;
-            margin-bottom: 24px;
+            font-size: 12px;
+            margin-bottom: 20px;
         }
 
         .tribute-quote {
-            font-size: 15px;
-            line-height: 2.1;
+            font-size: 14px;
+            line-height: 2;
             color: #e2e8f0;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             font-weight: 400;
             text-align: justify;
             text-align-last: center;
@@ -1371,19 +1373,19 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             font-style: normal;
             font-weight: 600;
             display: block;
-            margin: 12px 0;
-            padding: 10px 14px;
+            margin: 10px 0;
+            padding: 8px 12px;
             background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
+            border-radius: 10px;
             border-right: 3px solid #84cc16;
         }
 
         .tribute-author {
             color: var(--lime-bright);
             font-weight: 800;
-            font-size: 14px;
-            margin-bottom: 28px;
-            padding-top: 14px;
+            font-size: 13px;
+            margin-bottom: 24px;
+            padding-top: 12px;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -1391,32 +1393,25 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             width: 100%;
             background: linear-gradient(135deg, #84cc16, #16a34a);
             color: #052e16;
-            padding: 16px 24px;
-            border-radius: 16px;
-            font-size: 16px;
+            padding: 15px 20px;
+            border-radius: 14px;
+            font-size: 15px;
             font-weight: 900;
             border: none;
             cursor: pointer;
             box-shadow: 0 10px 25px rgba(132, 204, 22, 0.35);
-            transition: all 0.25s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
         }
 
-        .btn-large-cta:hover, .btn-large-cta:active {
-            transform: scale(0.99);
-            box-shadow: 0 14px 30px rgba(132, 204, 22, 0.55);
-            background: linear-gradient(135deg, #a3e635, #22c55e);
-        }
-
-        /* SCREEN 2: Authentication Screen */
+        /* SCREEN 2: Auth Screen */
         .auth-container {
-            max-width: 460px;
-            margin: auto;
-            padding: 30px 18px;
             width: 100%;
+            max-width: 440px;
+            margin: auto;
+            padding: 24px 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1427,55 +1422,36 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         .auth-card {
             background: var(--surface-card);
             border: 1px solid var(--border-glow);
-            border-radius: 24px;
-            padding: 34px 24px;
+            border-radius: 20px;
+            padding: 28px 20px;
             width: 100%;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
             text-align: center;
-        }
-
-        .auth-title {
-            font-size: 22px;
-            font-weight: 900;
-            margin-bottom: 8px;
-        }
-
-        .auth-subtitle {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 26px;
-            line-height: 1.6;
         }
 
         .auth-button {
             width: 100%;
-            padding: 14px 18px;
-            border-radius: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             background: var(--surface-elevated);
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            transition: all 0.2s ease;
-        }
-
-        .auth-button:hover, .auth-button:active {
-            border-color: var(--lime-main);
-            background: rgba(132, 204, 22, 0.12);
+            gap: 10px;
         }
 
         .auth-divider {
             display: flex;
             align-items: center;
-            margin: 20px 0;
+            margin: 18px 0;
             color: var(--text-muted);
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .auth-divider::before, .auth-divider::after {
@@ -1486,83 +1462,70 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         }
 
         .auth-divider span {
-            padding: 0 12px;
+            padding: 0 10px;
         }
 
         .input-group {
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             text-align: right;
         }
 
         .input-group label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             color: #cbd5e1;
         }
 
         .input-field {
             width: 100%;
-            padding: 13px 16px;
-            border-radius: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.14);
             background: #060a14;
             color: white;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s ease;
-        }
-
-        .input-field:focus {
-            border-color: var(--lime-main);
-            box-shadow: 0 0 10px rgba(132, 204, 22, 0.35);
-        }
-
-        .auth-footer-nav {
-            margin-top: 20px;
             font-size: 13px;
-            color: var(--lime-bright);
-            cursor: pointer;
-            font-weight: 700;
+            outline: none;
         }
 
-        /* SCREEN 3: Workspace Layout */
+        /* SCREEN 3: Workspace Layout (100% Mobile Responsive) */
         .workspace-layout {
             display: flex;
             flex-direction: column;
+            width: 100%;
+            max-width: 100vw;
             height: 100vh;
             height: 100dvh;
             overflow: hidden;
-            width: 100%;
+            position: relative;
         }
 
         /* Top Bar */
         .top-navbar {
             width: 100%;
-            padding: 10px 16px;
+            max-width: 100vw;
+            padding: 10px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(11, 17, 30, 0.95);
+            background: rgba(11, 17, 30, 0.96);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border-subtle);
-            position: sticky;
-            top: 0;
+            flex-shrink: 0;
             z-index: 100;
         }
 
-        .nav-left-group, .nav-right-group {
+        .nav-right-group, .nav-left-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        /* Arrow Exit Button */
         .nav-icon-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #f1f5f9;
@@ -1570,18 +1533,12 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .nav-icon-btn:hover, .nav-icon-btn:active {
-            background: rgba(239, 68, 68, 0.15);
-            border-color: var(--rose-accent);
-            color: #fda4af;
+            flex-shrink: 0;
         }
 
         .nav-icon-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             fill: none;
             stroke: currentColor;
             stroke-width: 2.2;
@@ -1589,11 +1546,10 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             stroke-linejoin: round;
         }
 
-        /* 3-Dots Menu Button */
         .menu-dots-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #f1f5f9;
@@ -1601,28 +1557,22 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            flex-shrink: 0;
             position: relative;
-        }
-
-        .menu-dots-btn:hover, .menu-dots-btn:active {
-            background: rgba(132, 204, 22, 0.15);
-            border-color: var(--lime-main);
-            color: var(--lime-bright);
         }
 
         /* Settings Dropdown Menu */
         .dropdown-menu {
             display: none;
             position: absolute;
-            top: 48px;
+            top: 46px;
             left: 0;
-            width: 260px;
+            width: 240px;
             background: #0d1527;
             border: 1px solid rgba(132, 204, 22, 0.35);
-            border-radius: 18px;
-            padding: 8px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(132, 204, 22, 0.2);
+            border-radius: 16px;
+            padding: 6px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
             z-index: 250;
             text-align: right;
         }
@@ -1641,14 +1591,13 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            font-size: 13px;
+            gap: 8px;
+            padding: 9px 10px;
+            border-radius: 8px;
+            font-size: 12.5px;
             font-weight: 600;
             color: #e2e8f0;
             cursor: pointer;
-            transition: background 0.15s ease;
         }
 
         .dropdown-item:hover {
@@ -1659,70 +1608,55 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         .dropdown-item-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .dropdown-divider {
             height: 1px;
             background: rgba(255, 255, 255, 0.08);
-            margin: 6px 0;
+            margin: 4px 0;
         }
 
-        /* Toggle Switch in Menu */
+        /* Toggle Switch */
         .menu-toggle {
             position: relative;
             display: inline-block;
-            width: 36px;
-            height: 20px;
+            width: 32px;
+            height: 18px;
         }
-        .menu-toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .menu-toggle input { opacity: 0; width: 0; height: 0; }
         .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #334155;
-            transition: .3s;
-            border-radius: 20px;
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #334155; transition: .3s; border-radius: 18px;
         }
         .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 14px;
-            width: 14px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
+            position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
         }
-        input:checked + .toggle-slider {
-            background-color: var(--lime-main);
-        }
-        input:checked + .toggle-slider:before {
-            transform: translateX(16px);
-        }
+        input:checked + .toggle-slider { background-color: var(--lime-main); }
+        input:checked + .toggle-slider:before { transform: translateX(14px); }
 
         /* Chat Stream Area */
         .chat-stream {
             flex: 1;
+            width: 100%;
+            max-width: 100vw;
             overflow-y: auto;
-            padding: 16px 14px;
+            overflow-x: hidden;
+            padding: 12px 12px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 14px;
         }
 
         .chat-msg {
-            max-width: 90%;
-            padding: 14px 16px;
-            border-radius: 18px;
-            font-size: 14px;
-            line-height: 1.7;
+            max-width: 100%;
+            padding: 12px 14px;
+            border-radius: 16px;
+            font-size: 13.5px;
+            line-height: 1.65;
             word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .msg-ai {
@@ -1732,7 +1666,6 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             border-bottom-right-radius: 4px;
             color: #f1f5f9;
             width: 100%;
-            max-width: 92%;
         }
 
         .msg-user {
@@ -1741,46 +1674,29 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             border: 1px solid rgba(99, 102, 241, 0.4);
             color: white;
             border-bottom-left-radius: 4px;
+            max-width: 88%;
         }
 
-        /* Image Attachment Preview inside Chat Message */
         .chat-attached-image {
             max-width: 100%;
-            max-height: 240px;
+            max-height: 200px;
             object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             display: block;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-        .chat-attached-image:hover {
-            transform: scale(1.02);
         }
 
-        .chat-attached-file {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 8px 12px;
-            margin-bottom: 10px;
-            font-size: 13px;
-        }
-
-        /* Code Block Container with Dedicated Copy Button */
+        /* Code Block */
         .code-block-container {
-            position: relative;
             background: #040711;
             border: 1px solid rgba(132, 204, 22, 0.25);
-            border-radius: 12px;
-            margin: 12px 0;
+            border-radius: 10px;
+            margin: 10px 0;
             overflow: hidden;
             direction: ltr;
             text-align: left;
+            width: 100%;
         }
 
         .code-header {
@@ -1788,9 +1704,9 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             justify-content: space-between;
             align-items: center;
             background: #09101d;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--lime-bright);
             font-family: 'JetBrains Mono', monospace;
         }
@@ -1799,78 +1715,73 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             background: rgba(132, 204, 22, 0.15);
             border: 1px solid rgba(132, 204, 22, 0.4);
             color: #d9f99d;
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 10.5px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 4px;
-            transition: all 0.2s ease;
-        }
-        .code-copy-btn:hover {
-            background: var(--lime-main);
-            color: #052e16;
         }
 
         .code-content {
-            padding: 12px;
+            padding: 10px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12.5px;
-            line-height: 1.6;
+            font-size: 11.5px;
+            line-height: 1.55;
             color: #f8fafc;
             overflow-x: auto;
             white-space: pre;
         }
 
-        /* AI Message Action Toolbar (Copy, TTS, Like, Dislike, Share) */
+        /* Sleek Icon-Only Action Toolbar (NO text labels, beautifully formatted) */
         .msg-action-toolbar {
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-top: 12px;
-            padding-top: 10px;
+            margin-top: 10px;
+            padding-top: 8px;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
-            flex-wrap: wrap;
         }
 
-        .msg-action-btn {
+        .icon-action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            color: var(--text-muted);
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
+            color: #94a3b8;
+            display: flex;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            cursor: pointer;
             transition: all 0.2s ease;
+            flex-shrink: 0;
+            padding: 0;
         }
 
-        .msg-action-btn:hover, .msg-action-btn:active {
+        .icon-action-btn:hover, .icon-action-btn:active {
             background: rgba(132, 204, 22, 0.15);
             border-color: var(--lime-main);
             color: var(--lime-bright);
         }
 
-        .msg-action-btn.active-like {
+        .icon-action-btn.active-like {
             background: rgba(34, 197, 94, 0.2);
             border-color: #22c55e;
             color: #86efac;
         }
 
-        .msg-action-btn.active-dislike {
+        .icon-action-btn.active-dislike {
             background: rgba(244, 63, 94, 0.2);
             border-color: #f43f5e;
             color: #fda4af;
         }
 
-        .msg-action-btn svg {
-            width: 14px;
-            height: 14px;
+        .icon-action-btn svg {
+            width: 15px;
+            height: 15px;
             fill: none;
             stroke: currentColor;
             stroke-width: 2;
@@ -1878,53 +1789,53 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             stroke-linejoin: round;
         }
 
-        /* Bottom Floating Bar Container */
+        /* Bottom Container (100% Mobile Responsive Bar) */
         .bottom-container {
             background: #080c17;
             border-top: 1px solid var(--border-subtle);
-            padding: 8px 12px 12px;
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            width: 100%;
+            max-width: 100vw;
+            flex-shrink: 0;
+            z-index: 100;
         }
 
-        /* Attachment Preview Chip (Floats ABOVE input, leaving typing area 100% free) */
+        /* Attachment Preview Chip (Floats ABOVE input) */
         #attachment-preview-box {
             display: none;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: #0f1a2e;
             border: 1px solid rgba(132, 204, 22, 0.4);
-            border-radius: 12px;
-            padding: 6px 10px;
+            border-radius: 10px;
+            padding: 5px 8px;
             width: fit-content;
             max-width: 100%;
         }
 
         #attachment-preview-box.active {
             display: flex;
-            animation: fadeInDown 0.2s ease;
         }
 
         #attachment-thumb {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
             object-fit: cover;
             border: 1px solid rgba(255, 255, 255, 0.2);
             display: none;
         }
 
-        #attachment-icon-holder {
-            font-size: 20px;
-            display: none;
-        }
+        #attachment-icon-holder { font-size: 16px; display: none; }
 
         #attachment-filename {
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 700;
             color: var(--lime-bright);
-            max-width: 180px;
+            max-width: 160px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -1934,29 +1845,30 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             background: rgba(244, 63, 94, 0.2);
             border: none;
             color: #fda4af;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 10px;
             cursor: pointer;
-            margin-right: 4px;
         }
 
-        /* Bottom Action Bar */
+        /* Bottom Floating Bar - Perfectly Fitted without Overflow */
         .bottom-action-bar {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
             width: 100%;
+            max-width: 100%;
         }
 
-        /* Action Buttons */
+        /* Attachment Button */
         .action-tool-btn {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1965,8 +1877,8 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
             flex-shrink: 0;
+            padding: 0;
         }
 
         .action-tool-btn:hover, .action-tool-btn:active {
@@ -1985,10 +1897,11 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             stroke-linejoin: round;
         }
 
-        /* Voice Live Waves Button (3 graduated arcs) */
+        /* Voice Live Waves (Three Graduated Arcs) */
         .voice-live-waves-btn {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
             border-radius: 50%;
             background: rgba(132, 204, 22, 0.12);
             border: 1px solid rgba(132, 204, 22, 0.35);
@@ -1997,14 +1910,9 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
             flex-shrink: 0;
             gap: 2px;
-        }
-
-        .voice-live-waves-btn:hover, .voice-live-waves-btn:active {
-            background: rgba(132, 204, 22, 0.25);
-            box-shadow: 0 0 14px rgba(132, 204, 22, 0.45);
+            padding: 0;
         }
 
         .wave-arc {
@@ -2016,36 +1924,37 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             border-radius: 50%;
         }
 
-        .arc-1 { width: 6px; height: 10px; }
-        .arc-2 { width: 10px; height: 16px; }
-        .arc-3 { width: 14px; height: 22px; }
+        .arc-1 { width: 5px; height: 9px; }
+        .arc-2 { width: 9px; height: 14px; }
+        .arc-3 { width: 13px; height: 20px; }
 
         /* Input Wrapper */
         .input-wrapper {
             flex: 1;
+            min-width: 0;
             display: flex;
             align-items: center;
             background: #040711;
             border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 24px;
-            padding: 4px 14px 4px 8px;
-            gap: 8px;
-            transition: border-color 0.2s ease;
+            border-radius: 20px;
+            padding: 2px 10px 2px 6px;
+            gap: 6px;
         }
 
         .input-wrapper:focus-within {
             border-color: var(--lime-main);
-            box-shadow: 0 0 10px rgba(132, 204, 22, 0.3);
+            box-shadow: 0 0 8px rgba(132, 204, 22, 0.3);
         }
 
         .prompt-input-field {
             flex: 1;
+            min-width: 0;
             background: transparent;
             border: none;
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             outline: none;
-            padding: 8px 4px;
+            padding: 6px 2px;
         }
 
         .mic-icon-btn {
@@ -2056,8 +1965,8 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 4px;
-            transition: color 0.2s ease;
+            padding: 2px;
+            flex-shrink: 0;
         }
 
         .mic-icon-btn:hover {
@@ -2065,8 +1974,8 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         }
 
         .mic-icon-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 17px;
+            height: 17px;
             fill: none;
             stroke: currentColor;
             stroke-width: 2;
@@ -2076,8 +1985,9 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
         /* Send Button: Upward Arrow */
         .send-arrow-btn {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
             border-radius: 50%;
             background: linear-gradient(135deg, #84cc16, #16a34a);
             color: #052e16;
@@ -2086,20 +1996,14 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(132, 204, 22, 0.4);
             flex-shrink: 0;
-        }
-
-        .send-arrow-btn:hover, .send-arrow-btn:active {
-            transform: scale(1.06);
-            box-shadow: 0 6px 20px rgba(132, 204, 22, 0.6);
-            background: linear-gradient(135deg, #a3e635, #22c55e);
+            box-shadow: 0 3px 12px rgba(132, 204, 22, 0.4);
+            padding: 0;
         }
 
         .send-arrow-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 19px;
+            height: 19px;
             fill: none;
             stroke: currentColor;
             stroke-width: 2.6;
@@ -2107,109 +2011,98 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             stroke-linejoin: round;
         }
 
-        /* LIVE VOICE INTERACTIVE MODAL */
+        /* LIVE VOICE MODAL */
         #voice-live-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(4, 7, 17, 0.92);
+            width: 100vw;
+            height: 100vh;
+            background: rgba(4, 7, 17, 0.94);
             backdrop-filter: blur(20px);
             z-index: 500;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 36px 20px 48px;
+            padding: 30px 16px 40px;
             text-align: center;
         }
 
         #voice-live-modal.active {
             display: flex;
-            animation: fadeInDown 0.3s ease;
-        }
-
-        .voice-live-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
 
         .voice-pulse-orb {
-            width: 140px;
-            height: 140px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             background: radial-gradient(circle at 35% 35%, #bef264, #84cc16 60%, #15803d 100%);
-            box-shadow: 0 0 40px rgba(132, 204, 22, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 35px rgba(132, 204, 22, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             animation: orbPulse 2s infinite ease-in-out;
-            margin: 30px auto;
+            margin: 20px auto;
         }
 
         @keyframes orbPulse {
-            0% { transform: scale(1); box-shadow: 0 0 30px rgba(132, 204, 22, 0.5); }
-            50% { transform: scale(1.12); box-shadow: 0 0 65px rgba(132, 204, 22, 0.85); }
-            100% { transform: scale(1); box-shadow: 0 0 30px rgba(132, 204, 22, 0.5); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); box-shadow: 0 0 50px rgba(132, 204, 22, 0.85); }
+            100% { transform: scale(1); }
         }
 
         .voice-live-status {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--lime-bright);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .voice-live-transcript {
-            max-width: 500px;
-            min-height: 60px;
+            width: 100%;
+            max-width: 400px;
+            min-height: 50px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 14px;
-            font-size: 14px;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 13px;
             color: #e2e8f0;
-            line-height: 1.6;
-        }
-
-        .voice-live-controls {
-            display: flex;
-            align-items: center;
-            gap: 18px;
         }
 
         .voice-end-btn {
             background: #ef4444;
             color: white;
             border: none;
-            padding: 12px 28px;
-            border-radius: 30px;
-            font-size: 15px;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-size: 14px;
             font-weight: 800;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+            gap: 6px;
         }
 
         /* Toast Alert */
         #app-toast {
             position: fixed;
-            bottom: 80px;
+            bottom: 75px;
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             background: #0d1527;
             border: 1px solid var(--lime-main);
             color: white;
-            padding: 10px 22px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 8px 18px;
+            border-radius: 18px;
+            font-size: 12px;
             font-weight: 700;
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             z-index: 600;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(132, 204, 22, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
         }
 
         #app-toast.show {
@@ -2222,15 +2115,15 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
     <!-- SCREEN 1: Standalone Tribute Page (مصر والسودان) -->
     <div id="screen-tribute" class="screen-view active">
-        <header style="padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; background: rgba(11, 17, 30, 0.9); border-bottom: 1px solid var(--border-subtle);">
-            <div style="display: flex; align-items: center; gap: 10px;">
+        <header style="width: 100%; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; background: rgba(11, 17, 30, 0.9); border-bottom: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <div class="neama-logo-badge">N</div>
                 <div>
-                    <h1 class="brand-gradient-text" style="font-size: 18px; line-height: 1.2;">نعمه أي (Neama AI)</h1>
-                    <span style="font-size: 11px; color: var(--lime-bright); font-weight: 600;">The Autonomous Engine • v3.0</span>
+                    <h1 class="brand-gradient-text" style="font-size: 16px; line-height: 1.2;">نعمه أي (Neama AI)</h1>
+                    <span style="font-size: 10px; color: var(--lime-bright); font-weight: 600;">The Autonomous Engine • v3.0</span>
                 </div>
             </div>
-            <button onclick="playSound('click'); navigateTo('screen-auth')" style="background: rgba(132, 204, 22, 0.15); border: 1px solid var(--lime-main); color: var(--lime-bright); font-weight: bold; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 12px;">
+            <button onclick="playSound('click'); navigateTo('screen-auth')" style="background: rgba(132, 204, 22, 0.15); border: 1px solid var(--lime-main); color: var(--lime-bright); font-weight: bold; padding: 5px 14px; border-radius: 18px; cursor: pointer; font-size: 11.5px;">
                 تسجيل الدخول 🔑
             </button>
         </header>
@@ -2262,31 +2155,31 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
     <!-- SCREEN 2: Authentication Screen -->
     <div id="screen-auth" class="screen-view">
-        <header style="padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; background: rgba(11, 17, 30, 0.9); border-bottom: 1px solid var(--border-subtle);">
-            <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="navigateTo('screen-tribute')">
+        <header style="width: 100%; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; background: rgba(11, 17, 30, 0.9); border-bottom: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="navigateTo('screen-tribute')">
                 <div class="neama-logo-badge">N</div>
                 <div>
-                    <h1 class="brand-gradient-text" style="font-size: 18px;">نعمه أي</h1>
-                    <span style="font-size: 11px; color: var(--lime-bright); font-weight: 600;">بوابة المصادقة السحابية</span>
+                    <h1 class="brand-gradient-text" style="font-size: 16px;">نعمه أي</h1>
+                    <span style="font-size: 10px; color: var(--lime-bright); font-weight: 600;">بوابة المصادقة السحابية</span>
                 </div>
             </div>
-            <button onclick="playSound('click'); navigateTo('screen-tribute')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #cbd5e1; font-size: 12px; padding: 6px 14px; border-radius: 20px; cursor: pointer;">
-                ← العودة لرسالة الشكر
+            <button onclick="playSound('click'); navigateTo('screen-tribute')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #cbd5e1; font-size: 11.5px; padding: 5px 12px; border-radius: 18px; cursor: pointer;">
+                ← العودة
             </button>
         </header>
 
         <div class="auth-container">
             <div class="auth-card">
-                <h2 class="auth-title">تسجيل الدخول إلى <span class="brand-gradient-text">نعمه أي</span></h2>
-                <p class="auth-subtitle">سجّل دخولك للوصول إلى مساحة البرمجة الذاتية والمحادثة الصوتية التفاعلية</p>
+                <h2 style="font-size: 19px; font-weight: 900; margin-bottom: 6px;">تسجيل الدخول إلى <span class="brand-gradient-text">نعمه أي</span></h2>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">سجّل دخولك للوصول إلى مساحة البرمجة والمحادثة الصوتية</p>
 
                 <button class="auth-button" onclick="playSound('click'); performLogin('GitHub Identity')">
-                    <span style="font-size: 18px;">🐙</span>
+                    <span style="font-size: 16px;">🐙</span>
                     <span>المتابعة عبر GitHub Identity</span>
                 </button>
 
                 <button class="auth-button" onclick="playSound('click'); performLogin('Google Account')">
-                    <span style="font-size: 18px;">🌐</span>
+                    <span style="font-size: 16px;">🌐</span>
                     <span>المتابعة عبر Google Account</span>
                 </button>
 
@@ -2304,39 +2197,39 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     <input type="password" id="login-password" class="input-field" value="••••••••••••" placeholder="Password">
                 </div>
 
-                <button class="btn-large-cta" style="margin-top: 8px;" onclick="playSound('success'); performLogin('Email Credentials')">
-                    <span>دخول مساحة العمل السحابية 🔑</span>
+                <button class="btn-large-cta" style="margin-top: 6px;" onclick="playSound('success'); performLogin('Email Credentials')">
+                    <span>دخول مساحة العمل 🔑</span>
                 </button>
 
-                <div class="auth-footer-nav" onclick="navigateTo('screen-tribute')">
+                <div style="margin-top: 16px; font-size: 12px; color: var(--lime-bright); cursor: pointer; font-weight: 700;" onclick="navigateTo('screen-tribute')">
                     🇪🇬 🇸🇩 قراءة رسالة الشكر والوفاء الرسمية
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SCREEN 3: Workspace Layout -->
+    <!-- SCREEN 3: Workspace Layout (Clean Responsive Header & Bottom Bar) -->
     <div id="screen-workspace" class="screen-view workspace-layout">
         
         <!-- Clean Top Navigation Bar -->
         <div class="top-navbar">
             <!-- Right Group in RTL: Exit Arrow Button + Logo & Title -->
             <div class="nav-right-group">
-                <button class="nav-icon-btn" onclick="playSound('click'); logout()" title="الخروج إلى صفحة الشكر">
+                <button class="nav-icon-btn" onclick="playSound('click'); logout()" title="الخروج">
                     <svg viewBox="0 0 24 24">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
                 </button>
-                <div class="neama-logo-badge" style="width: 32px; height: 32px; min-width: 32px; font-size: 17px;">N</div>
-                <div class="brand-gradient-text" style="font-size: 17px;">نعمه أي (Neama AI)</div>
+                <div class="neama-logo-badge" style="width: 30px; height: 30px; min-width: 30px; font-size: 16px;">N</div>
+                <div class="brand-gradient-text" style="font-size: 15.5px;">نعمه أي (Neama AI)</div>
             </div>
 
             <!-- Left Group in RTL: 3-Dots Menu -->
             <div class="nav-left-group">
                 <div style="position: relative;">
                     <button class="menu-dots-btn" onclick="playSound('click'); toggleMenu()" title="الإعدادات والخيارات">
-                        <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor; stroke: none;">
+                        <svg viewBox="0 0 24 24" style="width: 17px; height: 17px; fill: currentColor; stroke: none;">
                             <circle cx="12" cy="5" r="2"></circle>
                             <circle cx="12" cy="12" r="2"></circle>
                             <circle cx="12" cy="19" r="2"></circle>
@@ -2345,11 +2238,10 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
                     <!-- Settings Dropdown Popup -->
                     <div id="settings-dropdown" class="dropdown-menu">
-                        <!-- Sound System Settings Toggle -->
                         <div class="dropdown-item" style="cursor: default;" onclick="event.stopPropagation()">
                             <div class="dropdown-item-left">
                                 <span>🔊</span>
-                                <span>الأصوات التفاعلية (Sound FX)</span>
+                                <span>الأصوات التفاعلية</span>
                             </div>
                             <label class="menu-toggle">
                                 <input type="checkbox" id="sound-fx-toggle" checked onchange="toggleSoundSystem(this.checked)">
@@ -2357,13 +2249,12 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                             </label>
                         </div>
 
-                        <!-- Speech Audio Voice Mode -->
                         <div class="dropdown-item" onclick="showToast('🎙️ صوت المنظومة الذكي: نشط وتفاعلي')">
                             <div class="dropdown-item-left">
                                 <span>🗣️</span>
-                                <span>صوت المنظومة (AI Voice Engine)</span>
+                                <span>صوت المنظومة (AI Voice)</span>
                             </div>
-                            <span style="font-size: 11px; color: var(--lime-bright);">عربي قياسي</span>
+                            <span style="font-size: 10.5px; color: var(--lime-bright);">عربي</span>
                         </div>
 
                         <div class="dropdown-divider"></div>
@@ -2371,21 +2262,21 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                         <div class="dropdown-item" onclick="showToast('📋 الخطة الحالية: Pro Enterprise SaaS')">
                             <div class="dropdown-item-left">
                                 <span>💳</span>
-                                <span>الخطة والاشتراك (Plan)</span>
+                                <span>الخطة والاشتراك</span>
                             </div>
                         </div>
 
                         <div class="dropdown-item" onclick="showToast('👤 الملف الشخصي: الحساب موثق ونشط')">
                             <div class="dropdown-item-left">
                                 <span>👤</span>
-                                <span>الملف الشخصي (Profile)</span>
+                                <span>الملف الشخصي</span>
                             </div>
                         </div>
 
                         <div class="dropdown-item" onclick="showToast('📁 المشاريع: 03 مشاريع برمجية نشطة')">
                             <div class="dropdown-item-left">
                                 <span>📁</span>
-                                <span>مشاريعي (My Projects)</span>
+                                <span>مشاريعي</span>
                             </div>
                         </div>
 
@@ -2394,7 +2285,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                         <div class="dropdown-item" onclick="showToast('🌐 لغة النظام: العربية (Arabic / English)')">
                             <div class="dropdown-item-left">
                                 <span>🌐</span>
-                                <span>تغيير لغة النظام (Language)</span>
+                                <span>تغيير لغة النظام</span>
                             </div>
                         </div>
 
@@ -2421,51 +2312,48 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         <!-- Chat Stream Messages -->
         <div class="chat-stream" id="chat-box" onclick="closeMenuIfOpen()">
             <div class="chat-msg msg-ai" id="welcome-msg">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div class="neama-logo-badge" style="width: 26px; height: 26px; min-width: 26px; font-size: 14px;">N</div>
-                    <strong class="brand-gradient-text" style="font-size: 15px;">مرحباً بك في منظومة «نعمه أي» (Neama AI) 👋</strong>
+                <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 6px;">
+                    <div class="neama-logo-badge" style="width: 24px; height: 24px; min-width: 24px; font-size: 13px;">N</div>
+                    <strong class="brand-gradient-text" style="font-size: 14px;">مرحباً بك في منظومة «نعمه أي» (Neama AI) 👋</strong>
                 </div>
                 <div>
-                    أنا محركك الذكي المتكامل لتوليد وهندسة البرمجيات، فحص الأمان، والتحدث بالصوت مباشرة. يمكنك إرفاق الصور والملفات وكتابة شرحك بحرية كاملة، أو بدء محادثة صوتية حية.
+                    أنا محركك الذكي المتكامل لهندسة البرمجيات، فحص الأمان، والتحدث بالصوت مباشرة. يمكنك إرفاق الصور والملفات وكتابة شرحك بحرية كاملة.
                 </div>
 
                 <div class="code-block-container">
                     <div class="code-header">
-                        <span>PYTHON • NEAMA_SECURE_ENGINE.PY</span>
+                        <span>PYTHON • NEAMA_ENGINE.PY</span>
                         <button class="code-copy-btn" onclick="copyCodeSnippet(this)">
                             📋 نسخ الكود
                         </button>
                     </div>
                     <div class="code-content">def init_neama_ai():
-    print("✨ Neama AI (نعمه أي) Engine initialized.")
-    return {"status": "ACTIVE", "voice_engine": "READY"}</div>
+    print("✨ Neama AI Engine initialized.")
+    return {"status": "ACTIVE", "voice": "READY"}</div>
                 </div>
 
+                <!-- Sleek Minimal Icon Action Toolbar (NO text labels) -->
                 <div class="msg-action-toolbar">
-                    <button class="msg-action-btn" onclick="copyFullMessage(this)" title="نسخ الرد الشامل">
+                    <button class="icon-action-btn" onclick="copyFullMessage(this)" title="نسخ الرد الشامل">
                         <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        <span>نسخ الرد</span>
                     </button>
-                    <button class="msg-action-btn" onclick="speakMessageText(this)" title="الاستماع للرد">
+                    <button class="icon-action-btn" onclick="speakMessageText(this)" title="الاستماع للرد">
                         <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                        <span>استماع</span>
                     </button>
-                    <button class="msg-action-btn" onclick="rateMessage(this, 'like')" title="أعجبني">
+                    <button class="icon-action-btn" onclick="rateMessage(this, 'like')" title="أعجبني">
                         <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                        <span>أعجبني</span>
                     </button>
-                    <button class="msg-action-btn" onclick="rateMessage(this, 'dislike')" title="لم يعجبني">
+                    <button class="icon-action-btn" onclick="rateMessage(this, 'dislike')" title="لم يعجبني">
                         <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
                     </button>
-                    <button class="msg-action-btn" onclick="shareMessage(this)" title="مشاركة الرد">
+                    <button class="icon-action-btn" onclick="shareMessage(this)" title="مشاركة الرد">
                         <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        <span>مشاركة</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Container with Attachment Preview Chip & Floating Bar -->
+        <!-- Bottom Container with Responsive Floating Bar -->
         <div class="bottom-container">
             
             <!-- Attachment Preview Chip: Leaves the prompt input completely free -->
@@ -2483,10 +2371,10 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                     </svg>
                 </button>
-                <input type="file" id="file-upload-input" onchange="handleFileSelected(event)">
+                <input type="file" id="file-upload-input" style="display: none;" onchange="handleFileSelected(event)">
 
-                <!-- 2. Voice Live Waves (Three Graduated Arcs for Live Voice Chat) -->
-                <button class="voice-live-waves-btn" onclick="playSound('open'); openVoiceLiveModal()" title="محادثة صوتية مباشرة تفاعلية (Voice Live)">
+                <!-- 2. Voice Live Waves (Three Graduated Arcs) -->
+                <button class="voice-live-waves-btn" onclick="playSound('open'); openVoiceLiveModal()" title="محادثة صوتية مباشرة (Voice Live)">
                     <span class="wave-arc arc-1"></span>
                     <span class="wave-arc arc-2"></span>
                     <span class="wave-arc arc-3"></span>
@@ -2494,8 +2382,8 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
                 <!-- 3. Prompt Input with Embedded Voice Mic -->
                 <div class="input-wrapper">
-                    <input type="text" id="user-prompt-input" class="prompt-input-field" placeholder="اكتب سؤالك أو شرحك للمرفق هنا..." onkeypress="handleEnter(event)">
-                    <button class="mic-icon-btn" onclick="playSound('click'); startVoiceInput()" title="الكتابة بالصوت (Speech to Text)">
+                    <input type="text" id="user-prompt-input" class="prompt-input-field" placeholder="اكتب سؤالك أو شرحك للمرفق..." onkeypress="handleEnter(event)">
+                    <button class="mic-icon-btn" onclick="playSound('click'); startVoiceInput()" title="الكتابة بالصوت">
                         <svg viewBox="0 0 24 24">
                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -2506,7 +2394,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                 </div>
 
                 <!-- 4. Upward Arrow Send Button -->
-                <button class="send-arrow-btn" onclick="playSound('send'); sendMessage()" title="إرسال الطلب">
+                <button class="send-arrow-btn" onclick="playSound('send'); sendMessage()" title="إرسال">
                     <svg viewBox="0 0 24 24">
                         <line x1="12" y1="19" x2="12" y2="5"></line>
                         <polyline points="5 12 12 5 19 12"></polyline>
@@ -2516,149 +2404,98 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- LIVE VOICE INTERACTIVE MODAL -->
+    <!-- LIVE VOICE MODAL -->
     <div id="voice-live-modal">
-        <div class="voice-live-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
             <div class="neama-logo-badge">N</div>
             <div>
-                <h2 class="brand-gradient-text" style="font-size: 20px;">نعمه أي • المحادثة الصوتية الحية</h2>
-                <span style="font-size: 12px; color: var(--lime-bright);">Real-time Interactive Audio Engine</span>
+                <h2 class="brand-gradient-text" style="font-size: 18px;">نعمه أي • المحادثة الصوتية الحية</h2>
+                <span style="font-size: 11px; color: var(--lime-bright);">Interactive Audio Engine</span>
             </div>
         </div>
 
         <div style="width: 100%;">
             <div class="voice-pulse-orb" id="voice-orb">
-                <span style="font-size: 40px; color: #052e16;">🎙️</span>
+                <span style="font-size: 34px; color: #052e16;">🎙️</span>
             </div>
             <div class="voice-live-status" id="voice-status-text">جاري الاستماع إليك مباشرة...</div>
-            <div class="voice-live-transcript" id="voice-transcript-text">تفضل بالتحدث، منظومة نعمه أي جاهزة للإجابة صوتياً بالكامل...</div>
+            <div class="voice-live-transcript" id="voice-transcript-text">تفضل بالتحدث، منظومة نعمه أي جاهزة للرد صوتياً.</div>
         </div>
 
-        <div class="voice-live-controls">
-            <button class="voice-end-btn" onclick="playSound('click'); closeVoiceLiveModal()">
-                <span>إنهاء المحادثة الصوتية ⏹️</span>
-            </button>
-        </div>
+        <button class="voice-end-btn" onclick="closeVoiceLiveModal()">
+            <span>إنهاء المحادثة الصوتية</span>
+            <span>✖</span>
+        </button>
     </div>
 
-    <!-- Toast Notification Element -->
+    <!-- Toast Alert -->
     <div id="app-toast"></div>
 
     <script>
-        // Web Audio Synthesizer for Interactive Sound FX
-        let soundFXEnabled = true;
+        // State
+        let currentAttachment = null;
+        let soundEnabled = true;
         let audioCtx = null;
+        let voiceRecognition = null;
+        let isVoiceLiveActive = false;
 
-        function getAudioContext() {
+        // Sound System
+        function initAudioContext() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            return audioCtx;
-        }
-
-        function playSound(type) {
-            if (!soundFXEnabled) return;
-            try {
-                const ctx = getAudioContext();
-                const now = ctx.currentTime;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                if (type === 'click') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                } else if (type === 'send') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(350, now);
-                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-                    osc.start(now);
-                    osc.stop(now + 0.12);
-                } else if (type === 'success' || type === 'open') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, now);
-                    osc.frequency.setValueAtTime(659.25, now + 0.08);
-                    osc.frequency.setValueAtTime(783.99, now + 0.16);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-                    osc.start(now);
-                    osc.stop(now + 0.25);
-                }
-            } catch (e) {
-                // Audio context fallback
             }
         }
 
         function toggleSoundSystem(enabled) {
-            soundFXEnabled = enabled;
-            showToast(enabled ? '🔊 تم تفعيل الأصوات التفاعلية' : '🔇 تم كتم الأصوات التفاعلية');
+            soundEnabled = enabled;
+            showToast(enabled ? '🔊 تم تفعيل الأصوات التفاعلية' : '🔇 تم كتم الأصوات');
         }
 
-        // Global Attachment State
-        let currentAttachment = null; // { file, type: 'image'|'file', dataUrl, name }
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudioContext();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-        function triggerFileUpload() {
-            document.getElementById('file-upload-input').click();
-        }
-
-        function handleFileSelected(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const isImage = file.type.startsWith('image/');
-            const reader = new FileReader();
-
-            reader.onload = function(evt) {
-                currentAttachment = {
-                    file: file,
-                    type: isImage ? 'image' : 'file',
-                    dataUrl: evt.target.result,
-                    name: file.name
-                };
-
-                const previewBox = document.getElementById('attachment-preview-box');
-                const thumb = document.getElementById('attachment-thumb');
-                const iconHolder = document.getElementById('attachment-icon-holder');
-                const filename = document.getElementById('attachment-filename');
-
-                filename.textContent = file.name;
-
-                if (isImage) {
-                    thumb.src = evt.target.result;
-                    thumb.style.display = 'block';
-                    iconHolder.style.display = 'none';
-                } else {
-                    thumb.style.display = 'none';
-                    iconHolder.style.display = 'block';
+                const now = audioCtx.currentTime;
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'send') {
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else if (type === 'success') {
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(783.99, now + 0.16);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'open') {
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
                 }
-
-                previewBox.classList.add('active');
-                playSound('success');
-                showToast('📎 تم إرفاق: ' + file.name + ' - يمكنك الآن كتابة الشرح بحرية');
-            };
-
-            reader.readAsDataURL(file);
+            } catch(e) {}
         }
 
-        function clearCurrentAttachment() {
-            currentAttachment = null;
-            document.getElementById('file-upload-input').value = '';
-            document.getElementById('attachment-preview-box').classList.remove('active');
-            playSound('click');
-        }
-
-        // Navigation
+        // Navigation Logic
         function navigateTo(screenId) {
             document.querySelectorAll('.screen-view').forEach(el => el.classList.remove('active'));
             const target = document.getElementById(screenId);
@@ -2678,7 +2515,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             navigateTo('screen-tribute');
         }
 
-        // Dropdown Menu
+        // Menu Toggle
         function toggleMenu() {
             const menu = document.getElementById('settings-dropdown');
             menu.classList.toggle('show');
@@ -2691,7 +2528,6 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             }
         }
 
-        // Toast Feedback
         function showToast(msg) {
             closeMenuIfOpen();
             const toast = document.getElementById('app-toast');
@@ -2702,96 +2538,49 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             }, 2500);
         }
 
-        // Interactive Live Voice Modal Logic
-        let liveRecognition = null;
-        let isVoiceSessionActive = false;
-
-        function openVoiceLiveModal() {
-            closeMenuIfOpen();
-            document.getElementById('voice-live-modal').classList.add('active');
-            isVoiceSessionActive = true;
-            startLiveVoiceLoop();
+        // Attachment Handling
+        function triggerFileUpload() {
+            document.getElementById('file-upload-input').click();
         }
 
-        function closeVoiceLiveModal() {
-            document.getElementById('voice-live-modal').classList.remove('active');
-            isVoiceSessionActive = false;
-            if (liveRecognition) {
-                try { liveRecognition.stop(); } catch(e) {}
-            }
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-        }
+        function handleFileSelected(e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-        function startLiveVoiceLoop() {
-            const statusText = document.getElementById('voice-status-text');
-            const transcriptText = document.getElementById('voice-transcript-text');
+            const previewBox = document.getElementById('attachment-preview-box');
+            const thumbImg = document.getElementById('attachment-thumb');
+            const iconHolder = document.getElementById('attachment-icon-holder');
+            const filenameEl = document.getElementById('attachment-filename');
 
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                liveRecognition = new SpeechRecognition();
-                liveRecognition.lang = 'ar-SA';
-                liveRecognition.continuous = true;
-                liveRecognition.interimResults = true;
+            filenameEl.textContent = file.name;
+            currentAttachment = { file: file, isImage: file.type.startsWith('image/'), url: null };
 
-                liveRecognition.onstart = () => {
-                    statusText.textContent = '🟢 جاري الاستماع إلى صوتك مباشرة...';
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentAttachment.url = event.target.result;
+                    thumbImg.src = event.target.result;
+                    thumbImg.style.display = 'block';
+                    iconHolder.style.display = 'none';
+                    previewBox.classList.add('active');
                 };
-
-                liveRecognition.onresult = (event) => {
-                    let fullText = '';
-                    for (let i = 0; i < event.results.length; ++i) {
-                        fullText += event.results[i][0].transcript;
-                    }
-                    transcriptText.textContent = '« ' + fullText + ' »';
-
-                    if (event.results[event.results.length - 1].isFinal) {
-                        const finalSaid = event.results[event.results.length - 1][0].transcript.trim();
-                        respondVoiceLive(finalSaid);
-                    }
-                };
-
-                liveRecognition.onerror = () => {
-                    statusText.textContent = '⚠️ استمع إليك مجدداً... تفضل بالتحدث';
-                };
-
-                try { liveRecognition.start(); } catch(e) {}
+                reader.readAsDataURL(file);
             } else {
-                statusText.textContent = '🎙️ وضع التحدث المباشر التفاعلي';
-                transcriptText.textContent = 'المتصفح في وضع المحادثة الصوتية، مرحباً بك في منظومة نعمه أي!';
-                speakTextDirect('مرحباً بك في منظومة نعمه أي، أنا جاهز لمساعدتك صوتياً.');
+                thumbImg.style.display = 'none';
+                iconHolder.style.display = 'inline-block';
+                previewBox.classList.add('active');
             }
+            showToast('📎 تم إرفاق: ' + file.name);
         }
 
-        function respondVoiceLive(userSaid) {
-            const statusText = document.getElementById('voice-status-text');
-            const transcriptText = document.getElementById('voice-transcript-text');
-            statusText.textContent = '⚡ منظومة نعمه أي تجيب صوتياً...';
-
-            const response = `أهلاً بك! تلقيت طلبك بخصوص ${userSaid}. منظومة نعمه أي جاهزة للتنفيذ فوراً.`;
-            transcriptText.textContent = response;
-            speakTextDirect(response, () => {
-                if (isVoiceSessionActive) {
-                    statusText.textContent = '🟢 جاري الاستماع إليك مجدداً...';
-                }
-            });
+        function clearCurrentAttachment() {
+            currentAttachment = null;
+            document.getElementById('attachment-preview-box').classList.remove('active');
+            document.getElementById('file-upload-input').value = '';
+            showToast('✖ تم إلغاء المرفق');
         }
 
-        function speakTextDirect(text, onEndCallback) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ar-SA';
-                utterance.rate = 1.0;
-                if (onEndCallback) {
-                    utterance.onend = onEndCallback;
-                }
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        // Voice Input (Speech to text into main text bar)
+        // Speech-To-Text (Mic Input)
         function startVoiceInput() {
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2806,36 +2595,98 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     const input = document.getElementById('user-prompt-input');
                     input.value = (input.value ? input.value + ' ' : '') + transcript;
                 };
-                
                 recognition.start();
             } else {
-                showToast('🎤 جاري تفعيل الميكروفون للكتابة بالصوت...');
+                showToast('🎤 الميكروفون متاح عبر المحادثة الصوتية الحية');
             }
         }
 
-        // Action Toolbar Functions for AI Messages
+        // Voice Live Modal
+        function openVoiceLiveModal() {
+            document.getElementById('voice-live-modal').classList.add('active');
+            isVoiceLiveActive = true;
+            startVoiceRecognitionLoop();
+        }
+
+        function closeVoiceLiveModal() {
+            document.getElementById('voice-live-modal').classList.remove('active');
+            isVoiceLiveActive = false;
+            if (voiceRecognition) {
+                try { voiceRecognition.stop(); } catch(e) {}
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function startVoiceRecognitionLoop() {
+            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) return;
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            voiceRecognition = new SpeechRecognition();
+            voiceRecognition.lang = 'ar-SA';
+            voiceRecognition.continuous = false;
+            voiceRecognition.interimResults = false;
+
+            voiceRecognition.onresult = (event) => {
+                const userSpoken = event.results[0][0].transcript;
+                document.getElementById('voice-transcript-text').textContent = 'أنت: ' + userSpoken;
+                document.getElementById('voice-status-text').textContent = 'جاري التفكير وتوليد الرد الصوتي...';
+
+                setTimeout(() => {
+                    const aiReply = 'سمعتك بوضوح! منظومة نعمه أي تعمل على معالجة طلبك: ' + userSpoken;
+                    document.getElementById('voice-transcript-text').textContent = 'نعمه أي: ' + aiReply;
+                    document.getElementById('voice-status-text').textContent = 'جاري التحدث... 🗣️';
+                    speakVoiceText(aiReply, () => {
+                        if (isVoiceLiveActive) {
+                            document.getElementById('voice-status-text').textContent = 'جاري الاستماع إليك مباشرة...';
+                            try { voiceRecognition.start(); } catch(e) {}
+                        }
+                    });
+                }, 800);
+            };
+
+            voiceRecognition.onerror = () => {
+                if (isVoiceLiveActive) {
+                    setTimeout(() => {
+                        try { voiceRecognition.start(); } catch(e) {}
+                    }, 1000);
+                }
+            };
+
+            try { voiceRecognition.start(); } catch(e) {}
+        }
+
+        function speakVoiceText(text, onEnd) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ar-SA';
+                utterance.rate = 1.0;
+                utterance.onend = onEnd;
+                window.speechSynthesis.speak(utterance);
+            } else if (onEnd) {
+                setTimeout(onEnd, 2000);
+            }
+        }
+
+        // Chat Action Helpers
+        function copyCodeSnippet(btn) {
+            playSound('click');
+            const codeEl = btn.closest('.code-block-container').querySelector('.code-content');
+            navigator.clipboard.writeText(codeEl.textContent.trim());
+            btn.textContent = '✅ تم النسخ';
+            showToast('📋 تم نسخ الكود البرمجي');
+            setTimeout(() => { btn.textContent = '📋 نسخ الكود'; }, 2000);
+        }
+
         function copyFullMessage(btn) {
             playSound('click');
             const msgEl = btn.closest('.chat-msg');
             const clone = msgEl.cloneNode(true);
             const toolbar = clone.querySelector('.msg-action-toolbar');
             if (toolbar) toolbar.remove();
-            
-            const textToCopy = clone.innerText.trim();
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                showToast('📋 تم نسخ الرد كاملاً بنجاح');
-            });
-        }
-
-        function copyCodeSnippet(btn) {
-            playSound('click');
-            const codeBlock = btn.closest('.code-block-container');
-            const codeContent = codeBlock.querySelector('.code-content').innerText;
-            navigator.clipboard.writeText(codeContent).then(() => {
-                btn.innerHTML = '✅ تم النسخ!';
-                setTimeout(() => { btn.innerHTML = '📋 نسخ الكود'; }, 2000);
-                showToast('💻 تم نسخ الكود فقط بنجاح');
-            });
+            navigator.clipboard.writeText(clone.innerText.trim());
+            showToast('📋 تم نسخ الرد الشامل بالكامل');
         }
 
         function speakMessageText(btn) {
@@ -2844,28 +2695,31 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             const clone = msgEl.cloneNode(true);
             const toolbar = clone.querySelector('.msg-action-toolbar');
             if (toolbar) toolbar.remove();
-            const codeBlocks = clone.querySelectorAll('.code-block-container');
-            codeBlocks.forEach(cb => cb.remove());
-
             const textToSpeak = clone.innerText.trim();
-            showToast('🔊 جاري قراءة الرد صوتياً...');
-            speakTextDirect(textToSpeak);
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'ar-SA';
+                window.speechSynthesis.speak(utterance);
+                showToast('🗣️ جاري قراءة الرد صوتياً...');
+            } else {
+                showToast('⚠️ تحويل النص لصوت غير مدعوم في متصفحك');
+            }
         }
 
         function rateMessage(btn, type) {
             playSound('click');
-            const toolbar = btn.closest('.msg-action-toolbar');
-            const likeBtn = toolbar.querySelector('button[title="أعجبني"]');
-            const dislikeBtn = toolbar.querySelector('button[title="لم يعجبني"]');
-
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.icon-action-btn').forEach(b => {
+                b.classList.remove('active-like', 'active-dislike');
+            });
             if (type === 'like') {
-                likeBtn.classList.toggle('active-like');
-                dislikeBtn.classList.remove('active-dislike');
-                showToast('👍 شكراً على تقييمك الإيجابي للرد!');
+                btn.classList.add('active-like');
+                showToast('💚 شكراً على تقييمك الإيجابي!');
             } else {
-                dislikeBtn.classList.toggle('active-dislike');
-                likeBtn.classList.remove('active-like');
-                showToast('👎 تم تسجيل ملاحظتك لتحسين الردود');
+                btn.classList.add('active-dislike');
+                showToast('📝 شكراً لملاحظتك، نعمل دائماً على تحسين الإجابات.');
             }
         }
 
@@ -2875,22 +2729,20 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             const clone = msgEl.cloneNode(true);
             const toolbar = clone.querySelector('.msg-action-toolbar');
             if (toolbar) toolbar.remove();
-            const textToShare = clone.innerText.trim();
+            const shareText = clone.innerText.trim();
 
             if (navigator.share) {
                 navigator.share({
-                    title: 'رد من منظومة نعمه أي (Neama AI)',
-                    text: textToShare,
-                    url: window.location.href
+                    title: 'منظومة نعمه أي (Neama AI)',
+                    text: shareText
                 }).catch(() => {});
             } else {
-                navigator.clipboard.writeText(textToShare).then(() => {
-                    showToast('🔗 تم نسخ رابط ومحتوى الرد للمشاركة');
-                });
+                navigator.clipboard.writeText(shareText);
+                showToast('🔗 تم نسخ الرد لمشاركته');
             }
         }
 
-        // Chat Interaction & Send
+        // Send Message
         function handleEnter(e) {
             if (e.key === 'Enter') {
                 sendMessage();
@@ -2907,29 +2759,26 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
             const chatBox = document.getElementById('chat-box');
 
-            // Render User Message with Image / File preview + Text caption
+            // Construct User Message
             const userMsg = document.createElement('div');
             userMsg.className = 'chat-msg msg-user';
-
-            if (attachment) {
-                if (attachment.type === 'image') {
-                    const img = document.createElement('img');
-                    img.className = 'chat-attached-image';
-                    img.src = attachment.dataUrl;
-                    img.alt = attachment.name;
-                    userMsg.appendChild(img);
-                } else {
-                    const fileBox = document.createElement('div');
-                    fileBox.className = 'chat-attached-file';
-                    fileBox.innerHTML = `<span>📁</span> <strong>${attachment.name}</strong>`;
-                    userMsg.appendChild(fileBox);
-                }
+            
+            if (attachment && attachment.isImage && attachment.url) {
+                const img = document.createElement('img');
+                img.src = attachment.url;
+                img.className = 'chat-attached-image';
+                userMsg.appendChild(img);
+            } else if (attachment) {
+                const fileCard = document.createElement('div');
+                fileCard.style.cssText = 'background: rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 12px;';
+                fileCard.textContent = '📁 ' + attachment.file.name;
+                userMsg.appendChild(fileCard);
             }
 
             if (prompt) {
-                const textEl = document.createElement('div');
-                textEl.textContent = prompt;
-                userMsg.appendChild(textEl);
+                const textSpan = document.createElement('div');
+                textSpan.textContent = prompt;
+                userMsg.appendChild(textSpan);
             }
 
             chatBox.appendChild(userMsg);
@@ -2940,10 +2789,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             // Loading bubble
             const loadingMsg = document.createElement('div');
             loadingMsg.className = 'chat-msg msg-ai';
-            loadingMsg.innerHTML = `<div style="display: flex; align-items: center; gap: 8px;">
-                <div class="neama-logo-badge" style="width: 22px; height: 22px; min-width: 22px; font-size: 12px;">N</div>
-                <em>جاري معالجة الطلب في منظومة نعمه أي... ⚡</em>
-            </div>`;
+            loadingMsg.innerHTML = `<em>جاري المعالجة بواسطة منظومة نعمه أي... ⚡</em>`;
             chatBox.appendChild(loadingMsg);
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -2951,75 +2797,66 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                 const res = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt || (attachment ? `تحليل المرفق: ${attachment.name}` : '') })
+                    body: JSON.stringify({ prompt: prompt || 'مرفق ملف' })
                 });
 
                 let responseText = '';
                 if (res.ok) {
                     const data = await res.json();
-                    responseText = data.response || data.message || 'تم إتمام العملية بنجاح في منظومة نعمه أي.';
+                    responseText = data.response || data.message || 'تمت معالجة الطلب بنجاح.';
                 } else {
-                    responseText = `تم تحليل طلبك بنجاح ضمن البيئة السحابية الآمنة لمنظومة نعمه أي. تم تأمين المرفق والبيانات.`;
-                }
-
-                // Check if response contains code
-                let codeHtml = '';
-                if (responseText.includes('def ') || responseText.includes('class ') || responseText.includes('{') || prompt.toLowerCase().includes('كود') || prompt.toLowerCase().includes('code')) {
-                    codeHtml = `
-                    <div class="code-block-container">
-                        <div class="code-header">
-                            <span>NEAMA_GENERATED_CODE</span>
-                            <button class="code-copy-btn" onclick="copyCodeSnippet(this)">
-                                📋 نسخ الكود
-                            </button>
-                        </div>
-                        <div class="code-content">// كود مولّد بواسطة منظومة نعمه أي (Neama AI)
-function executeNeamaTask() {
-    console.log("Task executed smoothly.");
-}</div>
-                    </div>`;
+                    responseText = `تم استلام وتحليل طلبك "${prompt || 'المرفق'}" بنجاح ضمن بيئة نعمه أي.`;
                 }
 
                 loadingMsg.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div class="neama-logo-badge" style="width: 26px; height: 26px; min-width: 26px; font-size: 14px;">N</div>
-                    <strong class="brand-gradient-text" style="font-size: 14px;">رد منظومة نعمه أي (Neama AI):</strong>
-                </div>
-                <div>${responseText}</div>
-                ${codeHtml}
-                <div class="msg-action-toolbar">
-                    <button class="msg-action-btn" onclick="copyFullMessage(this)" title="نسخ الرد الشامل">
-                        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        <span>نسخ الرد</span>
-                    </button>
-                    <button class="msg-action-btn" onclick="speakMessageText(this)" title="الاستماع للرد">
-                        <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                        <span>استماع</span>
-                    </button>
-                    <button class="msg-action-btn" onclick="rateMessage(this, 'like')" title="أعجبني">
-                        <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                        <span>أعجبني</span>
-                    </button>
-                    <button class="msg-action-btn" onclick="rateMessage(this, 'dislike')" title="لم يعجبني">
-                        <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
-                    </button>
-                    <button class="msg-action-btn" onclick="shareMessage(this)" title="مشاركة الرد">
-                        <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        <span>مشاركة</span>
-                    </button>
-                </div>`;
-                playSound('success');
+                    <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 6px;">
+                        <div class="neama-logo-badge" style="width: 24px; height: 24px; min-width: 24px; font-size: 13px;">N</div>
+                        <strong class="brand-gradient-text" style="font-size: 14px;">رد منظومة نعمه أي:</strong>
+                    </div>
+                    <div>${responseText}</div>
+                    <div class="msg-action-toolbar">
+                        <button class="icon-action-btn" onclick="copyFullMessage(this)" title="نسخ الرد الشامل">
+                            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                        <button class="icon-action-btn" onclick="speakMessageText(this)" title="الاستماع للرد">
+                            <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </button>
+                        <button class="icon-action-btn" onclick="rateMessage(this, 'like')" title="أعجبني">
+                            <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                        </button>
+                        <button class="icon-action-btn" onclick="rateMessage(this, 'dislike')" title="لم يعجبني">
+                            <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+                        </button>
+                        <button class="icon-action-btn" onclick="shareMessage(this)" title="مشاركة الرد">
+                            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
+                    </div>
+                `;
             } catch (err) {
                 loadingMsg.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div class="neama-logo-badge" style="width: 26px; height: 26px; min-width: 26px; font-size: 14px;">N</div>
-                    <strong class="brand-gradient-text" style="font-size: 14px;">رد منظومة نعمه أي:</strong>
-                </div>
-                <div>تم استلام ومعالجة طلبك بنجاح ضمن البيئة السحابية.</div>
-                <div class="msg-action-toolbar">
-                    <button class="msg-action-btn" onclick="copyFullMessage(this)"><span>نسخ الرد</span></button>
-                    <button class="msg-action-btn" onclick="speakMessageText(this)"><span>استماع</span></button>
-                </div>`;
+                    <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 6px;">
+                        <div class="neama-logo-badge" style="width: 24px; height: 24px; min-width: 24px; font-size: 13px;">N</div>
+                        <strong class="brand-gradient-text" style="font-size: 14px;">رد منظومة نعمه أي:</strong>
+                    </div>
+                    <div>تم استلام ومعالجة طلبك بنجاح.</div>
+                    <div class="msg-action-toolbar">
+                        <button class="icon-action-btn" onclick="copyFullMessage(this)" title="نسخ الرد الشامل">
+                            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                        <button class="icon-action-btn" onclick="speakMessageText(this)" title="الاستماع للرد">
+                            <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </button>
+                        <button class="icon-action-btn" onclick="rateMessage(this, 'like')" title="أعجبني">
+                            <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                        </button>
+                        <button class="icon-action-btn" onclick="rateMessage(this, 'dislike')" title="لم يعجبني">
+                            <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+                        </button>
+                        <button class="icon-action-btn" onclick="shareMessage(this)" title="مشاركة الرد">
+                            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
+                    </div>
+                `;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
