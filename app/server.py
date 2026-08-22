@@ -1,3 +1,4 @@
+from app.advanced_modules.governance_suite import ClassifierTrainingTracker, PodAlertingSystem, AutomatedBackupEngine, PenetrationTestingSimulator, UXAndResourceAnalytics
 from app.intelligence_suite.rci_engine import RequestClassifier, ContainerOrchestratorEngine, RCISelfOptimizerEngine, MultiLayerSafetyVerifier
 from app.advanced_modules.production_suite import RealtimeMetricsEngine, ConfigManagementEngine, StaticAnalysisSonarEngine, DocAutomationEngine, ErrorTaxonomyEngine, ChaosAndLoadTestingEngine
 from app.advanced_modules.capabilities import CodeProfilerEngine, SecurityAnalysisEngine, CICDWorkflowEngine, RustIntegrationEngine, LegacyModernizerEngine
@@ -882,7 +883,29 @@ def tool_optimize_task_rci(prompt: str = "", draft_solution: str = "", max_itera
 def tool_verify_safety(task_data: Dict[str, Any] = None) -> Dict[str, Any]:
     return MultiLayerSafetyVerifier.verify_task_safety(task_data or {})
 
+
+def tool_track_intent_training(prompt: str = "", intent: str = "", confidence: float = 0.9, feedback: str = "correct") -> Dict[str, Any]:
+    return ClassifierTrainingTracker.record_intent_prediction(prompt, intent, confidence, feedback)
+
+def tool_check_pod_alerts() -> Dict[str, Any]:
+    return PodAlertingSystem.evaluate_cluster_health()
+
+def tool_trigger_backup(target: str = "all") -> Dict[str, Any]:
+    return AutomatedBackupEngine.trigger_backup(target)
+
+def tool_run_pen_test(scope: str = "full") -> Dict[str, Any]:
+    return PenetrationTestingSimulator.run_security_audit(scope)
+
+def tool_get_ux_analytics() -> Dict[str, Any]:
+    return UXAndResourceAnalytics.get_system_analytics()
+
 SASA_AGENT_TOOLS = {
+    "track_intent_training": tool_track_intent_training,
+    "check_pod_alerts": tool_check_pod_alerts,
+    "trigger_backup": tool_trigger_backup,
+    "run_pen_test": tool_run_pen_test,
+    "get_ux_analytics": tool_get_ux_analytics,
+
     "classify_request": tool_classify_request,
     "docker_manage": tool_docker_manage,
     "k8s_query": tool_k8s_query,
@@ -4551,6 +4574,14 @@ else:
                     res = {"success": False, "error": "المحتوى فارغ أو الأداة غير مهيأة"}
                 self._send_json_response(res)
                 return
+            elif path == "/api/analytics/ux_and_resources":
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(UXAndResourceAnalytics.get_system_analytics()).encode("utf-8"))
+                return
+            elif path == "/api/alerts/cluster":
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(PodAlertingSystem.evaluate_cluster_health()).encode("utf-8"))
+                return
             elif path in ["/api/metrics/prometheus", "/metrics"]:
                 self.send_response(200)
                 self.send_header("Content-Type", "text/plain; version=0.0.4")
@@ -4650,6 +4681,18 @@ else:
                     token=body.get("token")
                 )
                 self._set_headers(200 if res.get("success") else 400, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/backup/trigger":
+                res = tool_trigger_backup(body.get("target", "all"))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/security/pentest":
+                res = tool_run_pen_test(body.get("scope", "full"))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/intelligence/train_feedback":
+                res = tool_track_intent_training(body.get("prompt", ""), body.get("intent", ""), body.get("confidence", 0.9), body.get("feedback", "correct"))
+                self._set_headers(200, "application/json")
                 self.wfile.write(json.dumps(res).encode("utf-8"))
             elif path == "/api/intelligence/classify":
                 res = tool_classify_request(body.get("request", ""))
