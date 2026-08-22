@@ -9,3 +9,7 @@ services:
         value: 5000
       - key: WORKSPACE_DIR
         value: /workspace
+      - key: DATABASE_URL
+        value: postgresql://sasa:mE82jUP81UCiswCx0el53ObD76z6Qjht@dpg-d9ukajlbedkc73ae85vg-a/sasa_4hfv
+      - key: INTERNAL_DATABASE_URL
+        value: postgresql://sasa:mE82jUP81UCiswCx0el53ObD76z6Qjht@dpg-d9ukajlbedkc73ae85vg-a/sasa_4hfv
