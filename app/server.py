@@ -2580,21 +2580,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     <span>المستودعات والاستضافات</span>
                     <span class="tenant-plan-tag" style="background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff;">Universal</span>
                 </button>
-                <button class="tenant-chip" onclick="playSound('click'); openHealthModal()" title="النواة الطبية الشاملة والعلوم الحيوية" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #34d399;">
-                    <span>⚕️</span>
-                    <span>النواة الطبية والعطارة</span>
-                    <span class="tenant-plan-tag" style="background: linear-gradient(135deg, #059669, #10b981); color: #fff;">Bio-Engine</span>
-                </button>
-                <button class="tenant-chip" onclick="playSound('click'); openSciencesModal()" title="موسوعة العلوم الكونية الشاملة" style="background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.35); color: #c084fc;">
-                    <span>🔬</span>
-                    <span>العلوم الكونية</span>
-                    <span class="tenant-plan-tag" style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff;">Cosmic</span>
-                </button>
-                <button class="tenant-chip" onclick="playSound('click'); openEsotericModal()" title="الطب الروحاني والمعرفة النورانية واستيعاب الويب" style="background: rgba(236, 72, 153, 0.12); border-color: rgba(236, 72, 153, 0.35); color: #f472b6;">
-                    <span>📜</span>
-                    <span>الطب الروحاني والنوراني</span>
-                    <span class="tenant-plan-tag" style="background: linear-gradient(135deg, #db2777, #f43f5e); color: #fff;">Esoteric RAG</span>
-                </button>
+
             </div>
 
             <!-- Left Group in RTL: 3-Dots Menu -->
