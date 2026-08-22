@@ -191,7 +191,7 @@ class NeamaCodeEngine {
     fun createProjectFileContent(
         fileName: String,
         rawCode: String,
-        author: String = "Sasa AI (صاصا) - الشيخ الهلباوي",
+        author: String = "منظومة Neama AI (نعمه أي) - الشيخ الهلباوي",
         description: String = "Auto-generated & engineered autonomously"
     ): String {
         val extension = fileName.substringAfterLast('.', "")
@@ -237,7 +237,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'application/json; charset=utf-8')
         self.end_headers()
-        res = {"status": "online", "system": "$projectName", "engine": "Sasa AI", "architect": "الشيخ الهلباوي"}
+        res = {"status": "online", "system": "$projectName", "engine": "Neama AI", "architect": "الشيخ الهلباوي"}
         self.wfile.write(json.dumps(res).encode('utf-8'))
 
 if __name__ == '__main__':
@@ -248,14 +248,14 @@ if __name__ == '__main__':
                 )
                 files["requirements.txt"] = "fastapi>=0.100.0\nuvicorn>=0.22.0\nrequests>=2.31.0\npsycopg2-binary>=2.9.6\n"
                 files["Dockerfile"] = "FROM python:3.11-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nEXPOSE 8080\nCMD [\"python\", \"server.py\"]\n"
-                files["README.md"] = "# $projectName\n\n$description\n\n- **Architect**: الشيخ الهلباوي\n- **Engine**: Sasa AI Autonomous Subsystem\n"
+                files["README.md"] = "# $projectName\n\n$description\n\n- **Architect**: الشيخ الهلباوي\n- **Engine**: Neama AI Autonomous Subsystem\n"
             }
             "android", "compose", "mobile" -> {
                 files["README.md"] = "# $projectName - Android Architecture\n\n$description\n\nBuilt with Kotlin, Jetpack Compose, Room DB, and Sasa Autonomous Engine."
             }
             else -> {
-                files["index.html"] = "<!DOCTYPE html><html lang='ar' dir='rtl'><head><meta charset='UTF-8'><title>$projectName</title></head><body><h1>$projectName</h1><p>$description</p><p>تم التطوير بواسطة منظومة صاصا - الشيخ الهلباوي</p></body></html>"
-                files["README.md"] = "# $projectName\n\n$description\n\nEngineered by Sasa AI (الشيخ الهلباوي)"
+                files["index.html"] = "<!DOCTYPE html><html lang='ar' dir='rtl'><head><meta charset='UTF-8'><title>$projectName</title></head><body><h1>$projectName</h1><p>$description</p><p>تم التطوير بواسطة منظومة نعمه - الشيخ الهلباوي</p></body></html>"
+                files["README.md"] = "# $projectName\n\n$description\n\nEngineered by Neama AI (الشيخ الهلباوي)"
             }
         }
         return files
@@ -279,7 +279,7 @@ if __name__ == '__main__':
             )
         }
 
-        val evolved = existingCode.trimEnd() + "\n\n// --- [تطوير برمجيات صاصا AI - الشيخ الهلباوي] ---\n" + newFeatureSpec
+        val evolved = existingCode.trimEnd() + "\n\n// --- [تطوير برمجيات نعمه AI - الشيخ الهلباوي] ---\n" + newFeatureSpec
         return FileEditResult(
             isSuccess = true,
             originalLinesCount = existingCode.lines().size,

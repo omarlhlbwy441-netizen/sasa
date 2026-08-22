@@ -7,11 +7,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import com.example.ui.screens.MainScreen
 import com.example.ui.theme.SasaTheme
-import com.example.ui.viewmodel.SasaViewModel
+import com.example.ui.viewmodel.NeamaViewModel
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: SasaViewModel by viewModels()
+    private val viewModel: NeamaViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

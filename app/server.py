@@ -231,7 +231,7 @@ def add_log(level: str, message: str, details: Optional[Dict[str, Any]] = None):
     if len(execution_logs) > 200:
         execution_logs.pop(0)
 
-add_log("INFO", "Sasa AI Autonomous Agent Engine initialized", {
+add_log("INFO", "Neama AI Autonomous Agent Engine initialized", {
     "workspace": WORKSPACE_DIR,
     "fastapi": USE_FASTAPI,
     "flask": USE_FLASK
@@ -364,7 +364,7 @@ def github_fetch_repo_contents(repo_full: str, path: str = "", token: str = "") 
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def github_push_file(repo_name: str, file_path: str, file_content: str, commit_message: str = "Update via Sasa AI Agent", token: Optional[str] = None) -> Dict[str, Any]:
+def github_push_file(repo_name: str, file_path: str, file_content: str, commit_message: str = "Update via Neama AI Agent", token: Optional[str] = None) -> Dict[str, Any]:
     tk = token or DEFAULT_GITHUB_TOKEN
     if not tk:
         return {"success": False, "error": "GitHub token is required"}
@@ -416,7 +416,7 @@ def github_push_file(repo_name: str, file_path: str, file_content: str, commit_m
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def github_delete_file(repo_name: str, file_path: str, commit_message: str = "Delete via Sasa AI Agent", token: Optional[str] = None) -> Dict[str, Any]:
+def github_delete_file(repo_name: str, file_path: str, commit_message: str = "Delete via Neama AI Agent", token: Optional[str] = None) -> Dict[str, Any]:
     tk = token or DEFAULT_GITHUB_TOKEN
     if not tk:
         return {"success": False, "error": "GitHub token is required"}
@@ -533,7 +533,7 @@ def fetch_github_repo_context(prompt: str) -> Dict[str, Any]:
                 repo_name=repo_full,
                 file_path="app/server.py",
                 file_content=cur_server_code,
-                commit_message="fix: Synchronize Autonomous Sasa AI Agent Engine (Sheikh Al-Helbawy)",
+                commit_message="fix: Synchronize Autonomous Neama AI Agent Engine (Sheikh Al-Helbawy)",
                 token=token
             )
             if push_res.get("success"):
@@ -543,7 +543,7 @@ def fetch_github_repo_context(prompt: str) -> Dict[str, Any]:
         except Exception as ex:
             push_info = f"\n\n⚠️ **فشل التحديث:** {str(ex)}"
 
-    built_in_report = f"""✅ **تم فحص وإدارة المستودع بنجاح عبر محرك Sasa AI Agent!**
+    built_in_report = f"""✅ **تم فحص وإدارة المستودع بنجاح عبر محرك Neama AI Agent!**
 
 📌 **بيانات المستودع المفحوص**: `{repo_full}`
 🔑 **حالة رمز الوصول**: تم التحقق والربط بـ GitHub API بنجاح.
@@ -553,7 +553,7 @@ def fetch_github_repo_context(prompt: str) -> Dict[str, Any]:
 
 🔍 **التحليل الفني والبرمجي للمشروع:**
 1. **الربط بين الواجهة والخلفية**: تم التحقق من ربط محرك الردود والمسارات البرمجية في الخادم.
-2. **المقدرات والوظائف**: محرك Sasa AI متصل بشكل كامل ببيئة التشغيل، أوامر Terminal، وخدمات GitHub REST API التي طورها **الشيخ الهلباوي**.
+2. **المقدرات والوظائف**: محرك Neama AI متصل بشكل كامل ببيئة التشغيل، أوامر Terminal، وخدمات GitHub REST API التي طورها **الشيخ الهلباوي**.
 3. **الأداء واستقرار الكود**: تم فحص الملفات {', '.join([f'`{k}`' for k in fetched_contents.keys()]) if fetched_contents else 'الأساسية'} وضمان معالجة استجابات النموذج فورياً.{push_info}"""
 
     return {
@@ -566,7 +566,7 @@ def fetch_github_repo_context(prompt: str) -> Dict[str, Any]:
     }
 
 # ==============================================================================
-# Sasa AI Autonomous Agent Tool Suite & Execution Subsystem (الوكيل الذاتي الشامل)
+# Neama AI Autonomous Agent Tool Suite & Execution Subsystem (الوكيل الذاتي الشامل)
 # ==============================================================================
 
 def tool_view_file(path: str, start_line: int = 1, end_line: int = 500) -> Dict[str, Any]:
@@ -923,7 +923,7 @@ def tool_scan_dependencies(manifest_content: str = "") -> Dict[str, Any]:
 def tool_get_latency_sla() -> Dict[str, Any]:
     return APILatencyMonitor.get_latency_sla_report()
 
-SASA_AGENT_TOOLS = {
+NEAMA_AGENT_TOOLS = {
     "adjust_intent_weights": tool_adjust_intent_weights,
     "evaluate_escalation": tool_evaluate_escalation,
     "detailed_restore_report": tool_detailed_restore_report,
@@ -1257,7 +1257,7 @@ def dispatch_tool_call(func_name: str, func_args: Dict[str, Any], prompt_token: 
                 repo_name=func_args.get("repo_name", ""),
                 file_path=func_args.get("file_path", ""),
                 file_content=func_args.get("file_content", ""),
-                commit_message=func_args.get("commit_message", "Update via Sasa AI Agent"),
+                commit_message=func_args.get("commit_message", "Update via Neama AI Agent"),
                 token=tk
             )
         elif func_name == "github_delete_file":
@@ -1265,7 +1265,7 @@ def dispatch_tool_call(func_name: str, func_args: Dict[str, Any], prompt_token: 
             return github_delete_file(
                 repo_name=func_args.get("repo_name", ""),
                 file_path=func_args.get("file_path", ""),
-                commit_message=func_args.get("commit_message", "Delete via Sasa AI Agent"),
+                commit_message=func_args.get("commit_message", "Delete via Neama AI Agent"),
                 token=tk
             )
         elif func_name in ("git_clone_repo", "github_clone_repo"):
@@ -1353,7 +1353,7 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
     prompt_token = token_match.group(1) if token_match else DEFAULT_GITHUB_TOKEN
 
     system_instruction_text = (
-        "أنت نظام Sasa AI (صاصا) - وكيل ذكي ومهندس برمجي ومعماري ومراجع جودة الكود المصدري (Software Architect & Autonomous Coding Agent).\n"
+        "أنت منظومة Neama AI (نعمه أي) - الوكيل الذكي الشامل والمهندس البرمجي ومعماري الأنظمة ومراجع جودة الكود المصدري ومعماري ومراجع جودة الكود المصدري (Software Architect & Autonomous Coding Agent).\n"
         "قام بتطويرك وتصميم بنيتك المعمارية **الشيخ الهلباوي** (Omar El-Helbawy).\n"
         f"الوقت والتاريخ الحالي بتوقيت القاهرة ومكة المكرمة (UTC+3): {now_str_arab} بتاريخ {today_str_arab}.\n\n"
         "إرشادات العمل والتنفيذ:\n"
@@ -1559,7 +1559,7 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
 
 def execute_autonomous_agent(goal: str, token: Optional[str] = None, api_key: Optional[str] = None) -> Dict[str, Any]:
     """
-    Autonomous Agent execution loop for Sasa AI.
+    Autonomous Agent execution loop for Neama AI.
     Uses native Function Calling and Gemini reasoning to achieve user goal dynamically.
     """
     add_log("AUTONOMOUS_AGENT", f"Starting dynamic autonomous execution for goal: {goal}")
@@ -3998,8 +3998,8 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
 if USE_FASTAPI:
     app = FastAPI(
-        title="Sasa AI Chat & Agent Workspace Engine",
-        description="FastAPI Backend Execution & Chat Engine for Sasa AI",
+        title="Neama AI Chat & Agent Workspace Engine",
+        description="FastAPI Backend Execution & Chat Engine for Neama AI",
         version="v16.0"
     )
 
@@ -4016,7 +4016,7 @@ if USE_FASTAPI:
         repo_name: Optional[str] = Field(None)
         file_path: Optional[str] = Field(None)
         file_content: Optional[str] = Field(None)
-        commit_message: str = Field("Update via Sasa AI Agent")
+        commit_message: str = Field("Update via Neama AI Agent")
         token: Optional[str] = Field(None)
         timeout: int = Field(60)
 
@@ -4032,7 +4032,7 @@ if USE_FASTAPI:
             return JSONResponse({
                 "status": "online",
                 "framework": "FastAPI",
-                "service": "Sasa AI Chat & Agent Engine",
+                "service": "Neama AI Chat & Agent Engine",
                 "version": "v16.0",
                 "supervisor": "Omar El-Helbawy (الشيخ الهلباوي)"
             })
@@ -4090,7 +4090,7 @@ if USE_FASTAPI:
         res = github_delete_file(
             repo_name=req.repo_name or "",
             file_path=req.file_path or "",
-            commit_message=req.commit_message or "Delete via Sasa AI Agent",
+            commit_message=req.commit_message or "Delete via Neama AI Agent",
             token=req.token
         )
         return res
@@ -4221,18 +4221,18 @@ if USE_FASTAPI:
     async def tools_list_endpoint():
         return {
             "success": True,
-            "tools": list(SASA_AGENT_TOOLS.keys()),
-            "count": len(SASA_AGENT_TOOLS)
+            "tools": list(NEAMA_AGENT_TOOLS.keys()),
+            "count": len(NEAMA_AGENT_TOOLS)
         }
 
     @app.post("/api/tools/execute")
     async def tools_execute_endpoint(req: Dict[str, Any]):
         tname = req.get("tool", "")
         args = req.get("args", {})
-        if tname not in SASA_AGENT_TOOLS:
+        if tname not in NEAMA_AGENT_TOOLS:
             return {"success": False, "error": f"Tool not found: {tname}"}
         try:
-            fn = SASA_AGENT_TOOLS[tname]
+            fn = NEAMA_AGENT_TOOLS[tname]
             res = fn(**args) if isinstance(args, dict) else fn(args)
             return {"success": True, "tool": tname, "result": res}
         except Exception as e:
@@ -4255,7 +4255,7 @@ elif USE_FLASK:
             return jsonify({
                 "status": "online",
                 "framework": "Flask",
-                "service": "Sasa AI Chat & Agent Engine",
+                "service": "Neama AI Chat & Agent Engine",
                 "version": "v16.0",
                 "supervisor": "Omar El-Helbawy (الشيخ الهلباوي)"
             })
@@ -4298,7 +4298,7 @@ elif USE_FLASK:
             repo_name=data.get("repo_name", ""),
             file_path=data.get("file_path", ""),
             file_content=data.get("file_content", ""),
-            commit_message=data.get("commit_message", "Update via Sasa AI Agent"),
+            commit_message=data.get("commit_message", "Update via Neama AI Agent"),
             token=data.get("token")
         )
         return jsonify(res)
@@ -4309,7 +4309,7 @@ elif USE_FLASK:
         res = github_delete_file(
             repo_name=data.get("repo_name", ""),
             file_path=data.get("file_path", ""),
-            commit_message=data.get("commit_message", "Delete via Sasa AI Agent"),
+            commit_message=data.get("commit_message", "Delete via Neama AI Agent"),
             token=data.get("token")
         )
         return jsonify(res)
@@ -4435,8 +4435,8 @@ elif USE_FLASK:
     def tools_list_flask():
         return jsonify({
             "success": True,
-            "tools": list(SASA_AGENT_TOOLS.keys()),
-            "count": len(SASA_AGENT_TOOLS)
+            "tools": list(NEAMA_AGENT_TOOLS.keys()),
+            "count": len(NEAMA_AGENT_TOOLS)
         })
 
     @app.route("/api/tools/execute", methods=["POST"])
@@ -4444,10 +4444,10 @@ elif USE_FLASK:
         data = request.get_json(silent=True) or {}
         tname = data.get("tool", "")
         args = data.get("args", {})
-        if tname not in SASA_AGENT_TOOLS:
+        if tname not in NEAMA_AGENT_TOOLS:
             return jsonify({"success": False, "error": f"Tool not found: {tname}"})
         try:
-            fn = SASA_AGENT_TOOLS[tname]
+            fn = NEAMA_AGENT_TOOLS[tname]
             res = fn(**args) if isinstance(args, dict) else fn(args)
             return jsonify({"success": True, "tool": tname, "result": res})
         except Exception as e:
@@ -4489,7 +4489,7 @@ else:
                     response = {
                         "status": "online",
                         "framework": "Python Built-in HTTPServer",
-                        "service": "Sasa AI Chat Engine",
+                        "service": "Neama AI Chat Engine",
                         "version": "v16.0"
                     }
                     self.wfile.write(json.dumps(response).encode("utf-8"))
@@ -4643,7 +4643,7 @@ else:
                 self.wfile.write(json.dumps(response).encode("utf-8"))
             elif path == "/api/tools/list":
                 self._set_headers(200, "application/json")
-                response = {"success": True, "tools": list(SASA_AGENT_TOOLS.keys()), "count": len(SASA_AGENT_TOOLS)}
+                response = {"success": True, "tools": list(NEAMA_AGENT_TOOLS.keys()), "count": len(NEAMA_AGENT_TOOLS)}
                 self.wfile.write(json.dumps(response).encode("utf-8"))
             elif path == "/api/logs":
                 self._set_headers(200, "application/json")
@@ -4689,11 +4689,11 @@ else:
             elif path == "/api/tools/execute":
                 tname = body.get("tool", "")
                 args = body.get("args", {})
-                if tname not in SASA_AGENT_TOOLS:
+                if tname not in NEAMA_AGENT_TOOLS:
                     res = {"success": False, "error": f"Tool not found: {tname}"}
                 else:
                     try:
-                        fn = SASA_AGENT_TOOLS[tname]
+                        fn = NEAMA_AGENT_TOOLS[tname]
                         t_res = fn(**args) if isinstance(args, dict) else fn(args)
                         res = {"success": True, "tool": tname, "result": t_res}
                     except Exception as e:
@@ -4705,7 +4705,7 @@ else:
                     repo_name=body.get("repo_name", ""),
                     file_path=body.get("file_path", ""),
                     file_content=body.get("file_content", ""),
-                    commit_message=body.get("commit_message", "Update via Sasa AI Agent"),
+                    commit_message=body.get("commit_message", "Update via Neama AI Agent"),
                     token=body.get("token")
                 )
                 self._set_headers(200 if res.get("success") else 400, "application/json")
@@ -4714,7 +4714,7 @@ else:
                 res = github_delete_file(
                     repo_name=body.get("repo_name", ""),
                     file_path=body.get("file_path", ""),
-                    commit_message=body.get("commit_message", "Delete via Sasa AI Agent"),
+                    commit_message=body.get("commit_message", "Delete via Neama AI Agent"),
                     token=body.get("token")
                 )
                 self._set_headers(200 if res.get("success") else 400, "application/json")

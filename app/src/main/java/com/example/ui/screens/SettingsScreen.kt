@@ -57,11 +57,11 @@ import com.example.ui.theme.IndigoSecondary
 import com.example.ui.theme.TechDarkBorder
 import com.example.ui.theme.TechDarkSurface
 import com.example.ui.theme.TechDarkSurfaceVariant
-import com.example.ui.viewmodel.SasaViewModel
+import com.example.ui.viewmodel.NeamaViewModel
 
 @Composable
 fun SettingsScreen(
-    viewModel: SasaViewModel,
+    viewModel: NeamaViewModel,
     githubToken: String,
     repoOwner: String,
     repoName: String,
@@ -405,7 +405,7 @@ fun HonorBadgeCard() {
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "صاصا AI (Sasa AI Engine v2.0)",
+                text = "نعمه AI (Neama AI Engine v2.0)",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

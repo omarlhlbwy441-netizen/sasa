@@ -91,14 +91,14 @@ import com.example.ui.theme.IndigoSecondary
 import com.example.ui.theme.TechDarkBorder
 import com.example.ui.theme.TechDarkSurface
 import com.example.ui.theme.TechDarkSurfaceVariant
-import com.example.ui.viewmodel.SasaViewModel
+import com.example.ui.viewmodel.NeamaViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun AgentHubScreen(
-    viewModel: SasaViewModel,
+    viewModel: NeamaViewModel,
     agentLogs: List<AgentLogEntity>,
     isThinking: Boolean
 ) {
@@ -191,7 +191,7 @@ fun AgentHubScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "مرحباً بك! ابدأ المحادثة مع صاصا AI للتحكم بالمستودع والخدمات.",
+                        text = "مرحباً بك! ابدأ المحادثة مع نعمه AI للتحكم بالمستودع والخدمات.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
@@ -231,7 +231,7 @@ fun AgentHubScreen(
                 modifier = Modifier
                     .weight(1f)
                     .testTag("agent_chat_input"),
-                placeholder = { Text("اكتب أمرك أو سؤالك لصاصا AI...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                placeholder = { Text("اكتب أمرك أو سؤالك لنعمه AI...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = TechDarkSurface,
                     unfocusedContainerColor = TechDarkSurface,
@@ -379,7 +379,7 @@ fun SupervisorBadgeCard(onClearLogs: () -> Unit) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "صاصا AI (Sasa AI Agent)",
+                        text = "نعمه AI (Neama AI Agent)",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = Color.White
@@ -470,7 +470,7 @@ fun ChatMessageBubble(
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
             <textarea id="postText" rows="2" placeholder="ماذا يدور في ذهنك اليوم؟..." class="w-full bg-slate-800 text-white rounded-lg p-3 text-sm focus:outline-none resize-none"></textarea>
             <div class="flex justify-between items-center mt-2">
-                <span class="text-xs text-slate-400">⚡ مفعّل بواسطة Sasa AI Engine</span>
+                <span class="text-xs text-slate-400">⚡ مفعّل بواسطة Neama AI Engine</span>
                 <button onclick="addPost()" class="bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-lg">نشر الآن</button>
             </div>
         </div>
@@ -483,7 +483,7 @@ fun ChatMessageBubble(
                         <p class="text-xs text-slate-400">قبل 5 دقائق</p>
                     </div>
                 </div>
-                <p class="text-sm text-slate-200">تم بحمد الله إطلاق الجيل السادس عشر من منظومة صاصا AI المستقلة لتطوير البرمجيات والنشر السحابي التلقائي! 🚀🚀</p>
+                <p class="text-sm text-slate-200">تم بحمد الله إطلاق الجيل السادس عشر من منظومة نعمه AI المستقلة لتطوير البرمجيات والنشر السحابي التلقائي! 🚀🚀</p>
                 <div class="flex items-center gap-4 text-xs text-slate-400 border-t border-slate-800 pt-2">
                     <button onclick="this.classList.toggle('text-rose-500')" class="flex items-center gap-1"><i class="fa-solid fa-heart"></i> 24 إعجاب</button>
                     <span><i class="fa-solid fa-comment"></i> 5 تعليقات</span>
@@ -640,7 +640,7 @@ STAGE5: 🌐 تجهيز العرض والمعاينة التفاعلية | ال�
                     Text(
                         text = when (log.sender) {
                             "USER" -> "أنت"
-                            "SASA_AI" -> "صاصا AI"
+                            "SASA_AI" -> "نعمه AI"
                             else -> "نظام Sasa Bridge"
                         },
                         fontWeight = FontWeight.Bold,
@@ -1019,7 +1019,7 @@ fun LiveRealtimeThinkingCard(currentStage: Int) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "محرك صاصا المستقل: جاري المعالجة والتنفيذ...",
+                        text = "محرك نعمه المستقل: جاري المعالجة والتنفيذ...",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = CyanPrimary

@@ -16,7 +16,7 @@ import com.example.data.remote.github.GitHubRepoResponse
 import com.example.data.remote.github.GitHubUserDetail
 import com.example.data.repository.GeminiRepository
 import com.example.data.repository.GitHubRepository
-import com.example.service.SasaBackgroundService
+import com.example.service.NeamaBackgroundService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class SasaViewModel(application: Application) : AndroidViewModel(application) {
+class NeamaViewModel(application: Application) : AndroidViewModel(application) {
 
     private val db = SasaDatabase.getDatabase(application)
     private val dao = db.sasaDao()
@@ -107,7 +107,7 @@ class SasaViewModel(application: Application) : AndroidViewModel(application) {
     val serviceLogs: StateFlow<List<ServiceLogEntity>> = dao.getRecentServiceLogs()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val isServiceRunning: StateFlow<Boolean> = SasaBackgroundService.isServiceRunning
+    val isServiceRunning: StateFlow<Boolean> = NeamaBackgroundService.isServiceRunning
 
     // Auto-Pilot State (Disabled by user request - Manual & Direct Control)
     private val _isAutoPilotEnabled = MutableStateFlow(false)
@@ -127,7 +127,7 @@ class SasaViewModel(application: Application) : AndroidViewModel(application) {
     init {
         // Automatically start background service on app launch
         try {
-            SasaBackgroundService.startService(application)
+            NeamaBackgroundService.startService(application)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -167,7 +167,7 @@ class SasaViewModel(application: Application) : AndroidViewModel(application) {
             dao.insertServiceLog(
                 ServiceLogEntity(
                     title = "بدء التشغيل الآلي المستقل",
-                    detail = "بدأ صاصا AI يفحص المستودع $owner/$repo ويقوم بالرفع البرمجي التلقائي...",
+                    detail = "بدأ نعمه AI يفحص المستودع $owner/$repo ويقوم بالرفع البرمجي التلقائي...",
                     isSuccess = true
                 )
             )
@@ -185,7 +185,7 @@ app = Flask(__name__)
 def health_check():
     return jsonify({
         "status": "online",
-        "agent": "Sasa AI v15.5",
+        "agent": "Neama AI v15.5",
         "supervisor": "El-Helbawy",
         "mode": "100% Autonomous Fully Automated",
         "message": "Sasa Backend Server is running smoothly and syncing automatically."
@@ -199,7 +199,7 @@ def execute_command():
         return jsonify({
             "status": "success",
             "executed_command": command,
-            "result": "Command processed successfully by Sasa AI backend."
+            "result": "Command processed successfully by Neama AI backend."
         })
     except Exception as e:
         return jsonify({
@@ -233,7 +233,7 @@ if __name__ == "__main__":
                 owner = owner,
                 repo = repo,
                 path = "app/server.py",
-                commitMessage = "auto: Initialized Flask Backend Server via Sasa AI Auto-Pilot",
+                commitMessage = "auto: Initialized Flask Backend Server via Neama AI Auto-Pilot",
                 fileContent = serverPyCode,
                 token = token
             )
@@ -254,7 +254,7 @@ if __name__ == "__main__":
                 owner = owner,
                 repo = repo,
                 path = ".gitignore",
-                commitMessage = "auto: Setup .gitignore via Sasa AI Auto-Pilot",
+                commitMessage = "auto: Setup .gitignore via Neama AI Auto-Pilot",
                 fileContent = gitignoreContent,
                 token = token
             )
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                 owner = owner,
                 repo = repo,
                 path = "requirements.txt",
-                commitMessage = "auto: Add Python dependencies via Sasa AI Auto-Pilot",
+                commitMessage = "auto: Add Python dependencies via Neama AI Auto-Pilot",
                 fileContent = reqContent,
                 token = token
             )
@@ -588,7 +588,7 @@ if __name__ == "__main__":
                             val match = nameRegex.find(userText)
                             val newRepoName = match?.groupValues?.getOrNull(1) ?: "sasa-ai-generated-app"
                             val isPrivate = userText.contains("خاص") || userText.contains("private")
-                            val desc = "Automated Repository created by Sasa AI Autonomous Agent"
+                            val desc = "Automated Repository created by Neama AI Autonomous Agent"
 
                             val repoRes = gitHubRepository.createRepository(
                                 name = newRepoName,
@@ -631,7 +631,7 @@ if __name__ == "__main__":
                                         owner = dynamicOwner,
                                         repo = dynamicRepo,
                                         path = targetFilePath,
-                                        commitMessage = "auto: Delete $targetFilePath via Sasa AI Agent",
+                                        commitMessage = "auto: Delete $targetFilePath via Neama AI Agent",
                                         sha = sha,
                                         token = dynamicToken
                                     )
@@ -717,11 +717,11 @@ if __name__ == "__main__":
                                     if (userText.contains("الشيخ الهلباوي")) {
                                         targetContent = "الشيخ الهلباوي"
                                     } else {
-                                        targetContent = "تم التوليد والتحديث بواسطة صاصا AI وكيل الأندرويد البرمجي الفعلي."
+                                        targetContent = "تم التوليد والتحديث بواسطة نعمه AI وكيل الأندرويد البرمجي الفعلي."
                                     }
                                 }
 
-                                val commitMsg = "feat: Auto-create/update $targetFilePath via Sasa AI Agent"
+                                val commitMsg = "feat: Auto-create/update $targetFilePath via Neama AI Agent"
 
                                 // Check if file exists to get existing SHA for updating
                                 val existingRes = gitHubRepository.getSingleFileContent(dynamicOwner, dynamicRepo, targetFilePath, dynamicToken)
@@ -787,7 +787,7 @@ if __name__ == "__main__":
 
             val res = gitHubRepository.createRepository(
                 name = name,
-                description = description ?: "Created by Sasa AI Autonomous Agent",
+                description = description ?: "Created by Neama AI Autonomous Agent",
                 isPrivate = isPrivate,
                 autoInit = true,
                 token = activeToken
@@ -861,7 +861,7 @@ if __name__ == "__main__":
         owner: String,
         repo: String,
         path: String,
-        commitMessage: String = "auto: Delete file via Sasa AI Agent",
+        commitMessage: String = "auto: Delete file via Neama AI Agent",
         token: String? = null
     ) {
         viewModelScope.launch {
@@ -949,9 +949,9 @@ app = Flask(__name__)
 def health_check():
     return jsonify({
         "status": "online",
-        "agent": "Sasa AI Autonomous Agent",
+        "agent": "Neama AI Autonomous Agent",
         "repository": "$owner/$repo",
-        "message": "Full Python Flask Backend initialized autonomously by Sasa AI"
+        "message": "Full Python Flask Backend initialized autonomously by Neama AI"
     })
 
 if __name__ == "__main__":
@@ -972,7 +972,7 @@ CMD ["python", "app/server.py"]
 
             val readmeCode = """# $repo
 
-Automated repository managed autonomously by **Sasa AI** (إشراف الشيخ الهلباوي).
+Automated repository managed autonomously by **Neama AI** (إشراف الشيخ الهلباوي).
 
 ## Features
 - Fully automated CI/CD push via GitHub API.
@@ -993,7 +993,7 @@ Automated repository managed autonomously by **Sasa AI** (إشراف الشيخ 
             for ((filePath, content) in filesMap) {
                 pushCodeToGitHub(
                     filePath = filePath,
-                    commitMessage = "feat: Auto-initialize $filePath via Sasa AI Autonomous Agent",
+                    commitMessage = "feat: Auto-initialize $filePath via Neama AI Autonomous Agent",
                     fileContent = content,
                     customRepoOwner = owner,
                     customRepoName = repo,
@@ -1075,9 +1075,9 @@ Automated repository managed autonomously by **Sasa AI** (إشراف الشيخ 
     fun toggleBackgroundService() {
         val context = getApplication<Application>().applicationContext
         if (isServiceRunning.value) {
-            SasaBackgroundService.stopService(context)
+            NeamaBackgroundService.stopService(context)
         } else {
-            SasaBackgroundService.startService(context)
+            NeamaBackgroundService.startService(context)
         }
     }
 
@@ -1123,7 +1123,7 @@ Automated repository managed autonomously by **Sasa AI** (إشراف الشيخ 
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
             <textarea id="postText" rows="2" placeholder="ماذا يدور في ذهنك اليوم؟..." class="w-full bg-slate-800 text-white rounded-lg p-3 text-sm focus:outline-none resize-none"></textarea>
             <div class="flex justify-between items-center mt-2">
-                <span class="text-xs text-slate-400">⚡ مفعّل بواسطة Sasa AI Engine</span>
+                <span class="text-xs text-slate-400">⚡ مفعّل بواسطة Neama AI Engine</span>
                 <button onclick="addPost()" class="bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-lg">نشر الآن</button>
             </div>
         </div>
@@ -1138,7 +1138,7 @@ Automated repository managed autonomously by **Sasa AI** (إشراف الشيخ 
                         <p class="text-xs text-slate-400">قبل 5 دقائق</p>
                     </div>
                 </div>
-                <p class="text-sm text-slate-200">تم بحمد الله إطلاق الجيل السادس عشر من منظومة صاصا AI المستقلة لتطوير البرمجيات والنشر السحابي التلقائي! 🚀🚀</p>
+                <p class="text-sm text-slate-200">تم بحمد الله إطلاق الجيل السادس عشر من منظومة نعمه AI المستقلة لتطوير البرمجيات والنشر السحابي التلقائي! 🚀🚀</p>
                 <div class="flex items-center gap-4 text-xs text-slate-400 border-t border-slate-800 pt-2">
                     <button onclick="this.classList.toggle('text-rose-500')" class="flex items-center gap-1"><i class="fa-solid fa-heart"></i> <span id="likeCount">24</span> إعجاب</button>
                     <span><i class="fa-solid fa-comment"></i> 5 تعليقات</span>
@@ -1180,7 +1180,7 @@ Automated repository managed autonomously by **Sasa AI** (إشراف الشيخ 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$topic | صاصا AI Builder</title>
+    <title>$topic | نعمه AI Builder</title>
     <style>
         :root {
             --primary: #00F2FE;
@@ -1208,7 +1208,7 @@ Automated repository managed autonomously by **Sasa AI** (إشراف الشيخ 
 <body>
     <header>
         <h1>⚡ $topic</h1>
-        <p class="subtitle">تطبيق ويب تفاعلي مولّد ومبني بالكامل بواسطة صاصا AI (إشراف: الشيخ الهلباوي)</p>
+        <p class="subtitle">تطبيق ويب تفاعلي مولّد ومبني بالكامل بواسطة نعمه AI (إشراف: الشيخ الهلباوي)</p>
         <button class="btn" onclick="alert('مرحباً بك! المعاينة المباشرة التفاعلية تعمل بنجاح 100% داخل تطبيق الأندرويد!')">تفاعل مع الموقع الآن</button>
     </header>
 
@@ -1239,7 +1239,7 @@ Automated repository managed autonomously by **Sasa AI** (إشراف الشيخ 
 
         val codeSnippet = """// App Configuration & Dynamic Router
 // File: app.js / server.py
-console.log("Sasa AI Engine: Initializing web project for $topic...");
+console.log("Neama AI Engine: Initializing web project for $topic...");
 
 function initInteractiveFeatures() {
     console.log("Features loaded successfully.");
@@ -1346,7 +1346,7 @@ STAGE5: 🧪 5. التوليف النهائي (Synthesis) | دمج التعدي�
 STAGE6: 🚀 6. تقديم النتيجة (Output) | جاهز للتطبيق الفوري ورفع التغييرات لمستودعك.
 ===PIPELINE_END===
 
-⚡ **[منظومة Sasa AI - التعديل البرمجي وتحديث الملفات]:**
+⚡ **[منظومة Neama AI - التعديل البرمجي وتحديث الملفات]:**
 
 تم تجهيز وتطبيق التعديل البرمجي المطلوب بأعلى درجات الدقة الهندسية:
 • **نوع التعديل:** استبدال وتحديث الأكواد البرمجية.
@@ -1371,7 +1371,7 @@ STAGE6: 🚀 6. تقديم النتيجة (Output) | جاهز للتطبيق ا�
 STAGE1: 🧩 1. فهم السياق (Context Parsing) | استلام أمر فحص ومراجعة ملفات المستودع بالكامل '$dynamicOwner/$dynamicRepo' وتصحيح انضباط الردود البرمجية.
 STAGE2: 🎯 2. تحديد نوع المهمة (Intent Classification) | نوع المهمة: مراجعة شاملة لملفات المشروع (Full Codebase Review) واستنساخ ومعالجة الردود.
 STAGE3: 🧠 3. التفكير المسبق (Pre-reasoning) | تشخيص أسباب الردود السابقة: إلغاء المقدمات التكرارية والتحول إلى التنفيذ المباشر الفوري.
-STAGE4: ⚙️ 4. التنفيذ التفاعلي (Interactive Execution) | فحص كافة ملفات المشروع (server.py, Dockerfile, Procfile, requirements.txt, render.yaml, build.gradle.kts, SasaViewModel.kt).
+STAGE4: ⚙️ 4. التنفيذ التفاعلي (Interactive Execution) | فحص كافة ملفات المشروع (server.py, Dockerfile, Procfile, requirements.txt, render.yaml, build.gradle.kts, NeamaViewModel.kt).
 STAGE5: 🧪 5. التوليف النهائي (Synthesis) | استنساخ ومطابقة بنية النظام وتحديث خطوط التنفيذ البرمجية.
 STAGE6: 🚀 6. تقديم النتيجة (Output) | عرض التقرير التشخيصي الدقيق والتصحيحات المنجزة وجاهزية العمل المشترك.
 ===PIPELINE_END===
@@ -1391,7 +1391,7 @@ STAGE6: 🚀 6. تقديم النتيجة (Output) | عرض التقرير ال�
 | الملف / المكون | الحالة البرمجية | ملاحظات التدقيق والتحسين |
 | :--- | :--- | :--- |
 | **`app/server.py`** | 🟢 سليم ومحدث | يحتوي على محرك الخادم، محرك الألعاب 3D، مسارات `/api/games/play`، ومسارات الطرفية `/api/execute`. |
-| **`app/src/.../SasaViewModel.kt`** | 🟢 تم ترقيته | تم توسيع معالج النوايا (Intent Dispatcher) ليتعرف فوراً على أوامر المراجعة، الاستنساخ، وصناعة الألعاب دون توقف. |
+| **`app/src/.../NeamaViewModel.kt`** | 🟢 تم ترقيته | تم توسيع معالج النوايا (Intent Dispatcher) ليتعرف فوراً على أوامر المراجعة، الاستنساخ، وصناعة الألعاب دون توقف. |
 | **`Dockerfile` & `Procfile`** | 🟢 جاهز للإنتاج | بيئة حاويات Python 3.10 مع تشغيل Gunicorn و Uvicorn بدون أخطاء. |
 | **`requirements.txt`** | 🟢 منضبط | اعتمادات FastAPI, Uvicorn, Gunicorn, Moshi, WebGL/Three.js جاهزة للعمل. |
 | **`render.yaml`** | 🟢 مهيأ | إعدادات النشر السحابي التلقائي مع متغيرات البيئة. |
@@ -1574,7 +1574,7 @@ STAGE6: 🚀 6. تقديم النتيجة (Output) | تم إرسال كافة م
         listOf(
             TerminalEntry(
                 command = "sasa-engine --version",
-                output = "Sasa AI Autonomous Development Environment v18.0 (Supervisor: Omar El-Helbawy)\nEnvironment: Linux / Android Jetpack Compose / Python FastEngine\nWorkspace: Ready."
+                output = "Neama AI Autonomous Development Environment v18.0 (Supervisor: Omar El-Helbawy)\nEnvironment: Linux / Android Jetpack Compose / Python FastEngine\nWorkspace: Ready."
             )
         )
     )
@@ -1592,7 +1592,7 @@ STAGE6: 🚀 6. تقديم النتيجة (Output) | تم إرسال كافة م
             WorkspaceFileItem("settings.gradle.kts", "settings.gradle.kts", false),
             WorkspaceFileItem("render.yaml", "render.yaml", false),
             WorkspaceFileItem("metadata.json", "metadata.json", false),
-            WorkspaceFileItem("SasaViewModel.kt", "app/src/main/java/com/example/ui/viewmodel/SasaViewModel.kt", false),
+            WorkspaceFileItem("NeamaViewModel.kt", "app/src/main/java/com/example/ui/viewmodel/NeamaViewModel.kt", false),
             WorkspaceFileItem("DeveloperStudioScreen.kt", "app/src/main/java/com/example/ui/screens/DeveloperStudioScreen.kt", false)
         )
     )
@@ -1602,13 +1602,13 @@ STAGE6: 🚀 6. تقديم النتيجة (Output) | تم إرسال كافة م
     val activeFilePath: StateFlow<String?> = _activeFilePath.asStateFlow()
 
     private val _activeFileContent = MutableStateFlow<String?>(
-        """# Sasa AI Autonomous Agent Engine
+        """# Neama AI Autonomous Agent Engine
 # Developed & Supervised by: Omar El-Helbawy (الشيخ الهلباوي)
 import os, sys, json, subprocess
 from datetime import datetime
 
 WORKSPACE_DIR = os.environ.get("WORKSPACE_DIR", os.getcwd())
-print("🚀 Sasa AI Developer Engine Online.")
+print("🚀 Neama AI Developer Engine Online.")
 """
     )
     val activeFileContent: StateFlow<String?> = _activeFileContent.asStateFlow()
@@ -1637,7 +1637,7 @@ Your branch is up to date with 'origin/main'.
 Changes to be committed:
   (use "git restore --staged <file>..." to unstage)
 	modified:   app/server.py
-	modified:   SasaViewModel.kt
+	modified:   NeamaViewModel.kt
 	modified:   DeveloperStudioScreen.kt
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
@@ -1661,7 +1661,7 @@ settings.gradle.kts"""
 Author: Omar El-Helbawy <omarlhlbwy441@gmail.com>
 Date:   Thu Aug 20 19:35:00 2026 +0300
 
-    Upgrade Sasa AI to Autonomous Full Developer Environment Studio
+    Upgrade Neama AI to Autonomous Full Developer Environment Studio
 
 commit a1f2d345e67890b
 Author: Omar El-Helbawy <omarlhlbwy441@gmail.com>
@@ -1703,7 +1703,7 @@ requests>=2.31.0"""
                     WorkspaceFileItem("settings.gradle.kts", "settings.gradle.kts", false),
                     WorkspaceFileItem("render.yaml", "render.yaml", false),
                     WorkspaceFileItem("metadata.json", "metadata.json", false),
-                    WorkspaceFileItem("SasaViewModel.kt", "app/src/main/java/com/example/ui/viewmodel/SasaViewModel.kt", false),
+                    WorkspaceFileItem("NeamaViewModel.kt", "app/src/main/java/com/example/ui/viewmodel/NeamaViewModel.kt", false),
                     WorkspaceFileItem("DeveloperStudioScreen.kt", "app/src/main/java/com/example/ui/screens/DeveloperStudioScreen.kt", false)
                 )
                 _workspaceFiles.value = defaultFiles
@@ -1746,7 +1746,7 @@ requests>=2.31.0"""
                     owner = _repoOwner.value,
                     repo = _repoName.value,
                     path = path,
-                    commitMessage = "Surgically update $path via Sasa AI Developer Studio",
+                    commitMessage = "Surgically update $path via Neama AI Developer Studio",
                     fileContent = content,
                     token = _githubToken.value
                 )
@@ -1763,7 +1763,7 @@ requests>=2.31.0"""
         viewModelScope.launch {
             val logResult = when (toolName) {
                 "view_file" -> "✅ [view_file]: Successfully inspected /app/server.py (Lines 1-120) with AST syntax verification."
-                "edit_file" -> "✅ [edit_file]: Surgically replaced target code blocks in /app/src/main/java/.../SasaViewModel.kt without errors."
+                "edit_file" -> "✅ [edit_file]: Surgically replaced target code blocks in /app/src/main/java/.../NeamaViewModel.kt without errors."
                 "create_file" -> "✅ [create_file]: Created new module /app/src/main/java/.../DeveloperStudioScreen.kt (100% compliant)."
                 "delete_file" -> "✅ [delete_file]: Cleaned temporary cache and unneeded build artifacts."
                 "list_dir" -> "✅ [list_dir]: Found 14 root items, 6 subdirectories in workspace."

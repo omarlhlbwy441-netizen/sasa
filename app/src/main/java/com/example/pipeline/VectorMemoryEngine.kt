@@ -58,7 +58,7 @@ class VectorMemoryEngine {
      */
     fun generatePgVectorInitSql(): String {
         return """
--- [منظومة صاصا - الشيخ الهلباوي: تهيئة محرك الذاكرة الشعاعية pgvector]
+-- [منظومة نعمه - الشيخ الهلباوي: تهيئة محرك الذاكرة الشعاعية pgvector]
 CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE IF NOT EXISTS codebase_embeddings (

@@ -75,7 +75,7 @@ class IntentClassifier {
                     taskType = TaskType.GENERAL_CHAT,
                     confidence = 0.85f,
                     requiredTools = listOf("general_llm"),
-                    reasoning = "استفسار عادي أو محادثة عامة مع صاصا AI."
+                    reasoning = "استفسار عادي أو محادثة عامة مع نعمه AI."
                 )
             }
         }

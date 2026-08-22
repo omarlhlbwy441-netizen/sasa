@@ -95,10 +95,10 @@ import com.example.ui.theme.IndigoSecondary
 import com.example.ui.theme.TechDarkBorder
 import com.example.ui.theme.TechDarkSurface
 import com.example.ui.theme.TechDarkSurfaceVariant
-import com.example.ui.viewmodel.SasaViewModel
+import com.example.ui.viewmodel.NeamaViewModel
 
 @Composable
-fun DeveloperStudioScreen(viewModel: SasaViewModel) {
+fun DeveloperStudioScreen(viewModel: NeamaViewModel) {
     var selectedSubTab by remember { mutableIntStateOf(0) }
     val tabTitles = listOf(
         "💻 الطرفية (Terminal)",
@@ -190,7 +190,7 @@ private fun DevStudioHeader(onRefresh: () -> Unit) {
             Spacer(modifier = Modifier.width(10.dp))
             Column {
                 Text(
-                    text = "Sasa AI Developer Studio (بيئة التطوير المتكاملة)",
+                    text = "Neama AI Developer Studio (بيئة التطوير المتكاملة)",
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
                     color = Color.White
@@ -216,7 +216,7 @@ private fun DevStudioHeader(onRefresh: () -> Unit) {
 // 1. TERMINAL VIEW
 // ----------------------------------------------------
 @Composable
-private fun TerminalView(viewModel: SasaViewModel) {
+private fun TerminalView(viewModel: NeamaViewModel) {
     var cmdInput by remember { mutableStateOf("") }
     val terminalHistory by viewModel.terminalHistory.collectAsState()
     val isExecuting by viewModel.isExecutingCommand.collectAsState()
@@ -268,7 +268,7 @@ private fun TerminalView(viewModel: SasaViewModel) {
                 ) {
                     Icon(Icons.Default.Terminal, contentDescription = null, tint = CyanPrimary.copy(alpha = 0.5f), modifier = Modifier.size(48.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("طرفية أوامر Sasa AI التفاعلية جاهزة لتنفيذ كافة الأوامر...", color = Color.Gray, fontSize = 12.sp)
+                    Text("طرفية أوامر Neama AI التفاعلية جاهزة لتنفيذ كافة الأوامر...", color = Color.Gray, fontSize = 12.sp)
                 }
             } else {
                 LazyColumn(
@@ -387,7 +387,7 @@ private fun TerminalHistoryItem(entry: TerminalEntry) {
 // 2. CODE STUDIO & SURGICAL EDITOR VIEW
 // ----------------------------------------------------
 @Composable
-private fun CodeEditorView(viewModel: SasaViewModel) {
+private fun CodeEditorView(viewModel: NeamaViewModel) {
     val workspaceFiles by viewModel.workspaceFiles.collectAsState()
     val activeFilePath by viewModel.activeFilePath.collectAsState()
     val fileContent by viewModel.activeFileContent.collectAsState()
@@ -509,7 +509,7 @@ private fun CodeEditorView(viewModel: SasaViewModel) {
 // 3. AGENT TOOLS RUNNER VIEW
 // ----------------------------------------------------
 @Composable
-private fun AgentToolsRunnerView(viewModel: SasaViewModel) {
+private fun AgentToolsRunnerView(viewModel: NeamaViewModel) {
     val toolList = listOf(
         "view_file" to "قراءة ملف محدد مع تحديد الأسطر",
         "edit_file" to "تعديل جراحي واستبدال شفرة",
@@ -599,7 +599,7 @@ private fun AgentToolsRunnerView(viewModel: SasaViewModel) {
 // 4. GAME & WEB SANDBOX VIEW
 // ----------------------------------------------------
 @Composable
-private fun GameSandboxView(viewModel: SasaViewModel) {
+private fun GameSandboxView(viewModel: NeamaViewModel) {
     val activeSandboxUrl by viewModel.activeSandboxUrl.collectAsState()
     var customGamePrompt by remember { mutableStateOf("") }
     val isBuildingGame by viewModel.isBuildingGame.collectAsState()
@@ -687,7 +687,7 @@ private fun GameSandboxView(viewModel: SasaViewModel) {
 // 5. CLOUD TELEMETRY VIEW
 // ----------------------------------------------------
 @Composable
-private fun CloudTelemetryView(viewModel: SasaViewModel) {
+private fun CloudTelemetryView(viewModel: NeamaViewModel) {
     val repoOwner by viewModel.repoOwner.collectAsState()
     val repoName by viewModel.repoName.collectAsState()
     val serverUrl by viewModel.serverUrl.collectAsState()

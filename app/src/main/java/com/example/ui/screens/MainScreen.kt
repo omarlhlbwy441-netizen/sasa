@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.CyanPrimary
 import com.example.ui.theme.TechDarkBorder
 import com.example.ui.theme.TechDarkSurface
-import com.example.ui.viewmodel.SasaViewModel
+import com.example.ui.viewmodel.NeamaViewModel
 
 @Composable
-fun MainScreen(viewModel: SasaViewModel) {
+fun MainScreen(viewModel: NeamaViewModel) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
     val githubToken by viewModel.githubToken.collectAsState()

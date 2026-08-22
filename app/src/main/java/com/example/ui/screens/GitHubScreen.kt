@@ -70,11 +70,11 @@ import com.example.ui.theme.RoseError
 import com.example.ui.theme.TechDarkBorder
 import com.example.ui.theme.TechDarkSurface
 import com.example.ui.theme.TechDarkSurfaceVariant
-import com.example.ui.viewmodel.SasaViewModel
+import com.example.ui.viewmodel.NeamaViewModel
 
 @Composable
 fun GitHubScreen(
-    viewModel: SasaViewModel,
+    viewModel: NeamaViewModel,
     repoOwner: String,
     repoName: String,
     repoInfo: GitHubRepoResponse?,
@@ -86,17 +86,17 @@ fun GitHubScreen(
     pushResult: String?
 ) {
     var filePath by remember { mutableStateOf("server.py") }
-    var commitMessage by remember { mutableStateOf("feat: Add background sync handler for Sasa AI agent") }
+    var commitMessage by remember { mutableStateOf("feat: Add background sync handler for Neama AI agent") }
     var targetRepoInput by remember { mutableStateOf("$repoOwner/$repoName") }
     var targetTokenInput by remember { mutableStateOf("") }
     var codeContent by remember {
         mutableStateOf(
-            """# Server Background Handler for Sasa AI
+            """# Server Background Handler for Neama AI
 import os
 import sys
 
 def main():
-    print("Sasa AI Background Agent Bridge initialized successfully.")
+    print("Neama AI Background Agent Bridge initialized successfully.")
     print("Repository: $repoOwner/$repoName")
 
 if __name__ == "__main__":
@@ -162,7 +162,7 @@ if __name__ == "__main__":
                         owner = parsed.first,
                         repo = parsed.second,
                         path = filePath,
-                        commitMessage = commitMessage.ifBlank { "auto: Delete $filePath via Sasa AI Agent" },
+                        commitMessage = commitMessage.ifBlank { "auto: Delete $filePath via Neama AI Agent" },
                         token = targetTokenInput.ifBlank { null }
                     )
                 }
@@ -439,7 +439,7 @@ fun DirectCommitPushCard(
                 OutlinedButton(
                     onClick = {
                         onFilePathChange("app/server.py")
-                        onCommitMessageChange("feat: Add Flask server backend for Sasa AI")
+                        onCommitMessageChange("feat: Add Flask server backend for Neama AI")
                         onCodeContentChange(
                             """import os
 from flask import Flask, jsonify, request
@@ -453,7 +453,7 @@ app = Flask(__name__)
 def health_check():
     return jsonify({
         "status": "online",
-        "agent": "Sasa AI v15.5",
+        "agent": "Neama AI v15.5",
         "supervisor": "El-Helbawy",
         "message": "Sasa Backend Server is running smoothly."
     })
@@ -466,7 +466,7 @@ def execute_command():
         return jsonify({
             "status": "success",
             "executed_command": command,
-            "result": "Command processed successfully by Sasa AI backend."
+            "result": "Command processed successfully by Neama AI backend."
         })
     except Exception as e:
         return jsonify({

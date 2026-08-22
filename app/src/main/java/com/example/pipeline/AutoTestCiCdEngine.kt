@@ -33,7 +33,7 @@ class AutoTestCiCdEngine {
             val testCode = """
 @Test
 fun test_${method}_executesSuccessfullyUnderSupervision() {
-    // Generated automatically by Sasa AI AutoTest Engine (Sheikh Al-Helbawy)
+    // Generated automatically by Neama AI AutoTest Engine (Sheikh Al-Helbawy)
     val component = $className()
     assertNotNull(component)
 }

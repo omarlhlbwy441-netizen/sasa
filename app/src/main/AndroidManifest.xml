@@ -30,7 +30,7 @@
         </activity>
 
         <service
-            android:name=".service.SasaBackgroundService"
+            android:name=".service.NeamaBackgroundService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />

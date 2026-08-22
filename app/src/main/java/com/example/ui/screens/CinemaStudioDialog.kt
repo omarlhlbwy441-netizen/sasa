@@ -165,7 +165,7 @@ fun CinemaStudioDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("استوديو صاصا للإنتاج السينمائي والدرامي", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+                                Text("استوديو نعمه للإنتاج السينمائي والدرامي", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier

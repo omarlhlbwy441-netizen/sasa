@@ -55,14 +55,14 @@ import com.example.ui.theme.RoseError
 import com.example.ui.theme.TechDarkBorder
 import com.example.ui.theme.TechDarkSurface
 import com.example.ui.theme.TechDarkSurfaceVariant
-import com.example.ui.viewmodel.SasaViewModel
+import com.example.ui.viewmodel.NeamaViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun BackgroundServiceScreen(
-    viewModel: SasaViewModel,
+    viewModel: NeamaViewModel,
     isServiceRunning: Boolean,
     serviceLogs: List<ServiceLogEntity>
 ) {
@@ -284,7 +284,7 @@ fun BackgroundCapabilitiesCard() {
             FeatureRowItem(
                 icon = Icons.Default.Shield,
                 title = "إشعار دائم شفاف",
-                description = "يعرض حالة صاصا AI في لوحة الإشعارات لحماية الخدمة من إغلاق النظام."
+                description = "يعرض حالة نعمه AI في لوحة الإشعارات لحماية الخدمة من إغلاق النظام."
             )
         }
     }

@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class SasaBackgroundService : Service() {
+class NeamaBackgroundService : Service() {
 
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
@@ -43,7 +43,7 @@ class SasaBackgroundService : Service() {
         val lastHeartbeatTime: StateFlow<Long> = _lastHeartbeatTime.asStateFlow()
 
         fun startService(context: Context) {
-            val intent = Intent(context, SasaBackgroundService::class.java)
+            val intent = Intent(context, NeamaBackgroundService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
             } else {
@@ -52,7 +52,7 @@ class SasaBackgroundService : Service() {
         }
 
         fun stopService(context: Context) {
-            val intent = Intent(context, SasaBackgroundService::class.java)
+            val intent = Intent(context, NeamaBackgroundService::class.java)
             context.stopService(intent)
         }
     }
@@ -60,7 +60,7 @@ class SasaBackgroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        val notification = buildNotification("خدمة صاصا AI نشطة في الخلفية - مزامنة جاري التنفيذ...")
+        val notification = buildNotification("خدمة نعمه AI نشطة في الخلفية - مزامنة جاري التنفيذ...")
         startForeground(NOTIFICATION_ID, notification)
         _isServiceRunning.value = true
         startBackgroundProcessing()
@@ -85,7 +85,7 @@ class SasaBackgroundService : Service() {
             dao.insertServiceLog(
                 ServiceLogEntity(
                     title = "بدء تشغيل الخدمة",
-                    detail = "تم تفعيل خدمة الخلفية الشفافة لصاصا AI بنجاح.",
+                    detail = "تم تفعيل خدمة الخلفية الشفافة لنعمه AI بنجاح.",
                     isSuccess = true
                 )
             )
@@ -170,7 +170,7 @@ class SasaBackgroundService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("صاصا AI (Sasa AI Engine)")
+            .setContentTitle("نعمه AI (Neama AI Engine)")
             .setContentText(contentText)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
@@ -183,10 +183,10 @@ class SasaBackgroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Sasa AI Background Service Channel",
+                "Neama AI Background Service Channel",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "قناة إشعارات خدمة صاصا AI لرفع وإدارة التغييرات في الخلفية"
+                description = "قناة إشعارات خدمة نعمه AI لرفع وإدارة التغييرات في الخلفية"
             }
             val manager = getSystemService(NotificationManager::class.java)
             manager?.createNotificationChannel(channel)

@@ -51,7 +51,7 @@ class MultiCloudOrchestrator {
       "portMappings": [{"containerPort": 8080, "hostPort": 8080}],
       "environment": [
         {"name": "ARCHITECT", "value": "الشيخ الهلباوي"},
-        {"name": "ENGINE", "value": "Sasa AI Multi-Cloud"}
+        {"name": "ENGINE", "value": "Neama AI Multi-Cloud"}
       ]
     }
   ],
@@ -59,7 +59,7 @@ class MultiCloudOrchestrator {
   "cpu": "256",
   "memory": "512"
 }"""
-                files["infra/deploy-aws.sh"] = "#!/bin/bash\necho 'Deploying $projectName to AWS ECS Fargate via Sasa AI Orchestrator...'\naws ecs update-service --cluster sasa-cluster --service $projectName-svc --force-new-deployment\n"
+                files["infra/deploy-aws.sh"] = "#!/bin/bash\necho 'Deploying $projectName to AWS ECS Fargate via Neama AI Orchestrator...'\naws ecs update-service --cluster sasa-cluster --service $projectName-svc --force-new-deployment\n"
             }
             "GCP" -> {
                 files["infra/cloudbuild.yaml"] = """steps:
@@ -75,7 +75,7 @@ main = "src/index.js"
 compatibility_date = "2026-08-20"
 [vars]
 ARCHITECT = "الشيخ الهلباوي"
-ENGINE = "Sasa AI Edge Worker"
+ENGINE = "Neama AI Edge Worker"
 """
             }
             "DIGITALOCEAN" -> {

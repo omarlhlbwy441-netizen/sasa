@@ -1,7 +1,7 @@
 package com.example.pipeline
 
 /**
- * Sasa AI Video Synthesizer v3.0 (Code-to-Video Documentation & GPU Pipeline)
+ * Neama AI Video Synthesizer v3.0 (Code-to-Video Documentation & GPU Pipeline)
  * Developed and architected under the supervision of Sheikh Al-Helbawy (الشيخ الهلباوي).
  * 
  * Provides:
@@ -44,7 +44,7 @@ class VideoSynthesizerV3 {
                 sceneNumber = sceneCounter++,
                 title = "المقدمة المعمارية لمنظومة $projectTitle",
                 durationSeconds = 6,
-                codeSnippet = "// منظومة صاصا - الشيخ الهلباوي\n// High-Performance Architectural Blueprint",
+                codeSnippet = "// منظومة نعمه - الشيخ الهلباوي\n// High-Performance Architectural Blueprint",
                 narrationArabic = "أهلاً بكم في التوثيق المرئي التفاعلي لمنظومة $projectTitle المطورة بإشراف الشيخ الهلباوي.",
                 visualEffects = listOf("WebGPU_FadeIn", "Particle_Flow_Background", "Neon_Accent_Glow")
             )
