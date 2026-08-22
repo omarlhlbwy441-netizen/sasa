@@ -1,3 +1,4 @@
+from app.intelligence_suite.rci_engine import RequestClassifier, ContainerOrchestratorEngine, RCISelfOptimizerEngine, MultiLayerSafetyVerifier
 from app.advanced_modules.production_suite import RealtimeMetricsEngine, ConfigManagementEngine, StaticAnalysisSonarEngine, DocAutomationEngine, ErrorTaxonomyEngine, ChaosAndLoadTestingEngine
 from app.advanced_modules.capabilities import CodeProfilerEngine, SecurityAnalysisEngine, CICDWorkflowEngine, RustIntegrationEngine, LegacyModernizerEngine
 from app.emotions.affective_engine import analyze_user_emotion
@@ -865,7 +866,29 @@ def tool_get_error_taxonomy(code: str = "E1001") -> Dict[str, Any]:
 def tool_run_chaos_simulation(failure_type: str = "node_crash") -> Dict[str, Any]:
     return ChaosAndLoadTestingEngine.simulate_chaos_scenario(failure_type)
 
+
+def tool_classify_request(request_text: str = "") -> Dict[str, Any]:
+    return RequestClassifier.classify_request(request_text)
+
+def tool_docker_manage(action: str = "list", container_name: str = "neama_worker", image: str = "python:3.11-slim") -> Dict[str, Any]:
+    return ContainerOrchestratorEngine.docker_container_manage(action, container_name, image)
+
+def tool_k8s_query(namespace: str = "default", resource_type: str = "pods") -> Dict[str, Any]:
+    return ContainerOrchestratorEngine.k8s_cluster_query(namespace, resource_type)
+
+def tool_optimize_task_rci(prompt: str = "", draft_solution: str = "", max_iterations: int = 3) -> Dict[str, Any]:
+    return RCISelfOptimizerEngine.optimize_task_recursively(prompt, draft_solution, max_iterations)
+
+def tool_verify_safety(task_data: Dict[str, Any] = None) -> Dict[str, Any]:
+    return MultiLayerSafetyVerifier.verify_task_safety(task_data or {})
+
 SASA_AGENT_TOOLS = {
+    "classify_request": tool_classify_request,
+    "docker_manage": tool_docker_manage,
+    "k8s_query": tool_k8s_query,
+    "optimize_task_rci": tool_optimize_task_rci,
+    "verify_safety": tool_verify_safety,
+
     "get_prometheus_metrics": tool_get_prometheus_metrics,
     "scan_env_config": tool_scan_env_config,
     "analyze_code_smells": tool_analyze_code_smells,
@@ -4627,6 +4650,22 @@ else:
                     token=body.get("token")
                 )
                 self._set_headers(200 if res.get("success") else 400, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/intelligence/classify":
+                res = tool_classify_request(body.get("request", ""))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/intelligence/rci_optimize":
+                res = tool_optimize_task_rci(body.get("prompt", ""), body.get("draft", ""))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/intelligence/docker":
+                res = tool_docker_manage(body.get("action", "list"), body.get("container", ""), body.get("image", ""))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/intelligence/verify_safety":
+                res = tool_verify_safety(body)
+                self._set_headers(200, "application/json")
                 self.wfile.write(json.dumps(res).encode("utf-8"))
             elif path == "/api/capabilities/chaos":
                 res = tool_run_chaos_simulation(body.get("type", "node_crash"))
