@@ -1,3 +1,4 @@
+from app.advanced_modules.capabilities import CodeProfilerEngine, SecurityAnalysisEngine, CICDWorkflowEngine, RustIntegrationEngine, LegacyModernizerEngine
 from app.emotions.affective_engine import analyze_user_emotion
 
 try:
@@ -824,7 +825,30 @@ def db_tool_migrate_tables(**kwargs) -> Dict[str, Any]:
     res = init_database_tables()
     return res
 
+
+def tool_profile_code(code_snippet: str = "") -> Dict[str, Any]:
+    return CodeProfilerEngine.profile_python_code(code_snippet)
+
+def tool_audit_security(code_snippet: str = "") -> Dict[str, Any]:
+    return SecurityAnalysisEngine.audit_security(code_snippet)
+
+def tool_generate_cicd(project_type: str = "python") -> Dict[str, Any]:
+    wf = CICDWorkflowEngine.generate_github_action(project_type)
+    return {"success": True, "workflow": wf}
+
+def tool_analyze_rust(code_snippet: str = "") -> Dict[str, Any]:
+    return RustIntegrationEngine.analyze_rust_code(code_snippet)
+
+def tool_modernize_code(code_snippet: str = "") -> Dict[str, Any]:
+    return LegacyModernizerEngine.modernizer_analysis(code_snippet)
+
 SASA_AGENT_TOOLS = {
+    "profile_code": tool_profile_code,
+    "audit_security": tool_audit_security,
+    "generate_cicd": tool_generate_cicd,
+    "analyze_rust": tool_analyze_rust,
+    "modernize_code": tool_modernize_code,
+
     "db_get_status": db_tool_get_status,
     "db_list_tenants": db_tool_list_tenants,
     "db_create_tenant": db_tool_create_tenant,
@@ -4558,6 +4582,18 @@ else:
                     token=body.get("token")
                 )
                 self._set_headers(200 if res.get("success") else 400, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/capabilities/audit":
+                res = tool_audit_security(body.get("code", ""))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/capabilities/profile":
+                res = tool_profile_code(body.get("code", ""))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/capabilities/cicd":
+                res = tool_generate_cicd(body.get("type", "python"))
+                self._set_headers(200, "application/json")
                 self.wfile.write(json.dumps(res).encode("utf-8"))
             else:
                 self._set_headers(404, "application/json")
