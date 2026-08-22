@@ -899,7 +899,17 @@ def tool_run_pen_test(scope: str = "full") -> Dict[str, Any]:
 def tool_get_ux_analytics() -> Dict[str, Any]:
     return UXAndResourceAnalytics.get_system_analytics()
 
+
+def tool_analyze_historical_patterns() -> Dict[str, Any]:
+    return ClassifierTrainingTracker.analyze_historical_intent_patterns()
+
+def tool_test_backup_restoration(backup_id: str = "latest") -> Dict[str, Any]:
+    return AutomatedBackupEngine.test_backup_restoration(backup_id)
+
 SASA_AGENT_TOOLS = {
+    "analyze_historical_patterns": tool_analyze_historical_patterns,
+    "test_backup_restoration": tool_test_backup_restoration,
+
     "track_intent_training": tool_track_intent_training,
     "check_pod_alerts": tool_check_pod_alerts,
     "trigger_backup": tool_trigger_backup,
@@ -4681,6 +4691,14 @@ else:
                     token=body.get("token")
                 )
                 self._set_headers(200 if res.get("success") else 400, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/backup/test_restore":
+                res = tool_test_backup_restoration(body.get("backup_id", "latest"))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/intelligence/historical_patterns":
+                res = tool_analyze_historical_patterns()
+                self._set_headers(200, "application/json")
                 self.wfile.write(json.dumps(res).encode("utf-8"))
             elif path == "/api/backup/trigger":
                 res = tool_trigger_backup(body.get("target", "all"))
