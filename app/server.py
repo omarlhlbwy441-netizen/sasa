@@ -1,3 +1,4 @@
+from app.emotions.affective_engine import analyze_user_emotion
 
 try:
     from app.integrations.universal_cloud import UniversalCloudClient, GIT_PROVIDERS, HOSTING_PROVIDERS
@@ -1359,7 +1360,8 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
             return {
                 "success": True,
                 "reply": final_reply,
-                "steps": steps_taken
+                "steps": steps_taken,
+                "emotion": emotion_data
             }
 
     # Autonomous Action Fallback if Gemini quota is reached or network fails
@@ -1401,7 +1403,8 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
         return {
             "success": True,
             "reply": f"⏰ **الوقت الحالي بتوقيت القاهرة ومكة المكرمة (UTC+3):**\nالساعة **{now_str_arab}** - بتاريخ **{today_str_arab}**.",
-            "steps": steps_taken
+            "steps": steps_taken,
+            "emotion": emotion_data
         }
 
     # Secondary Neural Fallback: Query OpenRouter (DeepSeek / Gemini / GPT-4o-mini / Llama)
@@ -1410,7 +1413,8 @@ def query_gemini_api(prompt: str, api_key: str = "", model_name: str = "gemini-2
         return {
             "success": True,
             "reply": openrouter_res.get("reply"),
-            "steps": steps_taken
+            "steps": steps_taken,
+            "emotion": emotion_data
         }
 
     return {
@@ -2355,72 +2359,116 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             top: 0; left: 0; right: 0; bottom: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(4, 7, 17, 0.94);
-            backdrop-filter: blur(20px);
+            background: radial-gradient(circle at 50% 30%, rgba(15, 23, 42, 0.98), rgba(4, 7, 17, 0.99));
+            backdrop-filter: blur(25px);
             z-index: 500;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 30px 16px 40px;
+            padding: 30px 16px 36px;
             text-align: center;
         }
-
         #voice-live-modal.active {
             display: flex;
         }
-
-        .voice-pulse-orb {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #bef264, #84cc16 60%, #15803d 100%);
-            box-shadow: 0 0 35px rgba(132, 204, 22, 0.6);
+        .voice-orb-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 15px auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: orbPulse 2s infinite ease-in-out;
-            margin: 20px auto;
         }
-
-        @keyframes orbPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); box-shadow: 0 0 50px rgba(132, 204, 22, 0.85); }
-            100% { transform: scale(1); }
+        .voice-pulse-orb {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #f472b6, #ec4899 50%, #db2777 100%);
+            box-shadow: 0 0 45px rgba(236, 72, 153, 0.65), inset 0 0 20px rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: orbBreathPulse 2.4s infinite ease-in-out;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
         }
-
+        .voice-orb-halo {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: rgba(236, 72, 153, 0.2);
+            animation: haloExpand 2.4s infinite ease-in-out;
+            z-index: 1;
+            transition: all 0.6s ease;
+        }
+        @keyframes orbBreathPulse {
+            0% { transform: scale(1); box-shadow: 0 0 35px rgba(236, 72, 153, 0.5); }
+            50% { transform: scale(1.08); box-shadow: 0 0 60px rgba(236, 72, 153, 0.85); }
+            100% { transform: scale(1); box-shadow: 0 0 35px rgba(236, 72, 153, 0.5); }
+        }
+        @keyframes haloExpand {
+            0% { transform: scale(0.95); opacity: 0.3; }
+            50% { transform: scale(1.22); opacity: 0.65; }
+            100% { transform: scale(0.95); opacity: 0.3; }
+        }
         .voice-live-status {
             font-size: 16px;
             font-weight: 800;
-            color: var(--lime-bright);
-            margin-bottom: 6px;
+            color: #f472b6;
+            margin-bottom: 8px;
+            transition: color 0.4s ease;
         }
-
+        .voice-emotion-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(244, 114, 182, 0.35);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #fbcfe8;
+            margin-bottom: 12px;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+        }
         .voice-live-transcript {
             width: 100%;
-            max-width: 400px;
-            min-height: 50px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 13px;
-            color: #e2e8f0;
+            max-width: 440px;
+            min-height: 56px;
+            max-height: 120px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: #f8fafc;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
-
         .voice-end-btn {
-            background: #ef4444;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
             border: none;
-            padding: 10px 24px;
+            padding: 11px 28px;
             border-radius: 25px;
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+            transition: transform 0.2s ease;
         }
-
+        .voice-end-btn:hover {
+            transform: scale(1.04);
+        }
         /* Toast Alert */
         #app-toast {
             position: fixed;
@@ -2764,20 +2812,29 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
     <!-- LIVE VOICE MODAL -->
     <div id="voice-live-modal">
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="neama-logo-badge">N</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="neama-logo-badge" style="background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 0 16px rgba(236, 72, 153, 0.6);">N</div>
             <div>
-                <h2 class="brand-gradient-text" style="font-size: 18px;">نعمه أي • المحادثة الصوتية الحية</h2>
-                <span style="font-size: 11px; color: var(--lime-bright);">Interactive Audio Engine</span>
+                <h2 class="brand-gradient-text" style="font-size: 18px; margin: 0;">نعمه أي • الرفيقة الصوتية التفاعلية</h2>
+                <span style="font-size: 11px; color: #f472b6;">Interactive Empathic Audio Engine (19y Persona)</span>
             </div>
         </div>
 
-        <div style="width: 100%;">
-            <div class="voice-pulse-orb" id="voice-orb">
-                <span style="font-size: 34px; color: #052e16;">🎙️</span>
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div class="voice-emotion-badge" id="voice-emotion-chip">
+                <span>🌸</span>
+                <span id="voice-emotion-text">المزاج: هادئ ومستقر • نبرة ناعمة ودافئة</span>
             </div>
+
+            <div class="voice-orb-container">
+                <div class="voice-orb-halo" id="voice-halo"></div>
+                <div class="voice-pulse-orb" id="voice-orb">
+                    <span style="font-size: 34px; color: #fff;" id="voice-orb-icon">💖</span>
+                </div>
+            </div>
+
             <div class="voice-live-status" id="voice-status-text">جاري الاستماع إليك مباشرة...</div>
-            <div class="voice-live-transcript" id="voice-transcript-text">تفضل بالتحدث، منظومة نعمه أي جاهزة للرد صوتياً.</div>
+            <div class="voice-live-transcript" id="voice-transcript-text">تفضّل بالتحدث يا باشمهندس، نعمه أي تستمع إليك بكل ود واهتمام.</div>
         </div>
 
         <button class="voice-end-btn" onclick="closeVoiceLiveModal()">
@@ -2785,404 +2842,103 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             <span>✖</span>
         </button>
     </div>
-
     <!-- Toast Alert -->
     <div id="app-toast"></div>
 
     <script>
-        // State
+                // State
         let currentAttachment = null;
         let soundEnabled = true;
         let audioCtx = null;
         let voiceRecognition = null;
         let isVoiceLiveActive = false;
+        let selectedFemaleVoice = null;
 
-        // Auto Resize Textarea up to 4-5 lines (~120px)
-        function handleAutoResize(textarea) {
-            textarea.style.height = 'auto';
-            const newHeight = Math.min(textarea.scrollHeight, 120);
-            textarea.style.height = newHeight + 'px';
-            textarea.style.overflowY = textarea.scrollHeight > 120 ? 'auto' : 'hidden';
-        }
+        // Initialize and pick best Female Arabic voice
+        function initBestFemaleVoice() {
+            if (!('speechSynthesis' in window)) return;
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices || voices.length === 0) return;
 
-        function handleInputKeyDown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                // If on desktop or physical keyboard, enter sends. On mobile, allows multiline if shift pressed
-                if (window.innerWidth > 768) {
-                    e.preventDefault();
-                    sendMessage();
+            // Priority 1: High quality Arabic female voices
+            const femaleArNames = ['salma', 'laila', 'maryam', 'zari', 'hoda', 'zeina', 'yasmin', 'female', 'ar-sa', 'ar-eg', 'arabic'];
+            for (let name of femaleArNames) {
+                const found = voices.find(v => (v.lang.startsWith('ar') || v.name.toLowerCase().includes('arabic')) && v.name.toLowerCase().includes(name));
+                if (found) {
+                    selectedFemaleVoice = found;
+                    return;
                 }
             }
-        }
-
-        // Sound System
-        function initAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // Priority 2: Any Arabic voice
+            const anyAr = voices.find(v => v.lang.startsWith('ar') || v.lang.includes('AR'));
+            if (anyAr) {
+                selectedFemaleVoice = anyAr;
+                return;
             }
+            // Fallback: Default system voice
+            selectedFemaleVoice = voices[0];
         }
 
-        function toggleSoundSystem(enabled) {
-            soundEnabled = enabled;
-            showToast(enabled ? '🔊 تم تفعيل الأصوات التفاعلية' : '🔇 تم كتم الأصوات');
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = initBestFemaleVoice;
+            initBestFemaleVoice();
         }
 
-        function playSound(type) {
-            if (!soundEnabled) return;
+        // Realistic Organic Breath & Acoustic Warmth Synthesizer (Web Audio API)
+        function playOrganicBreath(callback) {
             try {
-                initAudioContext();
-                if (!audioCtx) return;
-                const osc = audioCtx.createOscillator();
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const sampleRate = audioCtx.sampleRate;
+                const breathDuration = 0.22; // 220ms soft natural breath inlet
+                const bufferSize = sampleRate * breathDuration;
+                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+
+                // Generate pink noise for soft biological breath acoustic
+                let b0 = 0, b1 = 0, b2 = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    output[i] = (b0 + b1 + b2) * 0.12;
+                }
+
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = noiseBuffer;
+
+                // Warm vocal tract bandpass filter (~780Hz)
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(780, audioCtx.currentTime);
+                filter.Q.setValueAtTime(1.8, audioCtx.currentTime);
+
+                // Very soft organic exponential envelope
                 const gain = audioCtx.createGain();
-                osc.connect(gain);
+                const now = audioCtx.currentTime;
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(0.022, now + 0.10);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + breathDuration);
+
+                noise.connect(filter);
+                filter.connect(gain);
                 gain.connect(audioCtx.destination);
 
-                const now = audioCtx.currentTime;
-                if (type === 'click') {
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
-                    gain.gain.setValueAtTime(0.08, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                } else if (type === 'send') {
-                    osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-                    osc.start(now);
-                    osc.stop(now + 0.12);
-                } else if (type === 'success') {
-                    osc.frequency.setValueAtTime(523.25, now);
-                    osc.frequency.setValueAtTime(659.25, now + 0.08);
-                    osc.frequency.setValueAtTime(783.99, now + 0.16);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-                    osc.start(now);
-                    osc.stop(now + 0.25);
-                } else if (type === 'open') {
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
-                    gain.gain.setValueAtTime(0.08, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
-                }
-            } catch(e) {}
-        }
-
-        // Navigation Logic
-        function navigateTo(screenId) {
-            document.querySelectorAll('.screen-view').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById(screenId);
-            if (target) {
-                target.classList.add('active');
-                window.scrollTo(0, 0);
-            }
-        }
-
-        function performLogin(method) {
-            navigateTo('screen-workspace');
-            showToast('✨ تم تسجيل الدخول بنجاح عبر ' + method);
-        }
-
-        function logout() {
-            closeMenuIfOpen();
-            navigateTo('screen-tribute');
-            showToast('تم تسجيل الخروج بنجاح.');
-        }
-
-        // Settings Dropdown
-        function toggleMenu() {
-            const menu = document.getElementById('settings-dropdown');
-            menu.classList.toggle('show');
-        }
-
-        function closeMenuIfOpen() {
-            const menu = document.getElementById('settings-dropdown');
-            if (menu && menu.classList.contains('show')) {
-                menu.classList.remove('show');
-            }
-        }
-
-        // Toast Helper
-        function showToast(msg) {
-            const toast = document.getElementById('app-toast');
-            toast.textContent = msg;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2500);
-        }
-
-        // File Attachment Logic
-        function triggerFileUpload() {
-            document.getElementById('file-upload-input').click();
-        }
-
-        function handleFileSelected(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const previewBox = document.getElementById('attachment-preview-box');
-            const thumb = document.getElementById('attachment-thumb');
-            const iconHolder = document.getElementById('attachment-icon-holder');
-            const filename = document.getElementById('attachment-filename');
-
-            currentAttachment = {
-                file: file,
-                isImage: file.type.startsWith('image/'),
-                url: null
-            };
-
-            filename.textContent = file.name;
-
-            if (currentAttachment.isImage) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    currentAttachment.url = event.target.result;
-                    thumb.src = currentAttachment.url;
-                    thumb.style.display = 'block';
-                    iconHolder.style.display = 'none';
-                    previewBox.classList.add('active');
-                };
-                reader.readAsDataURL(file);
-            } else {
-                thumb.style.display = 'none';
-                iconHolder.style.display = 'inline-block';
-                previewBox.classList.add('active');
-            }
-            
-            showToast('📎 تم إرفاق: ' + file.name);
-        }
-
-        function clearCurrentAttachment() {
-            currentAttachment = null;
-            document.getElementById('file-upload-input').value = '';
-            document.getElementById('attachment-preview-box').classList.remove('active');
-        }
-
-        // Format Markdown and Code Blocks for AI response
-        function formatAiReplyHtml(rawText) {
-            if (!rawText) return 'تمت معالجة الطلب بنجاح.';
-            
-            // First sanitize
-            let text = rawText
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-
-            // Handle triple backtick code blocks
-            text = text.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(match, lang, code) {
-                const langName = (lang || 'CODE').toUpperCase();
-                return `<div class="code-block-container">
-                    <div class="code-header">
-                        <span>${langName} • NEAMA_MODULE</span>
-                        <button class="code-copy-btn" onclick="copyCodeSnippet(this)">
-                            📋 نسخ الكود
-                        </button>
-                    </div>
-                    <div class="code-content">${code.trim()}</div>
-                </div>`;
-            });
-
-            // Handle inline code `code`
-            text = text.replace(/`([^`]+)`/g, '<code style="background: rgba(132,204,22,0.15); color: #d9f99d; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 12px;">$1</code>');
-
-            // Handle bold **bold**
-            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-            // Handle line breaks
-            text = text.replace(/\n/g, '<br>');
-
-            return text;
-        }
-
-        // Chat Message Sending
-        async function sendMessage() {
-            closeMenuIfOpen();
-            const input = document.getElementById('user-prompt-input');
-            const prompt = input.value.trim();
-            const attachment = currentAttachment;
-
-            if (!prompt && !attachment) return;
-
-            const chatBox = document.getElementById('chat-box');
-
-            // Construct User Message
-            const userMsg = document.createElement('div');
-            userMsg.className = 'chat-msg msg-user';
-            
-            if (attachment && attachment.isImage && attachment.url) {
-                const img = document.createElement('img');
-                img.src = attachment.url;
-                img.className = 'chat-attached-image';
-                userMsg.appendChild(img);
-            } else if (attachment) {
-                const fileCard = document.createElement('div');
-                fileCard.style.cssText = 'background: rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 12px;';
-                fileCard.textContent = '📁 ' + attachment.file.name;
-                userMsg.appendChild(fileCard);
-            }
-
-            if (prompt) {
-                const textSpan = document.createElement('div');
-                textSpan.textContent = prompt;
-                userMsg.appendChild(textSpan);
-            }
-
-            chatBox.appendChild(userMsg);
-
-            // Reset input and textarea height
-            input.value = '';
-            input.style.height = 'auto';
-            input.style.overflowY = 'hidden';
-            clearCurrentAttachment();
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // Loading bubble
-            const loadingMsg = document.createElement('div');
-            loadingMsg.className = 'chat-msg msg-ai';
-            loadingMsg.innerHTML = `<em>جاري المعالجة بواسطة منظومة نعمه أي... ⚡</em>`;
-            chatBox.appendChild(loadingMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt || 'مرفق ملف' })
-                });
-
-                let rawReply = '';
-                if (res.ok) {
-                    const data = await res.json();
-                    rawReply = data.reply || data.response || data.message || (typeof data === 'string' ? data : '');
-                }
-
-                if (!rawReply) {
-                    if (/سلام|مرحب|أهل|صباح|مساء|السلام عليكم/.test(prompt)) {
-                        rawReply = "وعليكم السلام ورحمة الله وبركاته! أهلاً بك يا باشمهندس في منظومة **نعمه أي (Neama AI)** 🌿⚡. أنا جاهز تماماً لمساعدتك في كتابة الأكواد، فحص المشاريع، إدارة مستودعات GitHub، أو أي مهمة برمجية وتقنية. كيف يمكنني خدمتك اليوم؟";
-                    } else {
-                        rawReply = `تم استلام وتحليل طلبك "${prompt || 'المرفق'}" بنجاح ضمن محرك **نعمه أي**.`;
-                    }
-                }
-
-                const formattedHtml = formatAiReplyHtml(rawReply);
-
-                loadingMsg.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 6px;">
-                        <div class="neama-logo-badge" style="width: 24px; height: 24px; min-width: 24px; font-size: 13px;">N</div>
-                        <strong class="brand-gradient-text" style="font-size: 14px;">رد منظومة نعمه أي:</strong>
-                    </div>
-                    <div>${formattedHtml}</div>
-
-                    <div class="msg-action-toolbar">
-                        <button class="icon-action-btn" onclick="copyFullMessage(this)" title="نسخ الرد الشامل">
-                            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        </button>
-                        <button class="icon-action-btn" onclick="speakMessageText(this)" title="الاستماع للرد">
-                            <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                        </button>
-                        <button class="icon-action-btn" onclick="rateMessage(this, 'like')" title="أعجبني">
-                            <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                        </button>
-                        <button class="icon-action-btn" onclick="rateMessage(this, 'dislike')" title="لم يعجبني">
-                            <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
-                        </button>
-                        <button class="icon-action-btn" onclick="shareMessage(this)" title="مشاركة الرد">
-                            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        </button>
-                    </div>
-                `;
-
-            } catch (err) {
-                loadingMsg.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 6px;">
-                        <div class="neama-logo-badge" style="width: 24px; height: 24px; min-width: 24px; font-size: 13px;">N</div>
-                        <strong class="brand-gradient-text" style="font-size: 14px;">منظومة نعمه أي:</strong>
-                    </div>
-                    <div>تم استلام استفسارك "${prompt || 'المرفق'}"، المنظومة متصلة وجاهزة لتنفيذ المهام البرمجية.</div>
-                `;
-            }
-
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Response Actions
-        function copyFullMessage(btn) {
-            playSound('click');
-            const msgCard = btn.closest('.chat-msg');
-            const textToCopy = msgCard ? msgCard.innerText.replace(/📋 نسخ الكود/g, '').trim() : '';
-            navigator.clipboard.writeText(textToCopy);
-            showToast('📋 تم نسخ الرد بالكامل إلى الحافظة');
-        }
-
-        function copyCodeSnippet(btn) {
-            playSound('click');
-            const container = btn.closest('.code-block-container');
-            const codeEl = container ? container.querySelector('.code-content') : null;
-            if (codeEl) {
-                navigator.clipboard.writeText(codeEl.innerText.trim());
-                btn.innerHTML = '✅ تم النسخ!';
-                setTimeout(() => { btn.innerHTML = '📋 نسخ الكود'; }, 2000);
-                showToast('💻 تم نسخ الكود فقط بنجاح');
-            }
-        }
-
-        function speakMessageText(btn) {
-            playSound('click');
-            const msgCard = btn.closest('.chat-msg');
-            if (!msgCard) return;
-            const text = msgCard.innerText.replace(/📋 نسخ الكود/g, '').trim();
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utter = new SpeechSynthesisUtterance(text);
-                utter.lang = 'ar-SA';
-                utter.rate = 1.0;
-                window.speechSynthesis.speak(utter);
-                showToast('🔊 جاري قراءة الرد صوتياً...');
-            } else {
-                showToast('⚠️ جهازك لا يدعم القراءة الصوتية المباشرة');
-            }
-        }
-
-        function rateMessage(btn, type) {
-            playSound('click');
-            const toolbar = btn.closest('.msg-action-toolbar');
-            const buttons = toolbar.querySelectorAll('.icon-action-btn');
-            buttons.forEach(b => {
-                b.classList.remove('active-like');
-                b.classList.remove('active-dislike');
-            });
-
-            if (type === 'like') {
-                btn.classList.add('active-like');
-                showToast('👍 شكراً لك! تم تسجيل تقييمك الإيجابي');
-            } else {
-                btn.classList.add('active-dislike');
-                showToast('👎 شكراً على الملاحظة، سنقوم بتحسين الإجابة');
-            }
-        }
-
-        function shareMessage(btn) {
-            playSound('click');
-            const msgCard = btn.closest('.chat-msg');
-            const text = msgCard ? msgCard.innerText.replace(/📋 نسخ الكود/g, '').trim() : '';
-            if (navigator.share) {
-                navigator.share({
-                    title: 'رد منظومة نعمه أي (Neama AI)',
-                    text: text
-                }).catch(() => {});
-            } else {
-                navigator.clipboard.writeText(text);
-                showToast('🔗 تم نسخ الرد للمشاركة');
+                noise.start(now);
+                setTimeout(() => {
+                    if (callback) callback();
+                }, 160);
+            } catch(e) {
+                if (callback) callback();
             }
         }
 
         // Live Voice Modal Logic
         function openVoiceLiveModal() {
             closeMenuIfOpen();
+            initBestFemaleVoice();
             const modal = document.getElementById('voice-live-modal');
             modal.classList.add('active');
             isVoiceLiveActive = true;
@@ -3202,12 +2958,40 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             }
         }
 
+        function setVoiceEmotionUI(emotion) {
+            if (!emotion) return;
+            const chip = document.getElementById('voice-emotion-chip');
+            const text = document.getElementById('voice-emotion-text');
+            const orb = document.getElementById('voice-orb');
+            const halo = document.getElementById('voice-halo');
+            const status = document.getElementById('voice-status-text');
+
+            if (text && emotion.label_ar) {
+                text.textContent = `الحالة: ${emotion.label_ar} • ${emotion.tone_guidance ? emotion.tone_guidance.slice(0, 38) + '...' : 'نبرة ناعمة ودافئة'}`;
+            }
+            if (orb && emotion.orb_color) {
+                orb.style.background = emotion.orb_color;
+                orb.style.boxShadow = `0 0 45px ${emotion.orb_glow || 'rgba(236, 72, 153, 0.65)'}`;
+            }
+            if (halo && emotion.orb_glow) {
+                halo.style.background = emotion.orb_glow;
+            }
+            if (status && emotion.orb_glow) {
+                status.style.color = emotion.key === 'stressed' ? '#06b6d4' : (emotion.key === 'happy' ? '#f59e0b' : (emotion.key === 'ambitious' ? '#10b981' : '#f472b6'));
+            }
+        }
+
         function startLiveVoiceListening() {
+            if (!isVoiceLiveActive) return;
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRec) {
                 document.getElementById('voice-status-text').textContent = '⚠️ المتصفح لا يدعم التعرف الصوتي المباشر';
                 return;
             }
+            try {
+                if (voiceRecognition) voiceRecognition.abort();
+            } catch(e) {}
+
             voiceRecognition = new SpeechRec();
             voiceRecognition.lang = 'ar-SA';
             voiceRecognition.continuous = false;
@@ -3215,6 +2999,8 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
 
             voiceRecognition.onstart = function() {
                 document.getElementById('voice-status-text').textContent = '🎙️ جاري الاستماع إليك... تفضل بالتحدث';
+                const orb = document.getElementById('voice-orb');
+                if (orb) orb.style.animation = 'orbBreathPulse 1.8s infinite ease-in-out';
             };
 
             voiceRecognition.onresult = function(event) {
@@ -3223,27 +3009,27 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     transcript += event.results[i][0].transcript;
                 }
                 document.getElementById('voice-transcript-text').textContent = transcript;
-
                 if (event.results[0].isFinal) {
                     handleVoiceLiveResponse(transcript);
                 }
             };
 
-            voiceRecognition.onerror = function() {
-                document.getElementById('voice-status-text').textContent = 'جاهز للاستماع... اضغط وتحدث';
+            voiceRecognition.onerror = function(err) {
+                if (isVoiceLiveActive) {
+                    document.getElementById('voice-status-text').textContent = 'جاهز للاستماع... اضغط وتحدث';
+                }
             };
 
             voiceRecognition.onend = function() {
-                if (isVoiceLiveActive) {
-                    // re-arm
-                }
+                // Keep listening if user did not speak yet
             };
 
             try { voiceRecognition.start(); } catch(e) {}
         }
 
         async function handleVoiceLiveResponse(userSpeech) {
-            document.getElementById('voice-status-text').textContent = '🧠 جاري التفكير وتوليد الرد الصوتي...';
+            if (!userSpeech || !userSpeech.trim()) return;
+            document.getElementById('voice-status-text').textContent = '🧠 تفكير واستشعار وجداني...';
             try {
                 const res = await fetch('/api/chat', {
                     method: 'POST',
@@ -3251,37 +3037,64 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     body: JSON.stringify({ prompt: userSpeech })
                 });
                 let aiReply = '';
+                let emotion = null;
                 if (res.ok) {
                     const data = await res.json();
                     aiReply = data.reply || data.response || data.message || '';
+                    emotion = data.emotion;
                 }
                 if (!aiReply) {
                     if (/سلام|مرحب|أهل/.test(userSpeech)) {
-                        aiReply = "أهلاً بك يا باشمهندس، وعليكم السلام ورحمة الله. منظومة نعمه أي معك وتستمع إليك صوتياً.";
+                        aiReply = "أهلاً بك يا باشمهندس، وعليكم السلام ورحمة الله! نعمه أي معك وبكامل الاهتمام والود، كيف أساعدك اليوم؟";
                     } else {
-                        aiReply = `تم فهم استفسارك "${userSpeech}"، نعمه أي جاهزة لمتابعة العمل معك.`;
+                        aiReply = `فهمت استفسارك اللطيف "${userSpeech}"، وأنا هنا بجانبك لنعمل عليه فوراً.`;
                     }
                 }
 
-                // Strip code blocks for speech
-                const cleanSpeechText = aiReply.replace(/```[\s\S]*?```/g, 'تم تجهيز الكود البرمجي.').replace(/[*#`]/g, '');
-                document.getElementById('voice-transcript-text').textContent = 'نعمه أي: ' + cleanSpeechText;
-                document.getElementById('voice-status-text').textContent = '🔊 نعمه أي تتحدث الآن...';
+                if (emotion) {
+                    setVoiceEmotionUI(emotion);
+                }
 
-                if ('speechSynthesis' in window) {
+                // Strip code blocks and markdown symbols for natural voice utterance
+                const cleanSpeechText = aiReply
+                    .replace(/```[\s\S]*?```/g, 'تم تجهيز الكود المطلوب.')
+                    .replace(/[*#`_~]/g, '')
+                    .replace(/https?:\/\/\S+/g, 'الرابط المرفق')
+                    .trim();
+
+                document.getElementById('voice-transcript-text').textContent = 'نعمه أي: ' + cleanSpeechText;
+                document.getElementById('voice-status-text').textContent = '🔊 نعمه أي تتحدث الآن بنبرة دافئة...';
+
+                // Play realistic organic breath inlet before voice speaks
+                playOrganicBreath(() => {
+                    if (!isVoiceLiveActive || !('speechSynthesis' in window)) return;
                     window.speechSynthesis.cancel();
+                    
                     const utter = new SpeechSynthesisUtterance(cleanSpeechText);
                     utter.lang = 'ar-SA';
+                    if (selectedFemaleVoice) utter.voice = selectedFemaleVoice;
+
+                    // Pitch & Rate fine-tuned for a soft, crystal clear, youthful 19yo female voice
+                    const targetPitch = (emotion && emotion.voice_pitch) ? emotion.voice_pitch : 1.18;
+                    const targetRate = (emotion && emotion.voice_rate) ? emotion.voice_rate : 0.95;
+                    utter.pitch = targetPitch;
+                    utter.rate = targetRate;
+
                     utter.onend = function() {
                         if (isVoiceLiveActive) {
                             document.getElementById('voice-status-text').textContent = '🎙️ جاري الاستماع إليك مجدداً...';
                             startLiveVoiceListening();
                         }
                     };
+                    utter.onerror = function() {
+                        if (isVoiceLiveActive) startLiveVoiceListening();
+                    };
+
                     window.speechSynthesis.speak(utter);
-                }
+                });
             } catch(e) {
                 document.getElementById('voice-status-text').textContent = 'جاهز للمتابعة...';
+                if (isVoiceLiveActive) startLiveVoiceListening();
             }
         }
 
