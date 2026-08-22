@@ -69,7 +69,7 @@ class ConfigManagementEngine:
                         risks.append({
                             "key": key,
                             "issue": "Raw secret exposed in plaintext configuration",
-                            "recommendation": f"استخدم HashiCorp Vault أو AWS Secrets Manager بدلاً من التخزين المكشوف."
+                            "recommendation": "استخدم HashiCorp Vault أو AWS Secrets Manager بدلاً من التخزين المكشوف."
                         })
         return {
             "status": "SECURE" if not risks else "WARNING",
@@ -99,7 +99,6 @@ class StaticAnalysisSonarEngine:
             smells.append({"type": "Large File / Complex Unit", "message": "الملف يتجاوز 400 سطر، ينصح بتقسيمه إلى وحدات فرعية."})
         
         long_methods = [m.group(1) for m in re.finditer(r"def\s+([a-zA-Z0-9_]+)\(.*\):", code)]
-        duplicates = len(re.findall(r"print\(|logger\.", code))
         
         return {
             "status": "COMPLETED",
@@ -117,8 +116,8 @@ class DocAutomationEngine:
             "openapi": "3.0.3",
             "info": {
                 "title": "Neama AI Autonomous Engineering API",
-                "version": "4.2.0",
-                "description": "API التفاعلي لمنظومة نعمه أي وسرب الوكلاء الذاتي"
+                "version": "4.5.0",
+                "description": "API التفاعلي لمنظومة نعمه أي وسرب الوكلاء الذاتي مع مقاييس الأداء والأمان والنسخ الاحتياطي"
             },
             "paths": {
                 "/api/chat": {
@@ -133,10 +132,58 @@ class DocAutomationEngine:
                         "responses": {"200": {"description": "Prometheus Plain Text"}}
                     }
                 },
+                "/api/analytics/ux_and_resources": {
+                    "get": {
+                        "summary": "تحليلات تجربة المستخدم واستهلاك الموارد والأنماط السلوكية",
+                        "responses": {"200": {"description": "JSON Analytics"}}
+                    }
+                },
+                "/api/analytics/latency_sla": {
+                    "get": {
+                        "summary": "تقرير زمن الاستجابة والامتثال لـ SLA",
+                        "responses": {"200": {"description": "Latency SLA Report"}}
+                    }
+                },
+                "/api/alerts/cluster": {
+                    "get": {
+                        "summary": "حالة التنبيهات الحرجة للحاويات والـ Pods وسياسات التصعيد",
+                        "responses": {"200": {"description": "Cluster Alerts"}}
+                    }
+                },
                 "/api/capabilities/audit": {
                     "post": {
                         "summary": "فحص أمان الكود السيبراني المصدري (SAST)",
                         "responses": {"200": {"description": "تقرير الأمان السيبراني"}}
+                    }
+                },
+                "/api/security/dependencies_scan": {
+                    "post": {
+                        "summary": "فحص ثغرات التبعيات والمكتبات (SCA / CVE Scanner)",
+                        "responses": {"200": {"description": "تقرير فحص التبعيات"}}
+                    }
+                },
+                "/api/security/pentest": {
+                    "post": {
+                        "summary": "محاكاة اختبار الاختراق الأمني الدوري الشامل",
+                        "responses": {"200": {"description": "تقرير اختبار الاختراق"}}
+                    }
+                },
+                "/api/intelligence/classify": {
+                    "post": {
+                        "summary": "تصنيف نوايا المستخدمين آلياً",
+                        "responses": {"200": {"description": "تصنيف النية"}}
+                    }
+                },
+                "/api/backup/trigger": {
+                    "post": {
+                        "summary": "أخذ نسخة احتياطية آمنة ومشفرة",
+                        "responses": {"200": {"description": "بيانات النسخة"}}
+                    }
+                },
+                "/api/backup/test_restore": {
+                    "post": {
+                        "summary": "اختبار استعادة النسخ الاحتياطي في بيئة معزولة مع تقرير تفصيلي",
+                        "responses": {"200": {"description": "تقرير استعادة البيانات"}}
                     }
                 }
             }
@@ -163,17 +210,19 @@ package "Core Intelligence & Autonomous Swarm" {
 
 package "Production & Resilience Layer" {
   [Prometheus Metrics Exporter] as Metrics
-  [SAST Security Scanner] as Security
+  [SAST & SCA Security Scanner] as Security
   [PostgreSQL Central Storage] as DB
+  [SLA & Escalation Monitor] as SLA
 }
 
 UI --> Reasoner : /api/chat
 Voice --> Emotion : Audio Stream
 Emotion --> Reasoner : Affective Context
 Reasoner --> Swarm : Multi-Agent Tasking
-Swarm --> Security : Code Audit & CI/CD
+Swarm --> Security : Code Audit & Dependencies
 Swarm --> DB : Multi-Tenant Storage
 Metrics --> UI : Telemetry & Health
+SLA --> UI : Latency & Alerts
 @enduml
 """
 
@@ -202,15 +251,19 @@ class ChaosAndLoadTestingEngine:
 import json
 
 class NeamaAIStressTest(HttpUser):
-    wait_time = between(0.1, 1.0)
+    wait_time = between(0.1, 0.8)
 
-    @task(3)
+    @task(5)
     def test_chat_interaction(self):
         payload = {"prompt": "ما هي أفضل ممارسات تصميم البرمجيات؟"}
         headers = {"Content-Type": "application/json"}
         self.client.post("/api/chat", json=payload, headers=headers)
 
-    @task(1)
+    @task(2)
+    def test_latency_sla(self):
+        self.client.get("/api/analytics/latency_sla")
+
+    @task(2)
     def test_metrics_endpoint(self):
         self.client.get("/api/metrics/prometheus")
 
@@ -218,6 +271,11 @@ class NeamaAIStressTest(HttpUser):
     def test_security_audit(self):
         payload = {"code": "def hello():\n    return 'clean'"}
         self.client.post("/api/capabilities/audit", json=payload)
+
+    @task(1)
+    def test_dependency_scan(self):
+        payload = {"manifest": "fastapi==0.100.0\nrequests==2.31.0"}
+        self.client.post("/api/security/dependencies_scan", json=payload)
 """
 
     @staticmethod

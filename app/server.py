@@ -1,3 +1,4 @@
+from app.advanced_modules.extended_governance import DynamicWeightTuner, AlertEscalationPolicy, DetailedRestorationReporter, DependencyVulnerabilityScanner, APILatencyMonitor
 from app.advanced_modules.governance_suite import ClassifierTrainingTracker, PodAlertingSystem, AutomatedBackupEngine, PenetrationTestingSimulator, UXAndResourceAnalytics
 from app.intelligence_suite.rci_engine import RequestClassifier, ContainerOrchestratorEngine, RCISelfOptimizerEngine, MultiLayerSafetyVerifier
 from app.advanced_modules.production_suite import RealtimeMetricsEngine, ConfigManagementEngine, StaticAnalysisSonarEngine, DocAutomationEngine, ErrorTaxonomyEngine, ChaosAndLoadTestingEngine
@@ -906,7 +907,29 @@ def tool_analyze_historical_patterns() -> Dict[str, Any]:
 def tool_test_backup_restoration(backup_id: str = "latest") -> Dict[str, Any]:
     return AutomatedBackupEngine.test_backup_restoration(backup_id)
 
+
+def tool_adjust_intent_weights(historical_accuracy: Dict[str, float] = None) -> Dict[str, Any]:
+    return DynamicWeightTuner.adjust_intent_weights(historical_accuracy)
+
+def tool_evaluate_escalation(persistent_minutes: int = 18, severity: str = "HIGH", resource: str = "Memory Pressure") -> Dict[str, Any]:
+    return AlertEscalationPolicy.evaluate_escalation(persistent_minutes, severity, resource)
+
+def tool_detailed_restore_report(backup_id: str = "bkp_latest") -> Dict[str, Any]:
+    return DetailedRestorationReporter.generate_detailed_restore_report(backup_id)
+
+def tool_scan_dependencies(manifest_content: str = "") -> Dict[str, Any]:
+    return DependencyVulnerabilityScanner.scan_dependencies(manifest_content)
+
+def tool_get_latency_sla() -> Dict[str, Any]:
+    return APILatencyMonitor.get_latency_sla_report()
+
 SASA_AGENT_TOOLS = {
+    "adjust_intent_weights": tool_adjust_intent_weights,
+    "evaluate_escalation": tool_evaluate_escalation,
+    "detailed_restore_report": tool_detailed_restore_report,
+    "scan_dependencies": tool_scan_dependencies,
+    "get_latency_sla": tool_get_latency_sla,
+
     "analyze_historical_patterns": tool_analyze_historical_patterns,
     "test_backup_restoration": tool_test_backup_restoration,
 
@@ -4584,6 +4607,10 @@ else:
                     res = {"success": False, "error": "المحتوى فارغ أو الأداة غير مهيأة"}
                 self._send_json_response(res)
                 return
+            elif path == "/api/analytics/latency_sla":
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(APILatencyMonitor.get_latency_sla_report()).encode("utf-8"))
+                return
             elif path == "/api/analytics/ux_and_resources":
                 self._set_headers(200, "application/json")
                 self.wfile.write(json.dumps(UXAndResourceAnalytics.get_system_analytics()).encode("utf-8"))
@@ -4691,6 +4718,18 @@ else:
                     token=body.get("token")
                 )
                 self._set_headers(200 if res.get("success") else 400, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/security/dependencies_scan":
+                res = tool_scan_dependencies(body.get("manifest", ""))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/intelligence/tune_weights":
+                res = tool_adjust_intent_weights(body.get("accuracy", None))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/alerts/escalation":
+                res = tool_evaluate_escalation(body.get("minutes", 18), body.get("severity", "HIGH"), body.get("resource", "Memory Pressure"))
+                self._set_headers(200, "application/json")
                 self.wfile.write(json.dumps(res).encode("utf-8"))
             elif path == "/api/backup/test_restore":
                 res = tool_test_backup_restoration(body.get("backup_id", "latest"))
