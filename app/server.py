@@ -1675,6 +1675,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             color: white;
             border-bottom-left-radius: 4px;
             max-width: 88%;
+            white-space: pre-wrap;
         }
 
         .chat-attached-image {
@@ -1859,7 +1860,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         .bottom-action-bar {
             display: flex;
             gap: 6px;
-            align-items: center;
+            align-items: flex-end;
             width: 100%;
             max-width: 100%;
         }
@@ -1879,6 +1880,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             cursor: pointer;
             flex-shrink: 0;
             padding: 0;
+            margin-bottom: 1px;
         }
 
         .action-tool-btn:hover, .action-tool-btn:active {
@@ -1913,6 +1915,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             flex-shrink: 0;
             gap: 2px;
             padding: 0;
+            margin-bottom: 1px;
         }
 
         .wave-arc {
@@ -1928,22 +1931,23 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         .arc-2 { width: 9px; height: 14px; }
         .arc-3 { width: 13px; height: 20px; }
 
-        /* Input Wrapper */
+        /* Multi-line Auto-expanding Textarea Wrapper */
         .input-wrapper {
             flex: 1;
             min-width: 0;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             background: #040711;
             border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 20px;
-            padding: 2px 10px 2px 6px;
+            border-radius: 18px;
+            padding: 6px 10px 6px 8px;
             gap: 6px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .input-wrapper:focus-within {
             border-color: var(--lime-main);
-            box-shadow: 0 0 8px rgba(132, 204, 22, 0.3);
+            box-shadow: 0 0 10px rgba(132, 204, 22, 0.3);
         }
 
         .prompt-input-field {
@@ -1952,9 +1956,15 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             background: transparent;
             border: none;
             color: white;
-            font-size: 13px;
+            font-size: 13.5px;
             outline: none;
-            padding: 6px 2px;
+            padding: 2px 2px;
+            resize: none;
+            min-height: 24px;
+            max-height: 120px; /* expands up to 4-5 lines */
+            line-height: 1.45;
+            font-family: 'Cairo', sans-serif;
+            overflow-y: hidden;
         }
 
         .mic-icon-btn {
@@ -1967,6 +1977,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             justify-content: center;
             padding: 2px;
             flex-shrink: 0;
+            margin-bottom: 2px;
         }
 
         .mic-icon-btn:hover {
@@ -1999,6 +2010,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             flex-shrink: 0;
             box-shadow: 0 3px 12px rgba(132, 204, 22, 0.4);
             padding: 0;
+            margin-bottom: 1px;
         }
 
         .send-arrow-btn svg {
@@ -2317,7 +2329,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     <strong class="brand-gradient-text" style="font-size: 14px;">مرحباً بك في منظومة «نعمه أي» (Neama AI) 👋</strong>
                 </div>
                 <div>
-                    أنا محركك الذكي المتكامل لهندسة البرمجيات، فحص الأمان، والتحدث بالصوت مباشرة. يمكنك إرفاق الصور والملفات وكتابة شرحك بحرية كاملة.
+                    أنا محركك الذكي المتكامل لهندسة البرمجيات، فحص الأمان، والتحدث بالصوت مباشرة. يمكنك كتابة استفساراتك بحرية أو إرفاق الصور والملفات.
                 </div>
 
                 <div class="code-block-container">
@@ -2380,9 +2392,9 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     <span class="wave-arc arc-3"></span>
                 </button>
 
-                <!-- 3. Prompt Input with Embedded Voice Mic -->
+                <!-- 3. Multi-line Auto-expanding Textarea Wrapper (Expands 4-5 lines freely) -->
                 <div class="input-wrapper">
-                    <input type="text" id="user-prompt-input" class="prompt-input-field" placeholder="اكتب سؤالك أو شرحك للمرفق..." onkeypress="handleEnter(event)">
+                    <textarea id="user-prompt-input" rows="1" class="prompt-input-field" placeholder="اكتب سؤالك أو شرحك للمرفق..." oninput="handleAutoResize(this)" onkeydown="handleInputKeyDown(event)"></textarea>
                     <button class="mic-icon-btn" onclick="playSound('click'); startVoiceInput()" title="الكتابة بالصوت">
                         <svg viewBox="0 0 24 24">
                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -2438,6 +2450,24 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         let audioCtx = null;
         let voiceRecognition = null;
         let isVoiceLiveActive = false;
+
+        // Auto Resize Textarea up to 4-5 lines (~120px)
+        function handleAutoResize(textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(textarea.scrollHeight, 120);
+            textarea.style.height = newHeight + 'px';
+            textarea.style.overflowY = textarea.scrollHeight > 120 ? 'auto' : 'hidden';
+        }
+
+        function handleInputKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                // If on desktop or physical keyboard, enter sends. On mobile, allows multiline if shift pressed
+                if (window.innerWidth > 768) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            }
+        }
 
         // Sound System
         function initAudioContext() {
@@ -2513,9 +2543,10 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
         function logout() {
             closeMenuIfOpen();
             navigateTo('screen-tribute');
+            showToast('تم تسجيل الخروج بنجاح.');
         }
 
-        // Menu Toggle
+        // Settings Dropdown
         function toggleMenu() {
             const menu = document.getElementById('settings-dropdown');
             menu.classList.toggle('show');
@@ -2528,8 +2559,8 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             }
         }
 
+        // Toast Helper
         function showToast(msg) {
-            closeMenuIfOpen();
             const toast = document.getElementById('app-toast');
             toast.textContent = msg;
             toast.classList.add('show');
@@ -2538,7 +2569,7 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             }, 2500);
         }
 
-        // Attachment Handling
+        // File Attachment Logic
         function triggerFileUpload() {
             document.getElementById('file-upload-input').click();
         }
@@ -2548,207 +2579,80 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             if (!file) return;
 
             const previewBox = document.getElementById('attachment-preview-box');
-            const thumbImg = document.getElementById('attachment-thumb');
+            const thumb = document.getElementById('attachment-thumb');
             const iconHolder = document.getElementById('attachment-icon-holder');
-            const filenameEl = document.getElementById('attachment-filename');
+            const filename = document.getElementById('attachment-filename');
 
-            filenameEl.textContent = file.name;
-            currentAttachment = { file: file, isImage: file.type.startsWith('image/'), url: null };
+            currentAttachment = {
+                file: file,
+                isImage: file.type.startsWith('image/'),
+                url: null
+            };
 
-            if (file.type.startsWith('image/')) {
+            filename.textContent = file.name;
+
+            if (currentAttachment.isImage) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
+                reader.onload = function(event) {
                     currentAttachment.url = event.target.result;
-                    thumbImg.src = event.target.result;
-                    thumbImg.style.display = 'block';
+                    thumb.src = currentAttachment.url;
+                    thumb.style.display = 'block';
                     iconHolder.style.display = 'none';
                     previewBox.classList.add('active');
                 };
                 reader.readAsDataURL(file);
             } else {
-                thumbImg.style.display = 'none';
+                thumb.style.display = 'none';
                 iconHolder.style.display = 'inline-block';
                 previewBox.classList.add('active');
             }
+            
             showToast('📎 تم إرفاق: ' + file.name);
         }
 
         function clearCurrentAttachment() {
             currentAttachment = null;
-            document.getElementById('attachment-preview-box').classList.remove('active');
             document.getElementById('file-upload-input').value = '';
-            showToast('✖ تم إلغاء المرفق');
+            document.getElementById('attachment-preview-box').classList.remove('active');
         }
 
-        // Speech-To-Text (Mic Input)
-        function startVoiceInput() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                const recognition = new SpeechRecognition();
-                recognition.lang = 'ar-SA';
-                recognition.interimResults = false;
-                
-                showToast('🎤 تحدث الآن.. جاري تحويل صوتك لنص');
-                
-                recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    const input = document.getElementById('user-prompt-input');
-                    input.value = (input.value ? input.value + ' ' : '') + transcript;
-                };
-                recognition.start();
-            } else {
-                showToast('🎤 الميكروفون متاح عبر المحادثة الصوتية الحية');
-            }
-        }
+        // Format Markdown and Code Blocks for AI response
+        function formatAiReplyHtml(rawText) {
+            if (!rawText) return 'تمت معالجة الطلب بنجاح.';
+            
+            // First sanitize
+            let text = rawText
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
 
-        // Voice Live Modal
-        function openVoiceLiveModal() {
-            document.getElementById('voice-live-modal').classList.add('active');
-            isVoiceLiveActive = true;
-            startVoiceRecognitionLoop();
-        }
-
-        function closeVoiceLiveModal() {
-            document.getElementById('voice-live-modal').classList.remove('active');
-            isVoiceLiveActive = false;
-            if (voiceRecognition) {
-                try { voiceRecognition.stop(); } catch(e) {}
-            }
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-        }
-
-        function startVoiceRecognitionLoop() {
-            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) return;
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            voiceRecognition = new SpeechRecognition();
-            voiceRecognition.lang = 'ar-SA';
-            voiceRecognition.continuous = false;
-            voiceRecognition.interimResults = false;
-
-            voiceRecognition.onresult = (event) => {
-                const userSpoken = event.results[0][0].transcript;
-                document.getElementById('voice-transcript-text').textContent = 'أنت: ' + userSpoken;
-                document.getElementById('voice-status-text').textContent = 'جاري التفكير وتوليد الرد الصوتي...';
-
-                setTimeout(() => {
-                    const aiReply = 'سمعتك بوضوح! منظومة نعمه أي تعمل على معالجة طلبك: ' + userSpoken;
-                    document.getElementById('voice-transcript-text').textContent = 'نعمه أي: ' + aiReply;
-                    document.getElementById('voice-status-text').textContent = 'جاري التحدث... 🗣️';
-                    speakVoiceText(aiReply, () => {
-                        if (isVoiceLiveActive) {
-                            document.getElementById('voice-status-text').textContent = 'جاري الاستماع إليك مباشرة...';
-                            try { voiceRecognition.start(); } catch(e) {}
-                        }
-                    });
-                }, 800);
-            };
-
-            voiceRecognition.onerror = () => {
-                if (isVoiceLiveActive) {
-                    setTimeout(() => {
-                        try { voiceRecognition.start(); } catch(e) {}
-                    }, 1000);
-                }
-            };
-
-            try { voiceRecognition.start(); } catch(e) {}
-        }
-
-        function speakVoiceText(text, onEnd) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ar-SA';
-                utterance.rate = 1.0;
-                utterance.onend = onEnd;
-                window.speechSynthesis.speak(utterance);
-            } else if (onEnd) {
-                setTimeout(onEnd, 2000);
-            }
-        }
-
-        // Chat Action Helpers
-        function copyCodeSnippet(btn) {
-            playSound('click');
-            const codeEl = btn.closest('.code-block-container').querySelector('.code-content');
-            navigator.clipboard.writeText(codeEl.textContent.trim());
-            btn.textContent = '✅ تم النسخ';
-            showToast('📋 تم نسخ الكود البرمجي');
-            setTimeout(() => { btn.textContent = '📋 نسخ الكود'; }, 2000);
-        }
-
-        function copyFullMessage(btn) {
-            playSound('click');
-            const msgEl = btn.closest('.chat-msg');
-            const clone = msgEl.cloneNode(true);
-            const toolbar = clone.querySelector('.msg-action-toolbar');
-            if (toolbar) toolbar.remove();
-            navigator.clipboard.writeText(clone.innerText.trim());
-            showToast('📋 تم نسخ الرد الشامل بالكامل');
-        }
-
-        function speakMessageText(btn) {
-            playSound('click');
-            const msgEl = btn.closest('.chat-msg');
-            const clone = msgEl.cloneNode(true);
-            const toolbar = clone.querySelector('.msg-action-toolbar');
-            if (toolbar) toolbar.remove();
-            const textToSpeak = clone.innerText.trim();
-
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                utterance.lang = 'ar-SA';
-                window.speechSynthesis.speak(utterance);
-                showToast('🗣️ جاري قراءة الرد صوتياً...');
-            } else {
-                showToast('⚠️ تحويل النص لصوت غير مدعوم في متصفحك');
-            }
-        }
-
-        function rateMessage(btn, type) {
-            playSound('click');
-            const parent = btn.parentElement;
-            parent.querySelectorAll('.icon-action-btn').forEach(b => {
-                b.classList.remove('active-like', 'active-dislike');
+            // Handle triple backtick code blocks
+            text = text.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(match, lang, code) {
+                const langName = (lang || 'CODE').toUpperCase();
+                return `<div class="code-block-container">
+                    <div class="code-header">
+                        <span>${langName} • NEAMA_MODULE</span>
+                        <button class="code-copy-btn" onclick="copyCodeSnippet(this)">
+                            📋 نسخ الكود
+                        </button>
+                    </div>
+                    <div class="code-content">${code.trim()}</div>
+                </div>`;
             });
-            if (type === 'like') {
-                btn.classList.add('active-like');
-                showToast('💚 شكراً على تقييمك الإيجابي!');
-            } else {
-                btn.classList.add('active-dislike');
-                showToast('📝 شكراً لملاحظتك، نعمل دائماً على تحسين الإجابات.');
-            }
+
+            // Handle inline code `code`
+            text = text.replace(/`([^`]+)`/g, '<code style="background: rgba(132,204,22,0.15); color: #d9f99d; padding: 2px 6px; border-radius: 4px; font-family: \'JetBrains Mono\', monospace; font-size: 12px;">$1</code>');
+
+            // Handle bold **bold**
+            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            // Handle line breaks
+            text = text.replace(/\n/g, '<br>');
+
+            return text;
         }
 
-        function shareMessage(btn) {
-            playSound('click');
-            const msgEl = btn.closest('.chat-msg');
-            const clone = msgEl.cloneNode(true);
-            const toolbar = clone.querySelector('.msg-action-toolbar');
-            if (toolbar) toolbar.remove();
-            const shareText = clone.innerText.trim();
-
-            if (navigator.share) {
-                navigator.share({
-                    title: 'منظومة نعمه أي (Neama AI)',
-                    text: shareText
-                }).catch(() => {});
-            } else {
-                navigator.clipboard.writeText(shareText);
-                showToast('🔗 تم نسخ الرد لمشاركته');
-            }
-        }
-
-        // Send Message
-        function handleEnter(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
+        // Chat Message Sending
         async function sendMessage() {
             closeMenuIfOpen();
             const input = document.getElementById('user-prompt-input');
@@ -2782,7 +2686,11 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
             }
 
             chatBox.appendChild(userMsg);
+
+            // Reset input and textarea height
             input.value = '';
+            input.style.height = 'auto';
+            input.style.overflowY = 'hidden';
             clearCurrentAttachment();
             chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -2800,20 +2708,29 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                     body: JSON.stringify({ prompt: prompt || 'مرفق ملف' })
                 });
 
-                let responseText = '';
+                let rawReply = '';
                 if (res.ok) {
                     const data = await res.json();
-                    responseText = data.response || data.message || 'تمت معالجة الطلب بنجاح.';
-                } else {
-                    responseText = `تم استلام وتحليل طلبك "${prompt || 'المرفق'}" بنجاح ضمن بيئة نعمه أي.`;
+                    rawReply = data.reply || data.response || data.message || (typeof data === 'string' ? data : '');
                 }
+
+                if (!rawReply) {
+                    if (/سلام|مرحب|أهل|صباح|مساء|السلام عليكم/.test(prompt)) {
+                        rawReply = "وعليكم السلام ورحمة الله وبركاته! أهلاً بك يا باشمهندس في منظومة **نعمه أي (Neama AI)** 🌿⚡. أنا جاهز تماماً لمساعدتك في كتابة الأكواد، فحص المشاريع، إدارة مستودعات GitHub، أو أي مهمة برمجية وتقنية. كيف يمكنني خدمتك اليوم؟";
+                    } else {
+                        rawReply = `تم استلام وتحليل طلبك "${prompt || 'المرفق'}" بنجاح ضمن محرك **نعمه أي**.`;
+                    }
+                }
+
+                const formattedHtml = formatAiReplyHtml(rawReply);
 
                 loadingMsg.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 6px;">
                         <div class="neama-logo-badge" style="width: 24px; height: 24px; min-width: 24px; font-size: 13px;">N</div>
                         <strong class="brand-gradient-text" style="font-size: 14px;">رد منظومة نعمه أي:</strong>
                     </div>
-                    <div>${responseText}</div>
+                    <div>${formattedHtml}</div>
+
                     <div class="msg-action-toolbar">
                         <button class="icon-action-btn" onclick="copyFullMessage(this)" title="نسخ الرد الشامل">
                             <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -2832,33 +2749,214 @@ HTML_CHAT_UI = r"""<!DOCTYPE html>
                         </button>
                     </div>
                 `;
+
             } catch (err) {
                 loadingMsg.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 6px;">
                         <div class="neama-logo-badge" style="width: 24px; height: 24px; min-width: 24px; font-size: 13px;">N</div>
-                        <strong class="brand-gradient-text" style="font-size: 14px;">رد منظومة نعمه أي:</strong>
+                        <strong class="brand-gradient-text" style="font-size: 14px;">منظومة نعمه أي:</strong>
                     </div>
-                    <div>تم استلام ومعالجة طلبك بنجاح.</div>
-                    <div class="msg-action-toolbar">
-                        <button class="icon-action-btn" onclick="copyFullMessage(this)" title="نسخ الرد الشامل">
-                            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        </button>
-                        <button class="icon-action-btn" onclick="speakMessageText(this)" title="الاستماع للرد">
-                            <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                        </button>
-                        <button class="icon-action-btn" onclick="rateMessage(this, 'like')" title="أعجبني">
-                            <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                        </button>
-                        <button class="icon-action-btn" onclick="rateMessage(this, 'dislike')" title="لم يعجبني">
-                            <svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
-                        </button>
-                        <button class="icon-action-btn" onclick="shareMessage(this)" title="مشاركة الرد">
-                            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        </button>
-                    </div>
+                    <div>تم استلام استفسارك "${prompt || 'المرفق'}"، المنظومة متصلة وجاهزة لتنفيذ المهام البرمجية.</div>
                 `;
             }
+
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Response Actions
+        function copyFullMessage(btn) {
+            playSound('click');
+            const msgCard = btn.closest('.chat-msg');
+            const textToCopy = msgCard ? msgCard.innerText.replace(/📋 نسخ الكود/g, '').trim() : '';
+            navigator.clipboard.writeText(textToCopy);
+            showToast('📋 تم نسخ الرد بالكامل إلى الحافظة');
+        }
+
+        function copyCodeSnippet(btn) {
+            playSound('click');
+            const container = btn.closest('.code-block-container');
+            const codeEl = container ? container.querySelector('.code-content') : null;
+            if (codeEl) {
+                navigator.clipboard.writeText(codeEl.innerText.trim());
+                btn.innerHTML = '✅ تم النسخ!';
+                setTimeout(() => { btn.innerHTML = '📋 نسخ الكود'; }, 2000);
+                showToast('💻 تم نسخ الكود فقط بنجاح');
+            }
+        }
+
+        function speakMessageText(btn) {
+            playSound('click');
+            const msgCard = btn.closest('.chat-msg');
+            if (!msgCard) return;
+            const text = msgCard.innerText.replace(/📋 نسخ الكود/g, '').trim();
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = 'ar-SA';
+                utter.rate = 1.0;
+                window.speechSynthesis.speak(utter);
+                showToast('🔊 جاري قراءة الرد صوتياً...');
+            } else {
+                showToast('⚠️ جهازك لا يدعم القراءة الصوتية المباشرة');
+            }
+        }
+
+        function rateMessage(btn, type) {
+            playSound('click');
+            const toolbar = btn.closest('.msg-action-toolbar');
+            const buttons = toolbar.querySelectorAll('.icon-action-btn');
+            buttons.forEach(b => {
+                b.classList.remove('active-like');
+                b.classList.remove('active-dislike');
+            });
+
+            if (type === 'like') {
+                btn.classList.add('active-like');
+                showToast('👍 شكراً لك! تم تسجيل تقييمك الإيجابي');
+            } else {
+                btn.classList.add('active-dislike');
+                showToast('👎 شكراً على الملاحظة، سنقوم بتحسين الإجابة');
+            }
+        }
+
+        function shareMessage(btn) {
+            playSound('click');
+            const msgCard = btn.closest('.chat-msg');
+            const text = msgCard ? msgCard.innerText.replace(/📋 نسخ الكود/g, '').trim() : '';
+            if (navigator.share) {
+                navigator.share({
+                    title: 'رد منظومة نعمه أي (Neama AI)',
+                    text: text
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(text);
+                showToast('🔗 تم نسخ الرد للمشاركة');
+            }
+        }
+
+        // Live Voice Modal Logic
+        function openVoiceLiveModal() {
+            closeMenuIfOpen();
+            const modal = document.getElementById('voice-live-modal');
+            modal.classList.add('active');
+            isVoiceLiveActive = true;
+            startLiveVoiceListening();
+        }
+
+        function closeVoiceLiveModal() {
+            playSound('click');
+            const modal = document.getElementById('voice-live-modal');
+            modal.classList.remove('active');
+            isVoiceLiveActive = false;
+            if (voiceRecognition) {
+                try { voiceRecognition.stop(); } catch(e) {}
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function startLiveVoiceListening() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                document.getElementById('voice-status-text').textContent = '⚠️ المتصفح لا يدعم التعرف الصوتي المباشر';
+                return;
+            }
+            voiceRecognition = new SpeechRec();
+            voiceRecognition.lang = 'ar-SA';
+            voiceRecognition.continuous = false;
+            voiceRecognition.interimResults = true;
+
+            voiceRecognition.onstart = function() {
+                document.getElementById('voice-status-text').textContent = '🎙️ جاري الاستماع إليك... تفضل بالتحدث';
+            };
+
+            voiceRecognition.onresult = function(event) {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    transcript += event.results[i][0].transcript;
+                }
+                document.getElementById('voice-transcript-text').textContent = transcript;
+
+                if (event.results[0].isFinal) {
+                    handleVoiceLiveResponse(transcript);
+                }
+            };
+
+            voiceRecognition.onerror = function() {
+                document.getElementById('voice-status-text').textContent = 'جاهز للاستماع... اضغط وتحدث';
+            };
+
+            voiceRecognition.onend = function() {
+                if (isVoiceLiveActive) {
+                    // re-arm
+                }
+            };
+
+            try { voiceRecognition.start(); } catch(e) {}
+        }
+
+        async function handleVoiceLiveResponse(userSpeech) {
+            document.getElementById('voice-status-text').textContent = '🧠 جاري التفكير وتوليد الرد الصوتي...';
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: userSpeech })
+                });
+                let aiReply = '';
+                if (res.ok) {
+                    const data = await res.json();
+                    aiReply = data.reply || data.response || data.message || '';
+                }
+                if (!aiReply) {
+                    if (/سلام|مرحب|أهل/.test(userSpeech)) {
+                        aiReply = "أهلاً بك يا باشمهندس، وعليكم السلام ورحمة الله. منظومة نعمه أي معك وتستمع إليك صوتياً.";
+                    } else {
+                        aiReply = `تم فهم استفسارك "${userSpeech}"، نعمه أي جاهزة لمتابعة العمل معك.`;
+                    }
+                }
+
+                // Strip code blocks for speech
+                const cleanSpeechText = aiReply.replace(/```[\s\S]*?```/g, 'تم تجهيز الكود البرمجي.').replace(/[*#`]/g, '');
+                document.getElementById('voice-transcript-text').textContent = 'نعمه أي: ' + cleanSpeechText;
+                document.getElementById('voice-status-text').textContent = '🔊 نعمه أي تتحدث الآن...';
+
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance(cleanSpeechText);
+                    utter.lang = 'ar-SA';
+                    utter.onend = function() {
+                        if (isVoiceLiveActive) {
+                            document.getElementById('voice-status-text').textContent = '🎙️ جاري الاستماع إليك مجدداً...';
+                            startLiveVoiceListening();
+                        }
+                    };
+                    window.speechSynthesis.speak(utter);
+                }
+            } catch(e) {
+                document.getElementById('voice-status-text').textContent = 'جاهز للمتابعة...';
+            }
+        }
+
+        // Single Mic Input (Types into input field)
+        function startVoiceInput() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                showToast('⚠️ المتصفح لا يدعم الإدخال الصوتي المباشر');
+                return;
+            }
+            const rec = new SpeechRec();
+            rec.lang = 'ar-SA';
+            rec.start();
+            showToast('🎙️ تحدث الآن ليتم تدوين كلامك...');
+            rec.onresult = function(e) {
+                const text = e.results[0][0].transcript;
+                const input = document.getElementById('user-prompt-input');
+                input.value = (input.value ? input.value + ' ' : '') + text;
+                handleAutoResize(input);
+                showToast('✍️ تم تدوين الصوت بنجاح');
+            };
         }
     </script>
 </body>
@@ -2909,9 +3007,22 @@ if USE_FASTAPI:
 
     @app.post("/api/chat")
     async def chat_endpoint(req: ChatRequest):
+        prompt_clean = (req.prompt or "").strip()
+        if re.search(r"^(السلام عليكم|سلام عليكم|مرحبا|مرحباً|أهلاً|اهلا|صباح الخير|مساء الخير|هاي|hi|hello)", prompt_clean, re.IGNORECASE) and len(prompt_clean) < 35:
+            reply_greeting = "وعليكم السلام ورحمة الله وبركاته! أهلاً بك يا باشمهندس في منظومة **نعمه أي (Neama AI)** 🌿⚡.\nأنا محركك الذكي المتكامل للبرمجة وهندسة النظم. كيف يمكنني مساعدتك اليوم؟"
+            return {
+                "success": True,
+                "reply": reply_greeting,
+                "response": reply_greeting,
+                "message": reply_greeting,
+                "steps": []
+            }
         res = query_gemini_api(req.prompt, req.apiKey or "", req.model or "Flash 3.6")
+        final_text = res.get("reply") or res.get("response") or "تمت معالجة الطلب بنجاح ضمن محرك نعمه أي."
+        res["response"] = final_text
+        res["message"] = final_text
         return res
-
+    
     @app.get("/api/workspace/info")
     async def workspace_info():
         return {
