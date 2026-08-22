@@ -1,3 +1,4 @@
+from app.advanced_modules.production_suite import RealtimeMetricsEngine, ConfigManagementEngine, StaticAnalysisSonarEngine, DocAutomationEngine, ErrorTaxonomyEngine, ChaosAndLoadTestingEngine
 from app.advanced_modules.capabilities import CodeProfilerEngine, SecurityAnalysisEngine, CICDWorkflowEngine, RustIntegrationEngine, LegacyModernizerEngine
 from app.emotions.affective_engine import analyze_user_emotion
 
@@ -842,7 +843,37 @@ def tool_analyze_rust(code_snippet: str = "") -> Dict[str, Any]:
 def tool_modernize_code(code_snippet: str = "") -> Dict[str, Any]:
     return LegacyModernizerEngine.modernizer_analysis(code_snippet)
 
+
+def tool_get_prometheus_metrics(request_count: int = 120, avg_latency_ms: float = 45.2) -> str:
+    return RealtimeMetricsEngine.get_prometheus_metrics(request_count, avg_latency_ms)
+
+def tool_scan_env_config(env_content: str = "") -> Dict[str, Any]:
+    return ConfigManagementEngine.scan_env_leakage(env_content)
+
+def tool_analyze_code_smells(code: str = "") -> Dict[str, Any]:
+    return StaticAnalysisSonarEngine.analyze_code_smells(code)
+
+def tool_generate_openapi_spec() -> Dict[str, Any]:
+    return DocAutomationEngine.generate_openapi_spec()
+
+def tool_generate_plantuml_arch() -> str:
+    return DocAutomationEngine.generate_plantuml_architecture()
+
+def tool_get_error_taxonomy(code: str = "E1001") -> Dict[str, Any]:
+    return ErrorTaxonomyEngine.get_troubleshooting_guide(code)
+
+def tool_run_chaos_simulation(failure_type: str = "node_crash") -> Dict[str, Any]:
+    return ChaosAndLoadTestingEngine.simulate_chaos_scenario(failure_type)
+
 SASA_AGENT_TOOLS = {
+    "get_prometheus_metrics": tool_get_prometheus_metrics,
+    "scan_env_config": tool_scan_env_config,
+    "analyze_code_smells": tool_analyze_code_smells,
+    "generate_openapi_spec": tool_generate_openapi_spec,
+    "generate_plantuml_arch": tool_generate_plantuml_arch,
+    "get_error_taxonomy": tool_get_error_taxonomy,
+    "run_chaos_simulation": tool_run_chaos_simulation,
+
     "profile_code": tool_profile_code,
     "audit_security": tool_audit_security,
     "generate_cicd": tool_generate_cicd,
@@ -4497,6 +4528,20 @@ else:
                     res = {"success": False, "error": "المحتوى فارغ أو الأداة غير مهيأة"}
                 self._send_json_response(res)
                 return
+            elif path in ["/api/metrics/prometheus", "/metrics"]:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; version=0.0.4")
+                self.end_headers()
+                self.wfile.write(RealtimeMetricsEngine.get_prometheus_metrics().encode("utf-8"))
+                return
+            elif path == "/api/docs/openapi":
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(DocAutomationEngine.generate_openapi_spec()).encode("utf-8"))
+                return
+            elif path == "/api/docs/architecture":
+                self._set_headers(200, "text/plain")
+                self.wfile.write(DocAutomationEngine.generate_plantuml_architecture().encode("utf-8"))
+                return
             elif path == "/api/workspace/info":
                 self._set_headers(200, "application/json")
                 response = {
@@ -4582,6 +4627,18 @@ else:
                     token=body.get("token")
                 )
                 self._set_headers(200 if res.get("success") else 400, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/capabilities/chaos":
+                res = tool_run_chaos_simulation(body.get("type", "node_crash"))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/capabilities/smells":
+                res = tool_analyze_code_smells(body.get("code", ""))
+                self._set_headers(200, "application/json")
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            elif path == "/api/capabilities/scan_env":
+                res = tool_scan_env_config(body.get("env", ""))
+                self._set_headers(200, "application/json")
                 self.wfile.write(json.dumps(res).encode("utf-8"))
             elif path == "/api/capabilities/audit":
                 res = tool_audit_security(body.get("code", ""))
