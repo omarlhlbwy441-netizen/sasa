@@ -793,7 +793,106 @@ AGENTS_SWARM_REGISTRY: List[Dict[str, Any]] = [
         "status": "active",
         "role": "استرجاع سياق المحادثات السابقة والمستودعات المرتبطة للإجابة الدقيقة.",
         "tools": ["view_file", "db_get_status"]
+    },
+
+    # ── Division 11: قطاع التراث الروحاني، المعرفة النورانية، والاستيعاب الذاتي (8 Agents) ──
+    {
+        "id": "esoteric_scholar",
+        "name_ar": "خبير التراث الفلسفي والروحاني",
+        "name_en": "The Esoteric & Philosophical Scholar",
+        "division_id": 11,
+        "division_ar": "التراث الروحاني والمعرفة النورانية",
+        "avatar": "📜",
+        "color": "#a855f7",
+        "status": "active",
+        "role": "تحليل أمهات كتب الطب الروحاني (الرازي، الغزالي، ابن سينا، السهروردي) من منظور تاريخي، فلسفي، ونفسي أكاديمي.",
+        "tools": ["query_spiritual_medicine", "get_planes_atlas", "view_file"]
+    },
+    {
+        "id": "universal_ingestion_bot",
+        "name_ar": "وكيل البحث والاستيعاب الشامل والأرشفة",
+        "name_en": "Universal Web Ingestion & RAG Agent",
+        "division_id": 11,
+        "division_ar": "التراث الروحاني والمعرفة النورانية",
+        "avatar": "🌐",
+        "color": "#06b6d4",
+        "status": "active",
+        "role": "البحث الشبكي المستقل، تفريغ صفحات الويب والمخطوطات، تنظيف النصوص، تقطيعها إلى Chunks، وحقنها في الذاكرة المعرفية.",
+        "tools": ["search_and_scrape", "chunk_and_vectorize", "direct_ingest_text"]
+    },
+    {
+        "id": "planes_ontologist",
+        "name_ar": "أنطولوجي العوالم الكونية والمثال",
+        "name_en": "Universal Planes & Ontologist",
+        "division_id": 11,
+        "division_ar": "التراث الروحاني والمعرفة النورانية",
+        "avatar": "🌌",
+        "color": "#818cf8",
+        "status": "active",
+        "role": "تفسير مفاهيم العوالم العلوية (الملكوت والجبروت)، عالم المثال والبرزخ، والعوالم السفلية والكثافة المادية في المدارس الإنسانية.",
+        "tools": ["get_planes_atlas", "query_spiritual_medicine"]
+    },
+    {
+        "id": "psychosomatic_scholar",
+        "name_ar": "باحث الطب السيكوسوماتي والتأثير الوجداني",
+        "name_en": "Psychosomatic & Mind-Body Scholar",
+        "division_id": 11,
+        "division_ar": "التراث الروحاني والمعرفة النورانية",
+        "avatar": "🧠",
+        "color": "#ec4899",
+        "status": "active",
+        "role": "دراسة اتصال النفس بالجسد وتأثير كدورات الحزن والغضب والوهم على نشوء الأمراض العضوية استناداً لطب الرازي وابن سينا.",
+        "tools": ["query_spiritual_medicine", "search_herbal_knowledge"]
+    },
+    {
+        "id": "illumination_philosopher",
+        "name_ar": "فيلسوف الإشراق والحكمة النورانية",
+        "name_en": "Illumination & Wisdom Philosopher",
+        "division_id": 11,
+        "division_ar": "التراث الروحاني والمعرفة النورانية",
+        "avatar": "✨",
+        "color": "#fbbf24",
+        "status": "active",
+        "role": "شرح نظريات الأنوار المجردة والفيض المعرفي عند السهروردي وابن عربي والحكماء القدماء بأسلوب فلسفي استبصاري.",
+        "tools": ["query_spiritual_medicine", "get_planes_atlas"]
+    },
+    {
+        "id": "manuscript_curator",
+        "name_ar": "أمين المخطوطات والوثائق النادرة",
+        "name_en": "Ancient Manuscripts & Treatises Curator",
+        "division_id": 11,
+        "division_ar": "التراث الروحاني والمعرفة النورانية",
+        "avatar": "🏛️",
+        "color": "#d97706",
+        "status": "active",
+        "role": "فهرسة وتوثيق المخطوطات القديمة، استخلاص المعاني الدقيقة، وضمان نسبة الأقوال لأصحابها في تاريخ الأفكار.",
+        "tools": ["search_and_scrape", "view_file", "query_spiritual_medicine"]
+    },
+    {
+        "id": "spiritual_guardrail_sentinel",
+        "name_ar": "حارس الأمان والمنهجية الأكاديمية",
+        "name_en": "Esoteric Safety & Academic Sentinel",
+        "division_id": 11,
+        "division_ar": "التراث الروحاني والمعرفة النورانية",
+        "avatar": "🛡️",
+        "color": "#ef4444",
+        "status": "active",
+        "role": "تطبيق حواجز الأمان الصارمة: منع الممارسات الغامضة الضارة، التمييز القاطع بين التراث والطب العضوي، والتأكيد على المنهج الموضوعي.",
+        "tools": ["validate_safety_rules", "query_spiritual_medicine"]
+    },
+    {
+        "id": "comparative_hermeneutics_expert",
+        "name_ar": "خبير التأويل والأنثروبولوجيا المقارنة",
+        "name_en": "Comparative Hermeneutics & Anthropology Expert",
+        "division_id": 11,
+        "division_ar": "التراث الروحاني والمعرفة النورانية",
+        "avatar": "🔍",
+        "color": "#10b981",
+        "status": "active",
+        "role": "المقارنة بين الرمزيات الروحانية في الحضارات القديمة (المصرية، البابلية، الإغريقية، والإسلامية) وتطور فكرة الروح والوعي.",
+        "tools": ["query_spiritual_medicine", "search_and_scrape"]
     }
+
 ]
 
 
