@@ -9,7 +9,7 @@ import asyncio
 import concurrent.futures
 from typing import Dict, List, Any, Optional, Callable
 
-# Complete 64-Agent Matrix Definition across 8 Core Strategic Divisions
+# Complete 80-Agent Multi-Disciplinary Matrix Definition across 8 Core Strategic Divisions
 AGENTS_SWARM_REGISTRY: List[Dict[str, Any]] = [
     # ── Division 1: Core Systems & High-Level Architecture (8 Agents) ──
     {
@@ -920,7 +920,7 @@ class SwarmOrchestrationEngine:
 - **التوليف الصوتي (WebAudio Synth):** جاهز ومفعل للعمليات الفورية.
 
 #### 3. 👥 سرب الوكلاء الأذكياء (64 Autonomous Agents Matrix):
-- **إجمالي الوكلاء المفهرسين:** **64 وكيلاً متخصصاً** عبر 8 قطاعات هندسية.
+- **إجمالي الوكلاء المفهرسين:** **80 وكيلاً فائق الذكاءاً متخصصاً** عبر 8 قطاعات هندسية.
 - **حالة السرب:** <span style="color: #86efac; font-weight: bold;">🟢 جميع الوكلاء (64/64) في حالة جاهزية واستعداد للعمل المتوازي.</span>
 
 #### 4. 💻 العمليات والمحركات النشطة في السيرفر:
